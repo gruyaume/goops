@@ -1,0 +1,24 @@
+name: go-charm
+summary: Write Juju charms in Go.
+description: |
+  Write Juju charms in Go.
+links:
+  website: https://github.com/gruyaume/go-operator
+  source: https://github.com/gruyaume/go-operator
+  issues: https://github.com/gruyaume/go-operator/issues
+
+type: charm
+base: ubuntu@24.04
+build-base: ubuntu@24.04
+platforms:
+  amd64:
+
+parts:
+
+  charm:
+    source: .
+    plugin: go
+    build-snaps:
+      - go
+    organize:
+      bin/go-operator: dispatch

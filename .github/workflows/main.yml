@@ -1,0 +1,23 @@
+name: Main workflow
+
+permissions:
+  contents: read
+  packages: write
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs: 
+  go-unit-test:
+    uses: ./.github/workflows/go-unittest.yaml
+  go-vet:
+    uses: ./.github/workflows/go-vet.yaml
+  go-lint:
+    uses: ./.github/workflows/go-lint.yaml
+  go-sec:
+    uses: ./.github/workflows/go-sec.yaml
