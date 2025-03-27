@@ -22,21 +22,3 @@ updates:
       go_dependencies:
         patterns:
           - "*"
-
-  - package-ecosystem: "npm"
-    directory: "/ui/"
-    schedule:
-      interval: "weekly"
-    commit-message:
-      prefix: "chore: "
-    groups:
-      npm_dependencies:
-        patterns:
-          - "*"
-  
-  - package-ecosystem: "pip"
-    directory: "/"
-    schedule:
-      interval: "daily"
-    commit-message:
-      prefix: "chore: "
