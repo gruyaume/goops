@@ -17,12 +17,9 @@ const (
 )
 
 func StatusSet(runner CommandRunner, status Status) error {
-	output, err := runner.Run(StatusSetCommand, string(status))
+	_, err := runner.Run(StatusSetCommand, string(status))
 	if err != nil {
 		return fmt.Errorf("failed to set status: %w", err)
-	}
-	if string(output) != "" {
-		return fmt.Errorf("unexpected output from status-set: %s", string(output))
 	}
 	return nil
 }

@@ -27,7 +27,7 @@ var levelStrings = []string{
 // JujuLog sends a log message to juju-log using the given runner,
 // appending any extra arguments provided.
 func JujuLog(runner CommandRunner, message string, logLevel Level, extraArgs ...string) {
-	args := []string{"--log-level", levelStrings[logLevel], message}
+	args := []string{"--log-level=" + levelStrings[logLevel], message}
 	args = append(args, extraArgs...)
 	_, err := runner.Run(JujuLogCommand, args...)
 	if err != nil {
