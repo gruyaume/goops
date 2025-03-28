@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"os"
 
 	"github.com/gruyaume/go-operator/internal/commands"
@@ -9,39 +8,42 @@ import (
 )
 
 func main() {
-	log.Println("Starting go-operator")
+	commandRunner := &commands.DefaultRunner{}
+	logger := commands.NewLogger(commandRunner)
+
+	logger.Info("Started go-operator")
 	eventType, err := events.GetEventType()
 	if err != nil {
-		log.Println("could not get event type:", err)
-		os.Exit(0)
-	}
-	log.Println("Event type:", eventType)
-	commandRunner := &commands.DefaultRunner{}
-	err = commands.StatusSet(commandRunner, commands.StatusActive)
-	if err != nil {
-		log.Println("could not set status:", err)
+		logger.Info("could not get event type: ", err.Error())
 		os.Exit(1)
 	}
-	log.Println("Status set to active")
+	logger.Info("Event type:", string(eventType))
 
-	mySecret, err := commands.SecretGet(commandRunner, "", "my-label", false, true)
+	err = commands.StatusSet(commandRunner, commands.StatusActive)
 	if err != nil {
-		log.Println("could not get secret:", err)
+		logger.Error("could not set status:", err.Error())
+		os.Exit(1)
+	}
+	logger.Info("Status set to active")
+
+	_, err = commands.SecretGet(commandRunner, "", "my-label", false, true)
+	if err != nil {
+		logger.Info("could not get secret:", err.Error())
 		myNewSecretContent := map[string]string{
 			"username": "admin",
 			"password": "password",
 		}
 		_, err := commands.SecretAdd(commandRunner, myNewSecretContent, "my secret", "my-label")
 		if err != nil {
-			log.Println("could not add secret:", err)
-			os.Exit(0)
+			logger.Error("could not add secret:", err.Error())
+			os.Exit(1)
 		}
-		log.Println("Created new secret")
+		logger.Info("Created new secret")
 	} else {
-		log.Println("Secret content:", mySecret)
+		logger.Info("Secret found")
 	}
 
-	log.Println("go-operator finished")
+	logger.Info("Finished go-operator")
 	os.Exit(0)
 }
 
