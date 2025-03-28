@@ -2,7 +2,6 @@ package commands
 
 import (
 	"fmt"
-	"os/exec"
 )
 
 type Status string
@@ -14,14 +13,16 @@ const (
 )
 
 const (
-	SetStatusCommand = "status-set"
+	StatusSetCommand = "status-set"
 )
 
-func SetStatus(status Status) error {
-	cmd := exec.Command(SetStatusCommand, string(status))
-	_, err := cmd.Output()
+func StatusSet(runner CommandRunner, status Status) error {
+	output, err := runner.Run(StatusSetCommand, string(status))
 	if err != nil {
 		return fmt.Errorf("failed to set status: %w", err)
+	}
+	if string(output) != "" {
+		return fmt.Errorf("unexpected output from status-set: %s", string(output))
 	}
 	return nil
 }
