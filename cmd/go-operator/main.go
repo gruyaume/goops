@@ -1,11 +1,35 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/gruyaume/go-operator/internal/commands"
 	"github.com/gruyaume/go-operator/internal/events"
 )
+
+const (
+	TLSCertificatesIntegration = "tls-certificates"
+)
+
+func GenerateCACertificate(commandRunner *commands.DefaultRunner, logger *commands.Logger) error {
+	_, err := commands.SecretGet(commandRunner, "", "my-label", false, true)
+	if err != nil {
+		logger.Info("could not get secret:", err.Error())
+		myNewSecretContent := map[string]string{
+			"username": "admin",
+			"password": "password",
+		}
+		_, err := commands.SecretAdd(commandRunner, myNewSecretContent, "my secret", "my-label")
+		if err != nil {
+			return fmt.Errorf("could not add secret: %w", err)
+		}
+		logger.Info("Created new secret")
+		return nil
+	}
+	logger.Info("Secret found")
+	return nil
+}
 
 func main() {
 	commandRunner := &commands.DefaultRunner{}
@@ -15,34 +39,30 @@ func main() {
 	eventType, err := events.GetEventType()
 	if err != nil {
 		logger.Info("could not get event type: ", err.Error())
-		os.Exit(1)
+		os.Exit(0)
 	}
 	logger.Info("Event type:", string(eventType))
 
 	err = commands.StatusSet(commandRunner, commands.StatusActive)
 	if err != nil {
 		logger.Error("could not set status:", err.Error())
-		os.Exit(1)
+		os.Exit(0)
 	}
 	logger.Info("Status set to active")
 
-	_, err = commands.SecretGet(commandRunner, "", "my-label", false, true)
+	err = GenerateCACertificate(commandRunner, logger)
 	if err != nil {
-		logger.Info("could not get secret:", err.Error())
-		myNewSecretContent := map[string]string{
-			"username": "admin",
-			"password": "password",
-		}
-		_, err := commands.SecretAdd(commandRunner, myNewSecretContent, "my secret", "my-label")
-		if err != nil {
-			logger.Error("could not add secret:", err.Error())
-			os.Exit(1)
-		}
-		logger.Info("Created new secret")
-	} else {
-		logger.Info("Secret found")
+		logger.Error("could not generate CA certificate:", err.Error())
+		os.Exit(0)
 	}
-
+	relationIDs, err := commands.RelationIDs(commandRunner, TLSCertificatesIntegration)
+	if err != nil {
+		logger.Error("could not get relation IDs:", err.Error())
+		os.Exit(0)
+	}
+	for relationID := range relationIDs {
+		logger.Info("Relation ID:", fmt.Sprintf("%d", relationID))
+	}
 	logger.Info("Finished go-operator")
 	os.Exit(0)
 }
