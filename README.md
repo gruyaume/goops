@@ -5,7 +5,7 @@
 
 **Develop Reliable, Portable, and Fast Juju Charms in Go**
 
-`go-operator` is a Go library for developing robust Juju charms. While Python is traditionally used for charm development, its dynamic typing and interpreter-based execution often lead to runtime errors and portability issues across different bases. In contrast, Go compiles to a single, self-contained binary, ensuring greater reliability and consistent behavior in any environment.
+`go-operator` is a Go library for developing robust Juju charms. While developers traditionally use the [ops Python framework](https://github.com/canonical/operator) for developing charms, Python's dynamic typing and interpreter-based execution often lead to runtime errors and portability issues across different bases. In contrast, Go compiles to a single, self-contained binary, ensuring greater reliability and consistent behavior in any environment.
 
 ## Try it now
 
@@ -58,4 +58,4 @@ func main() {
 ## Design principles
 
 - **Reliability**: Building predictable, robust charms is our top priority.
-- **Simplicity**: We maintain a clear, one-to-one mapping between Juju concepts and Go constructs.
+- **Simplicity**: `go-operator` serves as a minimal, one-to-one mapping between Juju concepts and Go constructs. It is not a framework.

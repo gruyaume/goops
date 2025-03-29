@@ -65,7 +65,7 @@ func GenerateRootCertificate(commonName string) (string, string, error) {
 	if err != nil {
 		return "", "", fmt.Errorf("failed to encode certificate: %w", err)
 	}
-	caCert := certPEM.String()
+	caCertPEM := certPEM.String()
 	caKey := new(bytes.Buffer)
 	err = pem.Encode(caKey, &pem.Block{
 		Type:  "RSA PRIVATE KEY",
@@ -75,7 +75,7 @@ func GenerateRootCertificate(commonName string) (string, string, error) {
 		return "", "", fmt.Errorf("failed to encode private key: %w", err)
 	}
 	caKeyPEM := caKey.String()
-	return caCert, caKeyPEM, nil
+	return caCertPEM, caKeyPEM, nil
 }
 
 func GenerateCertificate(caKeyPEM string, caCertPEM string, csrPEM string) (string, error) {

@@ -35,3 +35,7 @@ config:
 provides:
   certificates:
     interface: tls-certificates
+
+actions:
+  get-ca-certificate:
+    description: Outputs the CA cert

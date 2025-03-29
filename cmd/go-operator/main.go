@@ -23,14 +23,14 @@ func generateAndStoreRootCertificate(commandRunner *commands.DefaultRunner, logg
 	_, err = commands.SecretGet(commandRunner, "", CaCertificateSecretLabel, false, true)
 	if err != nil {
 		logger.Info("could not get secret:", err.Error())
-		caCert, caKeyPEM, err := charm.GenerateRootCertificate(caCommonName)
+		caCertPEM, caKeyPEM, err := charm.GenerateRootCertificate(caCommonName)
 		if err != nil {
 			return fmt.Errorf("could not generate root certificate: %w", err)
 		}
 		logger.Info("Generated new root certificate")
 		secretContent := map[string]string{
 			"private-key":    caKeyPEM,
-			"ca-certificate": caCert,
+			"ca-certificate": caCertPEM,
 		}
 		_, err = commands.SecretAdd(commandRunner, secretContent, "", CaCertificateSecretLabel)
 		if err != nil {
@@ -97,38 +97,21 @@ func processOutstandingCertificateRequests(commandRunner *commands.DefaultRunner
 	return nil
 }
 
-func main() {
-	commandRunner := &commands.DefaultRunner{}
-	environmentGetter := &environment.DefaultEnvironment{}
-	logger := commands.NewLogger(commandRunner)
-	logger.Info("Started go-operator")
-
-	hookName := environment.JujuHookName(environmentGetter)
-	logger.Info("Hook name:", hookName)
-	jujuVersion := environment.JujuVersion(environmentGetter)
-	logger.Info("Juju version:", jujuVersion)
-
+func handleDefaultHook(commandRunner *commands.DefaultRunner, logger *commands.Logger) error {
 	isLeader, err := commands.IsLeader(commandRunner)
 	if err != nil {
-		logger.Info("Could not check if leader:", err.Error())
-		os.Exit(0)
+		return fmt.Errorf("could not check if unit is leader: %w", err)
 	}
 	if !isLeader {
-		logger.Info("not leader, exiting")
-		os.Exit(0)
+		return fmt.Errorf("unit is not leader")
 	}
-	logger.Info("Unit is leader")
-
 	valid, err := isConfigValid(commandRunner)
 	if err != nil {
-		logger.Info("Could not check config:", err.Error())
-		os.Exit(0)
+		return fmt.Errorf("could not check config: %w", err)
 	}
 	if !valid {
-		logger.Info("Config is not valid, exiting")
-		os.Exit(0)
+		return fmt.Errorf("config is not valid")
 	}
-	logger.Info("Config is valid")
 
 	err = commands.StatusSet(commandRunner, commands.StatusActive)
 	if err != nil {
@@ -139,14 +122,72 @@ func main() {
 
 	err = generateAndStoreRootCertificate(commandRunner, logger)
 	if err != nil {
-		logger.Error("Could not generate CA certificate:", err.Error())
-		os.Exit(0)
+		return fmt.Errorf("could not generate CA certificate: %w", err)
 	}
 	err = processOutstandingCertificateRequests(commandRunner, logger)
 	if err != nil {
-		logger.Error("Could not process outstanding certificate requests:", err.Error())
-		os.Exit(0)
+		return fmt.Errorf("could not process outstanding certificate requests: %w", err)
 	}
-	logger.Info("Finished go-operator")
-	os.Exit(0)
+	return nil
+}
+
+func handleGetCACertificateAction(commandRunner *commands.DefaultRunner) error {
+	caCertificateSecret, err := commands.SecretGet(commandRunner, "", CaCertificateSecretLabel, false, true)
+	if err != nil {
+		err := commands.ActionFail(commandRunner, "could not get CA certificate secret")
+		if err != nil {
+			return fmt.Errorf("could not fail action: %w and could not get CA certificate secret: %w", err, err)
+		}
+		return fmt.Errorf("could not get CA certificate secret: %w", err)
+	}
+	caCertPEM, ok := caCertificateSecret["ca-certificate"]
+	if !ok {
+		err := commands.ActionFail(commandRunner, "could not find CA certificate in secret")
+		if err != nil {
+			return fmt.Errorf("could not fail action: %w and could not find CA certificate in secret: %w", err, err)
+		}
+		return fmt.Errorf("could not find CA certificate in secret")
+	}
+	err = commands.ActionSet(commandRunner, map[string]string{"ca-certificate": caCertPEM})
+	if err != nil {
+		err := commands.ActionFail(commandRunner, "could not set action result")
+		if err != nil {
+			return fmt.Errorf("could not fail action: %w and could not set action result: %w", err, err)
+		}
+		return fmt.Errorf("could not set action result: %w", err)
+	}
+	return nil
+}
+
+func main() {
+	commandRunner := &commands.DefaultRunner{}
+	environmentGetter := &environment.DefaultEnvironment{}
+	logger := commands.NewLogger(commandRunner)
+	actionName := environment.JujuActionName(environmentGetter)
+	if actionName != "" {
+		logger.Info("Action name:", actionName)
+		switch actionName {
+		case "get-ca-certificate":
+			err := handleGetCACertificateAction(commandRunner)
+			if err != nil {
+				logger.Error("Error handling get-ca-certificate action:", err.Error())
+				os.Exit(0)
+			}
+			logger.Info("Handled get-ca-certificate action successfully")
+			os.Exit(0)
+		default:
+			logger.Info("Action not recognized, exiting")
+			os.Exit(0)
+		}
+	}
+
+	hookName := environment.JujuHookName(environmentGetter)
+	if hookName != "" {
+		logger.Info("Hook name:", hookName)
+		err := handleDefaultHook(commandRunner, logger)
+		if err != nil {
+			logger.Error("Error handling default hook:", err.Error())
+			os.Exit(0)
+		}
+	}
 }
