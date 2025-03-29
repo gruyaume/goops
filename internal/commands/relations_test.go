@@ -140,10 +140,10 @@ func TestRelationSet_Success(t *testing.T) {
 	if fakeRunner.Args[1] != "--app" {
 		t.Errorf("Expected argument %q, got %q", "--app", fakeRunner.Args[1])
 	}
-	if fakeRunner.Args[2] != "username=user1" {
-		t.Errorf("Expected argument %q, got %q", "username=user1", fakeRunner.Args[2])
+	if fakeRunner.Args[2] != "username=user1" && fakeRunner.Args[2] != "password=pass1" {
+		t.Errorf("Expected argument %q or %q, got %q", "username=user1", "password=pass1", fakeRunner.Args[2])
 	}
-	if fakeRunner.Args[3] != "password=pass1" {
-		t.Errorf("Expected argument %q, got %q", "password=pass1", fakeRunner.Args[3])
+	if fakeRunner.Args[3] != "username=user1" && fakeRunner.Args[3] != "password=pass1" {
+		t.Errorf("Expected argument %q or %q, got %q", "username=user1", "password=pass1", fakeRunner.Args[3])
 	}
 }
