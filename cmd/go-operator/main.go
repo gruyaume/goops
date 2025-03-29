@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	CaCertificateSecretLabel   = "active-ca-certificates"
+	CaCertificateSecretLabel   = "active-ca-certificates" // #nosec G101
 	TLSCertificatesIntegration = "certificates"
 )
 
