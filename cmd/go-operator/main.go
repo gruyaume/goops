@@ -31,6 +31,17 @@ func GenerateCACertificate(commandRunner *commands.DefaultRunner, logger *comman
 	return nil
 }
 
+func isConfigValid(commandRunner *commands.DefaultRunner) (bool, error) {
+	caCommonNameConfig, err := commands.ConfigGet(commandRunner, "ca-common-name")
+	if err != nil {
+		return false, fmt.Errorf("could not get config: %w", err)
+	}
+	if caCommonNameConfig == "" {
+		return false, fmt.Errorf("ca-common-name config is empty")
+	}
+	return true, nil
+}
+
 func main() {
 	commandRunner := &commands.DefaultRunner{}
 	logger := commands.NewLogger(commandRunner)
@@ -46,6 +57,17 @@ func main() {
 		os.Exit(0)
 	}
 	logger.Info("Unit is leader")
+
+	valid, err := isConfigValid(commandRunner)
+	if err != nil {
+		logger.Info("Could not check config:", err.Error())
+		os.Exit(0)
+	}
+	if !valid {
+		logger.Info("Config is not valid, exiting")
+		os.Exit(0)
+	}
+	logger.Info("Config is valid")
 
 	eventType, err := events.GetEventType()
 	if err != nil {

@@ -14,7 +14,6 @@ platforms:
   amd64:
 
 parts:
-
   charm:
     source: .
     plugin: go
@@ -22,3 +21,17 @@ parts:
       - go
     organize:
       bin/go-operator: dispatch
+
+config:
+  options:
+    ca-common-name:
+      type: string
+      default: self-signed-certificates
+      description: >
+        Common name to be used by the Certificate Authority.
+        Changing this value will trigger generation of a new CA certificate,
+        revoking all previously issued certificates.
+
+provides:
+  certificates:
+    interface: tls-certificates
