@@ -3,7 +3,7 @@ package commands_test
 import (
 	"testing"
 
-	"github.com/gruyaume/go-operator/internal/commands"
+	"github.com/gruyaume/go-operator/commands"
 )
 
 func TestIsLeader_Success(t *testing.T) {

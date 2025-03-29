@@ -3,7 +3,7 @@ package commands_test
 import (
 	"testing"
 
-	"github.com/gruyaume/go-operator/internal/commands"
+	"github.com/gruyaume/go-operator/commands"
 )
 
 func TestSecretIDs_Success(t *testing.T) {
