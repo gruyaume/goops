@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	TLSCertificatesIntegration = "tls-certificates"
+	TLSCertificatesIntegration = "certificates"
 )
 
 func GenerateCACertificate(commandRunner *commands.DefaultRunner, logger *commands.Logger) error {
@@ -34,30 +34,41 @@ func GenerateCACertificate(commandRunner *commands.DefaultRunner, logger *comman
 func main() {
 	commandRunner := &commands.DefaultRunner{}
 	logger := commands.NewLogger(commandRunner)
-
 	logger.Info("Started go-operator")
+
+	isLeader, err := commands.IsLeader(commandRunner)
+	if err != nil {
+		logger.Info("Could not check if leader:", err.Error())
+		os.Exit(0)
+	}
+	if !isLeader {
+		logger.Info("not leader, exiting")
+		os.Exit(0)
+	}
+	logger.Info("Unit is leader")
+
 	eventType, err := events.GetEventType()
 	if err != nil {
-		logger.Info("could not get event type: ", err.Error())
+		logger.Info("Could not get event type: ", err.Error())
 		os.Exit(0)
 	}
 	logger.Info("Event type:", string(eventType))
 
 	err = commands.StatusSet(commandRunner, commands.StatusActive)
 	if err != nil {
-		logger.Error("could not set status:", err.Error())
+		logger.Error("Could not set status:", err.Error())
 		os.Exit(0)
 	}
 	logger.Info("Status set to active")
 
 	err = GenerateCACertificate(commandRunner, logger)
 	if err != nil {
-		logger.Error("could not generate CA certificate:", err.Error())
+		logger.Error("Could not generate CA certificate:", err.Error())
 		os.Exit(0)
 	}
 	relationIDs, err := commands.RelationIDs(commandRunner, TLSCertificatesIntegration)
 	if err != nil {
-		logger.Error("could not get relation IDs:", err.Error())
+		logger.Error("Could not get relation IDs:", err.Error())
 		os.Exit(0)
 	}
 	for relationID := range relationIDs {
