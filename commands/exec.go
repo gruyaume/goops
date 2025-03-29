@@ -10,9 +10,9 @@ type CommandRunner interface {
 	Run(name string, args ...string) ([]byte, error)
 }
 
-type DefaultRunner struct{}
+type HookCommand struct{}
 
-func (r *DefaultRunner) Run(name string, args ...string) ([]byte, error) {
+func (r *HookCommand) Run(name string, args ...string) ([]byte, error) {
 	cmd := exec.Command(name, args...)
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr

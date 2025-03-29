@@ -40,12 +40,12 @@ import (
 )
 
 func main() {
-	commandRunner := &commands.DefaultRunner{}
-	environmentGetter := &environment.DefaultEnvironment{}
-	logger := commands.NewLogger(commandRunner)
-	hookName := environment.JujuHookName(environmentGetter)
+	hookCommand := &commands.HookCommand{}
+	execEnv := &environment.ExecutionEnvironment{}
+	logger := commands.NewLogger(hookCommand)
+	hookName := environment.JujuHookName(execEnv)
 	logger.Info("Hook name:", hookName)
-	err := commands.StatusSet(commandRunner, commands.StatusActive)
+	err := commands.StatusSet(hookCommand, commands.StatusActive)
 	if err != nil {
 		logger.Error("Could not set status:", err.Error())
 		os.Exit(0)
@@ -54,6 +54,8 @@ func main() {
 	os.Exit(0)
 }
 ```
+
+You can find an example of the library in the [certificates charm](https://github.com/gruyaume/certificates-operator) repository. 
 
 ## Design principles
 
