@@ -11,7 +11,7 @@
 
 ### 1. Use the Charmcraft `go` plugin
 
-Use the `go` plugin to build your charm:
+Use the `go` plugin to build your charm in `charmcraft.yaml`:
 
 ```yaml
 ...
