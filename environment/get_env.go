@@ -6,8 +6,8 @@ type EnvironmentGetter interface {
 	Get(name string) string
 }
 
-type DefaultEnvironment struct{}
+type ExecutionEnvironment struct{}
 
-func (r *DefaultEnvironment) Get(name string) string {
+func (r *ExecutionEnvironment) Get(name string) string {
 	return os.Getenv(name)
 }
