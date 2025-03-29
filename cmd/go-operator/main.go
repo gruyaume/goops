@@ -72,7 +72,7 @@ func processOutstandingCertificateRequests(commandRunner *commands.DefaultRunner
 		if !ok {
 			return fmt.Errorf("could not find CA certificate in secret")
 		}
-		certPEM, err := charm.GenerateCertificate(caKeyPEM)
+		certPEM, err := charm.GenerateCertificate(caKeyPEM, caCertPEM, request.CertificateSigningRequest.Raw)
 		if err != nil {
 			return fmt.Errorf("could not generate certificate: %w", err)
 		}

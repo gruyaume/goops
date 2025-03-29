@@ -78,7 +78,7 @@ func GenerateRootCertificate(commonName string) (string, string, error) {
 	return caCert, caKeyPEM, nil
 }
 
-func GenerateCertificate(caKeyPEM string) (string, error) {
+func GenerateCertificate(caKeyPEM string, caCertPEM string, csrPEM string) (string, error) {
 	caKeyBlock, _ := pem.Decode([]byte(caKeyPEM))
 	if caKeyBlock == nil {
 		return "", fmt.Errorf("failed to decode PEM block containing the CA private key")
@@ -87,25 +87,48 @@ func GenerateCertificate(caKeyPEM string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to parse CA private key: %w", err)
 	}
+	caCertBlock, _ := pem.Decode([]byte(caCertPEM))
+	if caCertBlock == nil {
+		return "", fmt.Errorf("failed to decode PEM block containing the CA certificate")
+	}
+	caCert, err := x509.ParseCertificate(caCertBlock.Bytes)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse CA certificate: %w", err)
+	}
+	csrBlock, _ := pem.Decode([]byte(csrPEM))
+	if csrBlock == nil {
+		return "", fmt.Errorf("failed to decode PEM block containing the certificate signing request")
+	}
+	csr, err := x509.ParseCertificateRequest(csrBlock.Bytes)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse certificate signing request: %w", err)
+	}
+	if err := csr.CheckSignature(); err != nil {
+		return "", fmt.Errorf("CSR signature validation failed: %w", err)
+	}
 	certTemplate := &x509.Certificate{
 		SerialNumber: big.NewInt(time.Now().UnixNano()),
-		NotBefore:    time.Now(),
-		NotAfter:     time.Now().AddDate(1, 0, 0),
-		KeyUsage:     x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
-		ExtKeyUsage:  []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
+		Subject: pkix.Name{
+			CommonName: csr.Subject.CommonName,
+		},
+		NotBefore:             time.Now(),
+		NotAfter:              time.Now().AddDate(1, 0, 0),
+		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
+		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
+		BasicConstraintsValid: false,
 	}
-
-	derBytes, err := x509.CreateCertificate(rand.Reader, certTemplate, certTemplate, &caKey.PublicKey, caKey)
+	certDERBytes, err := x509.CreateCertificate(rand.Reader, certTemplate, caCert, csr.PublicKey, caKey)
 	if err != nil {
 		return "", fmt.Errorf("failed to create certificate: %w", err)
 	}
 	certPEM := new(bytes.Buffer)
 	err = pem.Encode(certPEM, &pem.Block{
 		Type:  "CERTIFICATE",
-		Bytes: derBytes,
+		Bytes: certDERBytes,
 	})
 	if err != nil {
 		return "", fmt.Errorf("failed to encode certificate: %w", err)
 	}
-	return certPEM.String(), nil
+	cert := certPEM.String()
+	return cert, nil
 }

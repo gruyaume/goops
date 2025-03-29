@@ -21,6 +21,10 @@ type CertificateSigningRequestProviderAppRelationData struct {
 	Certificate               string   `json:"certificate"`
 }
 
+type ProviderAppRelationData struct {
+	Certificates string `json:"certificates"`
+}
+
 type CertificateSigningRequest struct {
 	Raw                 string
 	CommonName          string
@@ -114,23 +118,24 @@ func GetOutstandingCertificateRequests(commandRunner *commands.DefaultRunner, re
 }
 
 func SetRelationCertificate(commandRunner *commands.DefaultRunner, relationID string, providerCertificate ProviderCertificate) error {
-	appData := CertificateSigningRequestProviderAppRelationData{
-		CA:                        providerCertificate.CA.Raw,
-		Chain:                     []string{},
-		CertificateSigningRequest: providerCertificate.CertificateSigningRequest.Raw,
-		Certificate:               providerCertificate.Certificate.Raw,
+	appData := []CertificateSigningRequestProviderAppRelationData{
+		{
+			CA:                        providerCertificate.CA.Raw,
+			Chain:                     []string{},
+			CertificateSigningRequest: providerCertificate.CertificateSigningRequest.Raw,
+			Certificate:               providerCertificate.Certificate.Raw,
+		},
 	}
 	for _, cert := range providerCertificate.Chain {
-		appData.Chain = append(appData.Chain, cert.Raw)
+		appData[0].Chain = append(appData[0].Chain, cert.Raw)
 	}
-	appDataBytes, err := json.Marshal(appData)
+	appDataJSON, err := json.Marshal(appData)
 	if err != nil {
 		return fmt.Errorf("could not marshal app data: %w", err)
 	}
 	relationData := map[string]string{
-		"certificates": string(appDataBytes),
+		"certificates": string(appDataJSON),
 	}
-
 	err = commands.RelationSet(commandRunner, relationID, true, relationData)
 	if err != nil {
 		return fmt.Errorf("could not set relation data: %w", err)
