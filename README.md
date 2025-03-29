@@ -35,8 +35,8 @@ package main
 import (
 	"os"
 
-	"github.com/gruyaume/go-operator/internal/commands"
-	"github.com/gruyaume/go-operator/internal/environment"
+	"github.com/gruyaume/go-operator/commands"
+	"github.com/gruyaume/go-operator/environment"
 )
 
 func main() {
