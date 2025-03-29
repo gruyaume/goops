@@ -1,26 +1,107 @@
 package main
 
 import (
+	"bytes"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
+	"crypto/x509/pkix"
+	"encoding/pem"
 	"fmt"
+	"math/big"
 	"os"
+	"time"
 
 	"github.com/gruyaume/go-operator/internal/commands"
 	"github.com/gruyaume/go-operator/internal/events"
 )
 
 const (
+	CaCertificateSecretLabel   = "active-ca-certificates"
+	CaCertificateValidityYears = 10
 	TLSCertificatesIntegration = "certificates"
 )
 
-func GenerateCACertificate(commandRunner *commands.DefaultRunner, logger *commands.Logger) error {
-	_, err := commands.SecretGet(commandRunner, "", "my-label", false, true)
+func generateRootCertificate1(commonName string) (string, string, error) {
+	priv, err := rsa.GenerateKey(rand.Reader, 4096)
+	if err != nil {
+		return "", "", fmt.Errorf("could not generate private key: %w", err)
+	}
+	csrTemplate := &x509.CertificateRequest{
+		Subject: pkix.Name{
+			CommonName: commonName,
+		},
+		DNSNames: []string{},
+	}
+
+	csrBytes, err := x509.CreateCertificateRequest(rand.Reader, csrTemplate, priv)
+	if err != nil {
+		return "", "", fmt.Errorf("failed to create certificate request: %w", err)
+	}
+	csrPEM := new(bytes.Buffer)
+	err = pem.Encode(csrPEM, &pem.Block{
+		Type:  "CERTIFICATE REQUEST",
+		Bytes: csrBytes,
+	})
+	if err != nil {
+		return "", "", fmt.Errorf("failed to encode certificate request: %w", err)
+	}
+	certTemplate := &x509.Certificate{
+		SerialNumber: big.NewInt(time.Now().UnixNano()),
+		Subject: pkix.Name{
+			CommonName: commonName,
+		},
+		NotBefore:             time.Now(),
+		NotAfter:              time.Now().AddDate(CaCertificateValidityYears, 0, 0),
+		KeyUsage:              x509.KeyUsageCertSign | x509.KeyUsageCRLSign,
+		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
+		BasicConstraintsValid: true,
+		IsCA:                  true,
+	}
+
+	derBytes, err := x509.CreateCertificate(rand.Reader, certTemplate, certTemplate, &priv.PublicKey, priv)
+	if err != nil {
+		return "", "", fmt.Errorf("failed to create certificate: %w", err)
+	}
+	certPEM := new(bytes.Buffer)
+	err = pem.Encode(certPEM, &pem.Block{
+		Type:  "CERTIFICATE",
+		Bytes: derBytes,
+	})
+	if err != nil {
+		return "", "", fmt.Errorf("failed to encode certificate: %w", err)
+	}
+	caCert := certPEM.String()
+	caKey := new(bytes.Buffer)
+	err = pem.Encode(caKey, &pem.Block{
+		Type:  "RSA PRIVATE KEY",
+		Bytes: x509.MarshalPKCS1PrivateKey(priv),
+	})
+	if err != nil {
+		return "", "", fmt.Errorf("failed to encode private key: %w", err)
+	}
+	caKeyPEM := caKey.String()
+	return caCert, caKeyPEM, nil
+}
+
+func generateRootCertificate(commandRunner *commands.DefaultRunner, logger *commands.Logger) error {
+	caCommonName, err := commands.ConfigGet(commandRunner, "ca-common-name")
+	if err != nil {
+		return fmt.Errorf("could not get config: %w", err)
+	}
+
+	_, err = commands.SecretGet(commandRunner, "", CaCertificateSecretLabel, false, true)
 	if err != nil {
 		logger.Info("could not get secret:", err.Error())
-		myNewSecretContent := map[string]string{
-			"username": "admin",
-			"password": "password",
+		caCert, caKeyPEM, err := generateRootCertificate1(caCommonName)
+		if err != nil {
+			return fmt.Errorf("could not generate root certificate: %w", err)
 		}
-		_, err := commands.SecretAdd(commandRunner, myNewSecretContent, "my secret", "my-label")
+		myNewSecretContent := map[string]string{
+			"private-key":    caKeyPEM,
+			"ca-certificate": caCert,
+		}
+		_, err = commands.SecretAdd(commandRunner, myNewSecretContent, "", CaCertificateSecretLabel)
 		if err != nil {
 			return fmt.Errorf("could not add secret: %w", err)
 		}
@@ -83,7 +164,7 @@ func main() {
 	}
 	logger.Info("Status set to active")
 
-	err = GenerateCACertificate(commandRunner, logger)
+	err = generateRootCertificate(commandRunner, logger)
 	if err != nil {
 		logger.Error("Could not generate CA certificate:", err.Error())
 		os.Exit(0)
@@ -99,105 +180,3 @@ func main() {
 	logger.Info("Finished go-operator")
 	os.Exit(0)
 }
-
-// type CreateCertificateAuthorityParams struct {
-// 	CommonName          string `json:"common_name"`
-// 	SANsDNS             string `json:"sans_dns"`
-// 	CountryName         string `json:"country_name"`
-// 	StateOrProvinceName string `json:"state_or_province_name"`
-// 	LocalityName        string `json:"locality_name"`
-// 	OrganizationName    string `json:"organization_name"`
-// 	OrganizationalUnit  string `json:"organizational_unit_name"`
-// 	NotValidAfter       string `json:"not_valid_after"`
-// }
-
-// func createCertificateAuthority(fields CreateCertificateAuthorityParams) (string, string, string, error) {
-// 	// Create the private key for the CA
-// 	priv, err := rsa.GenerateKey(rand.Reader, 4096)
-// 	if err != nil {
-// 		return "", "", ""
-// 	}
-
-// 	privPEM := new(bytes.Buffer)
-// 	err = pem.Encode(privPEM, &pem.Block{
-// 		Type:  "RSA PRIVATE KEY",
-// 		Bytes: x509.MarshalPKCS1PrivateKey(priv),
-// 	})
-// 	if err != nil {
-// 		return "", "", "", fmt.Errorf("failed to encode private key: %w", err)
-// 	}
-
-// 	// Create the certificate request for the CA
-// 	csrTemplate := &x509.CertificateRequest{
-// 		Subject: pkix.Name{
-// 			CommonName:         fields.CommonName,
-// 			Country:            []string{fields.CountryName},
-// 			Province:           []string{fields.StateOrProvinceName},
-// 			Locality:           []string{fields.LocalityName},
-// 			Organization:       []string{fields.OrganizationName},
-// 			OrganizationalUnit: []string{fields.OrganizationalUnit},
-// 		},
-// 		DNSNames: []string{fields.SANsDNS},
-// 	}
-
-// 	if fields.SANsDNS != "" {
-// 		csrTemplate.DNSNames = []string{fields.SANsDNS}
-// 	}
-
-// 	csrBytes, err := x509.CreateCertificateRequest(rand.Reader, csrTemplate, priv)
-// 	if err != nil {
-// 		return "", "", "", fmt.Errorf("failed to create certificate request: %w", err)
-// 	}
-
-// 	csrPEM := new(bytes.Buffer)
-// 	err = pem.Encode(csrPEM, &pem.Block{
-// 		Type:  "CERTIFICATE REQUEST",
-// 		Bytes: csrBytes,
-// 	})
-// 	if err != nil {
-// 		return "", "", "", fmt.Errorf("failed to encode certificate request: %w", err)
-// 	}
-
-// 	template := &x509.Certificate{
-// 		SerialNumber: big.NewInt(time.Now().UnixNano()),
-// 		Subject: pkix.Name{
-// 			CommonName:         fields.CommonName,
-// 			Country:            []string{fields.CountryName},
-// 			Province:           []string{fields.StateOrProvinceName},
-// 			Locality:           []string{fields.LocalityName},
-// 			Organization:       []string{fields.OrganizationName},
-// 			OrganizationalUnit: []string{fields.OrganizationalUnit},
-// 		},
-// 		NotBefore:             time.Now(),
-// 		KeyUsage:              x509.KeyUsageCertSign | x509.KeyUsageCRLSign,
-// 		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
-// 		BasicConstraintsValid: true,
-// 		IsCA:                  true,
-// 	}
-
-// 	if fields.NotValidAfter != "" {
-// 		notAfter, err := time.Parse(time.RFC3339, fields.NotValidAfter)
-// 		if err != nil {
-// 			return "", "", "", fmt.Errorf("failed to parse NotValidAfter: %w", err)
-// 		}
-// 		template.NotAfter = notAfter
-// 	} else {
-// 		template.NotAfter = time.Now().AddDate(10, 0, 0) // Default 10 years
-// 	}
-
-// 	derBytes, err := x509.CreateCertificate(rand.Reader, template, template, &priv.PublicKey, priv)
-// 	if err != nil {
-// 		return "", "", "", fmt.Errorf("failed to create certificate: %w", err)
-// 	}
-
-// 	certPEM := new(bytes.Buffer)
-// 	err = pem.Encode(certPEM, &pem.Block{
-// 		Type:  "CERTIFICATE",
-// 		Bytes: derBytes,
-// 	})
-// 	if err != nil {
-// 		return "", "", "", fmt.Errorf("failed to encode certificate: %w", err)
-// 	}
-
-// 	return csrPEM.String(), privPEM.String(), certPEM.String(), nil
-// }
