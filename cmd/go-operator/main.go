@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/gruyaume/go-operator/internal/commands"
-	"github.com/gruyaume/go-operator/internal/events"
 )
 
 const (
@@ -22,7 +21,7 @@ const (
 	TLSCertificatesIntegration = "certificates"
 )
 
-func generateRootCertificate1(commonName string) (string, string, error) {
+func generateRootCertificate(commonName string) (string, string, error) {
 	priv, err := rsa.GenerateKey(rand.Reader, 4096)
 	if err != nil {
 		return "", "", fmt.Errorf("could not generate private key: %w", err)
@@ -84,7 +83,7 @@ func generateRootCertificate1(commonName string) (string, string, error) {
 	return caCert, caKeyPEM, nil
 }
 
-func generateRootCertificate(commandRunner *commands.DefaultRunner, logger *commands.Logger) error {
+func generateAndStoreRootCertificate(commandRunner *commands.DefaultRunner, logger *commands.Logger) error {
 	caCommonName, err := commands.ConfigGet(commandRunner, "ca-common-name")
 	if err != nil {
 		return fmt.Errorf("could not get config: %w", err)
@@ -93,10 +92,11 @@ func generateRootCertificate(commandRunner *commands.DefaultRunner, logger *comm
 	_, err = commands.SecretGet(commandRunner, "", CaCertificateSecretLabel, false, true)
 	if err != nil {
 		logger.Info("could not get secret:", err.Error())
-		caCert, caKeyPEM, err := generateRootCertificate1(caCommonName)
+		caCert, caKeyPEM, err := generateRootCertificate(caCommonName)
 		if err != nil {
 			return fmt.Errorf("could not generate root certificate: %w", err)
 		}
+		logger.Info("Generated new root certificate")
 		myNewSecretContent := map[string]string{
 			"private-key":    caKeyPEM,
 			"ca-certificate": caCert,
@@ -121,6 +121,33 @@ func isConfigValid(commandRunner *commands.DefaultRunner) (bool, error) {
 		return false, fmt.Errorf("ca-common-name config is empty")
 	}
 	return true, nil
+}
+
+func processOutstandingCertificateRequests(commandRunner *commands.DefaultRunner, logger *commands.Logger) error {
+	relationIDs, err := commands.RelationIDs(commandRunner, TLSCertificatesIntegration)
+	if err != nil {
+		return fmt.Errorf("could not get relation IDs: %w", err)
+	}
+	for _, relationID := range relationIDs {
+		logger.Info("Found relation ID:", relationID)
+		relationUnits, err := commands.RelationList(commandRunner, relationID)
+		if err != nil {
+			return fmt.Errorf("could not list relation data: %w", err)
+		}
+		for _, unitID := range relationUnits {
+			logger.Info("Found unit ID:", unitID)
+			relationData, err := commands.RelationGet(commandRunner, relationID, unitID, false)
+			if err != nil {
+				return fmt.Errorf("could not get relation data: %w", err)
+			}
+			relationDataString := ""
+			for key, value := range relationData {
+				relationDataString += fmt.Sprintf("%s: %s\n", key, value)
+			}
+			logger.Info("Relation data:", relationDataString)
+		}
+	}
+	return nil
 }
 
 func main() {
@@ -150,13 +177,6 @@ func main() {
 	}
 	logger.Info("Config is valid")
 
-	eventType, err := events.GetEventType()
-	if err != nil {
-		logger.Info("Could not get event type: ", err.Error())
-		os.Exit(0)
-	}
-	logger.Info("Event type:", string(eventType))
-
 	err = commands.StatusSet(commandRunner, commands.StatusActive)
 	if err != nil {
 		logger.Error("Could not set status:", err.Error())
@@ -164,18 +184,15 @@ func main() {
 	}
 	logger.Info("Status set to active")
 
-	err = generateRootCertificate(commandRunner, logger)
+	err = generateAndStoreRootCertificate(commandRunner, logger)
 	if err != nil {
 		logger.Error("Could not generate CA certificate:", err.Error())
 		os.Exit(0)
 	}
-	relationIDs, err := commands.RelationIDs(commandRunner, TLSCertificatesIntegration)
+	err = processOutstandingCertificateRequests(commandRunner, logger)
 	if err != nil {
-		logger.Error("Could not get relation IDs:", err.Error())
+		logger.Error("Could not process outstanding certificate requests:", err.Error())
 		os.Exit(0)
-	}
-	for relationID := range relationIDs {
-		logger.Info("Relation ID:", fmt.Sprintf("%d", relationID))
 	}
 	logger.Info("Finished go-operator")
 	os.Exit(0)
