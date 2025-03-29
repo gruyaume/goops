@@ -1,11 +1,11 @@
 # go-operator
 
-** Write Juju charms in Go**
-
-`go-operator` is a Go library for developing Juju charms.
-
 > :construction: **Beta Notice**
 > Go-operator is in beta. If you encounter any issues, please [report them here](https://github.com/gruyaume/go-operator/issues). 
+
+**Write Juju charms in Go**
+
+`go-operator` is a Go library for developing **reliable**, **portable**, and **fast** Juju charms.
 
 ## Try it now
 
