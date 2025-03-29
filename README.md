@@ -58,4 +58,4 @@ func main() {
 ## Design principles
 
 - **Reliability**: Building predictable, robust charms is our top priority.
-- **Simplicity**: `go-operator` serves as a minimal, one-to-one mapping between Juju concepts and Go constructs. It is not a framework.
+- **Simplicity**: `go-operator` serves as a minimal, one-to-one mapping between Juju concepts and Go constructs. It is not a framework; it does not impose charm design patterns. The library has no dependencies.
