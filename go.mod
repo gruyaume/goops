@@ -1,3 +1,3 @@
-module github.com/gruyaume/go-operator
+module github.com/gruyaume/goops
 
 go 1.24.0

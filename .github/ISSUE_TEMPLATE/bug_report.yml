@@ -21,7 +21,7 @@ body:
       label: Environment
       description: >
         Include any relevant information about your environment. For example:
-          - Go-Operator version: 1.2.1
+          - Goops version: 1.2.1
           - OS: Ubuntu 24.04
     validations:
       required: true

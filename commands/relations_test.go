@@ -3,7 +3,7 @@ package commands_test
 import (
 	"testing"
 
-	"github.com/gruyaume/go-operator/commands"
+	"github.com/gruyaume/goops/commands"
 )
 
 func TestRelationIDs_Success(t *testing.T) {
