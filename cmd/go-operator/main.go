@@ -1,87 +1,17 @@
 package main
 
 import (
-	"bytes"
-	"crypto/rand"
-	"crypto/rsa"
-	"crypto/x509"
-	"crypto/x509/pkix"
-	"encoding/pem"
 	"fmt"
-	"math/big"
 	"os"
-	"time"
 
+	"github.com/gruyaume/go-operator/internal/charm"
 	"github.com/gruyaume/go-operator/internal/commands"
 )
 
 const (
 	CaCertificateSecretLabel   = "active-ca-certificates"
-	CaCertificateValidityYears = 10
 	TLSCertificatesIntegration = "certificates"
 )
-
-func generateRootCertificate(commonName string) (string, string, error) {
-	priv, err := rsa.GenerateKey(rand.Reader, 4096)
-	if err != nil {
-		return "", "", fmt.Errorf("could not generate private key: %w", err)
-	}
-	csrTemplate := &x509.CertificateRequest{
-		Subject: pkix.Name{
-			CommonName: commonName,
-		},
-		DNSNames: []string{},
-	}
-
-	csrBytes, err := x509.CreateCertificateRequest(rand.Reader, csrTemplate, priv)
-	if err != nil {
-		return "", "", fmt.Errorf("failed to create certificate request: %w", err)
-	}
-	csrPEM := new(bytes.Buffer)
-	err = pem.Encode(csrPEM, &pem.Block{
-		Type:  "CERTIFICATE REQUEST",
-		Bytes: csrBytes,
-	})
-	if err != nil {
-		return "", "", fmt.Errorf("failed to encode certificate request: %w", err)
-	}
-	certTemplate := &x509.Certificate{
-		SerialNumber: big.NewInt(time.Now().UnixNano()),
-		Subject: pkix.Name{
-			CommonName: commonName,
-		},
-		NotBefore:             time.Now(),
-		NotAfter:              time.Now().AddDate(CaCertificateValidityYears, 0, 0),
-		KeyUsage:              x509.KeyUsageCertSign | x509.KeyUsageCRLSign,
-		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
-		BasicConstraintsValid: true,
-		IsCA:                  true,
-	}
-
-	derBytes, err := x509.CreateCertificate(rand.Reader, certTemplate, certTemplate, &priv.PublicKey, priv)
-	if err != nil {
-		return "", "", fmt.Errorf("failed to create certificate: %w", err)
-	}
-	certPEM := new(bytes.Buffer)
-	err = pem.Encode(certPEM, &pem.Block{
-		Type:  "CERTIFICATE",
-		Bytes: derBytes,
-	})
-	if err != nil {
-		return "", "", fmt.Errorf("failed to encode certificate: %w", err)
-	}
-	caCert := certPEM.String()
-	caKey := new(bytes.Buffer)
-	err = pem.Encode(caKey, &pem.Block{
-		Type:  "RSA PRIVATE KEY",
-		Bytes: x509.MarshalPKCS1PrivateKey(priv),
-	})
-	if err != nil {
-		return "", "", fmt.Errorf("failed to encode private key: %w", err)
-	}
-	caKeyPEM := caKey.String()
-	return caCert, caKeyPEM, nil
-}
 
 func generateAndStoreRootCertificate(commandRunner *commands.DefaultRunner, logger *commands.Logger) error {
 	caCommonName, err := commands.ConfigGet(commandRunner, "ca-common-name")
@@ -92,16 +22,16 @@ func generateAndStoreRootCertificate(commandRunner *commands.DefaultRunner, logg
 	_, err = commands.SecretGet(commandRunner, "", CaCertificateSecretLabel, false, true)
 	if err != nil {
 		logger.Info("could not get secret:", err.Error())
-		caCert, caKeyPEM, err := generateRootCertificate(caCommonName)
+		caCert, caKeyPEM, err := charm.GenerateRootCertificate(caCommonName)
 		if err != nil {
 			return fmt.Errorf("could not generate root certificate: %w", err)
 		}
 		logger.Info("Generated new root certificate")
-		myNewSecretContent := map[string]string{
+		secretContent := map[string]string{
 			"private-key":    caKeyPEM,
 			"ca-certificate": caCert,
 		}
-		_, err = commands.SecretAdd(commandRunner, myNewSecretContent, "", CaCertificateSecretLabel)
+		_, err = commands.SecretAdd(commandRunner, secretContent, "", CaCertificateSecretLabel)
 		if err != nil {
 			return fmt.Errorf("could not add secret: %w", err)
 		}
@@ -124,28 +54,12 @@ func isConfigValid(commandRunner *commands.DefaultRunner) (bool, error) {
 }
 
 func processOutstandingCertificateRequests(commandRunner *commands.DefaultRunner, logger *commands.Logger) error {
-	relationIDs, err := commands.RelationIDs(commandRunner, TLSCertificatesIntegration)
+	outstandingCertificateRequests, err := charm.GetOutstandingCertificateRequests(commandRunner, TLSCertificatesIntegration)
 	if err != nil {
-		return fmt.Errorf("could not get relation IDs: %w", err)
+		return fmt.Errorf("could not get outstanding certificate requests: %w", err)
 	}
-	for _, relationID := range relationIDs {
-		logger.Info("Found relation ID:", relationID)
-		relationUnits, err := commands.RelationList(commandRunner, relationID)
-		if err != nil {
-			return fmt.Errorf("could not list relation data: %w", err)
-		}
-		for _, unitID := range relationUnits {
-			logger.Info("Found unit ID:", unitID)
-			relationData, err := commands.RelationGet(commandRunner, relationID, unitID, false)
-			if err != nil {
-				return fmt.Errorf("could not get relation data: %w", err)
-			}
-			relationDataString := ""
-			for key, value := range relationData {
-				relationDataString += fmt.Sprintf("%s: %s\n", key, value)
-			}
-			logger.Info("Relation data:", relationDataString)
-		}
+	for _, request := range outstandingCertificateRequests {
+		logger.Info("Received a certificate signing request from:", request.RelationID, "with common name:", request.CertificateSigningRequest.CommonName)
 	}
 	return nil
 }
