@@ -116,3 +116,34 @@ func TestRelationList_Success(t *testing.T) {
 		t.Errorf("Expected argument %q, got %q", "--format=json", fakeRunner.Args[1])
 	}
 }
+
+func TestRelationSet_Success(t *testing.T) {
+	fakeRunner := &FakeRunner{
+		Output: nil,
+		Err:    nil,
+	}
+
+	err := commands.RelationSet(fakeRunner, "certificates:0", true, map[string]string{"username": "user1", "password": "pass1"})
+	if err != nil {
+		t.Fatalf("RelationSet returned an error: %v", err)
+	}
+
+	if fakeRunner.Command != commands.RelationSetCommand {
+		t.Errorf("Expected command %q, got %q", commands.RelationSetCommand, fakeRunner.Command)
+	}
+	if len(fakeRunner.Args) != 4 {
+		t.Fatalf("Expected 4 arguments, got %d", len(fakeRunner.Args))
+	}
+	if fakeRunner.Args[0] != "-r=certificates:0" {
+		t.Errorf("Expected argument %q, got %q", "-r=certificates:0", fakeRunner.Args[0])
+	}
+	if fakeRunner.Args[1] != "--app" {
+		t.Errorf("Expected argument %q, got %q", "--app", fakeRunner.Args[1])
+	}
+	if fakeRunner.Args[2] != "username=user1" {
+		t.Errorf("Expected argument %q, got %q", "username=user1", fakeRunner.Args[2])
+	}
+	if fakeRunner.Args[3] != "password=pass1" {
+		t.Errorf("Expected argument %q, got %q", "password=pass1", fakeRunner.Args[3])
+	}
+}

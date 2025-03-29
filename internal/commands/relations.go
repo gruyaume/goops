@@ -9,6 +9,7 @@ const (
 	RelationIDsCommand  = "relation-ids"
 	RelationGetCommand  = "relation-get"
 	RelationListCommand = "relation-list"
+	RelationSetCommand  = "relation-set"
 )
 
 func RelationIDs(runner CommandRunner, name string) ([]string, error) {
@@ -64,4 +65,25 @@ func RelationList(runner CommandRunner, id string) ([]string, error) {
 		return nil, fmt.Errorf("failed to parse relation list: %w", err)
 	}
 	return relationList, nil
+}
+
+func RelationSet(runner CommandRunner, id string, app bool, data map[string]string) error {
+	if id == "" {
+		return fmt.Errorf("relation ID is empty")
+	}
+	args := []string{"-r=" + id}
+	if app {
+		args = append(args, "--app")
+	}
+	for key, value := range data {
+		args = append(args, key+"="+value)
+	}
+	output, err := runner.Run(RelationSetCommand, args...)
+	if err != nil {
+		return fmt.Errorf("failed to set relation data: %w", err)
+	}
+	if len(output) > 0 {
+		return fmt.Errorf("failed to set relation data: %s", output)
+	}
+	return nil
 }

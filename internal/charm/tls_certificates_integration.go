@@ -9,9 +9,16 @@ import (
 	"github.com/gruyaume/go-operator/internal/commands"
 )
 
-type CertificateSigningRequestRelationData struct {
+type CertificateSigningRequestRequirerRelationData struct {
 	CertificateSigningRequest string `json:"certificate_signing_request"`
-	Ca                        bool   `json:"ca"`
+	CA                        bool   `json:"ca"`
+}
+
+type CertificateSigningRequestProviderAppRelationData struct {
+	CA                        string   `json:"ca"`
+	Chain                     []string `json:"chain"`
+	CertificateSigningRequest string   `json:"certificate_signing_request"`
+	Certificate               string   `json:"certificate"`
 }
 
 type CertificateSigningRequest struct {
@@ -32,6 +39,32 @@ type RequirerCertificateRequest struct {
 	RelationID                string
 	CertificateSigningRequest CertificateSigningRequest
 	IsCA                      bool
+}
+
+type Certificate struct {
+	Raw                 string
+	CommonName          string
+	ExpiryTime          string
+	ValidityStartTime   string
+	IsCA                bool
+	SansDNS             []string
+	SansIP              []string
+	SansOID             []string
+	EmailAddress        string
+	Organization        string
+	OrganizationalUnit  string
+	CountryName         string
+	StateOrProvinceName string
+	LocalityName        string
+}
+
+type ProviderCertificate struct {
+	RelationID                string
+	Certificate               Certificate
+	CertificateSigningRequest CertificateSigningRequest
+	CA                        Certificate
+	Chain                     []Certificate
+	Revoked                   bool
 }
 
 func GetOutstandingCertificateRequests(commandRunner *commands.DefaultRunner, relationName string) ([]RequirerCertificateRequest, error) {
@@ -57,7 +90,7 @@ func GetOutstandingCertificateRequests(commandRunner *commands.DefaultRunner, re
 			if !ok {
 				continue
 			}
-			var certificateSigningRequestsRelationData []CertificateSigningRequestRelationData
+			var certificateSigningRequestsRelationData []CertificateSigningRequestRequirerRelationData
 			err = json.Unmarshal([]byte(csrJSON), &certificateSigningRequestsRelationData)
 			if err != nil {
 				return nil, fmt.Errorf("could not unmarshal certificate signing requests: %w", err)
@@ -71,13 +104,38 @@ func GetOutstandingCertificateRequests(commandRunner *commands.DefaultRunner, re
 				requirerCertificateRequest := RequirerCertificateRequest{
 					RelationID:                relationID,
 					CertificateSigningRequest: csr,
-					IsCA:                      csrRelationData.Ca,
+					IsCA:                      csrRelationData.CA,
 				}
 				requirerCertificateRequests = append(requirerCertificateRequests, requirerCertificateRequest)
 			}
 		}
 	}
 	return requirerCertificateRequests, nil
+}
+
+func SetRelationCertificate(commandRunner *commands.DefaultRunner, relationID string, providerCertificate ProviderCertificate) error {
+	appData := CertificateSigningRequestProviderAppRelationData{
+		CA:                        providerCertificate.CA.Raw,
+		Chain:                     []string{},
+		CertificateSigningRequest: providerCertificate.CertificateSigningRequest.Raw,
+		Certificate:               providerCertificate.Certificate.Raw,
+	}
+	for _, cert := range providerCertificate.Chain {
+		appData.Chain = append(appData.Chain, cert.Raw)
+	}
+	appDataBytes, err := json.Marshal(appData)
+	if err != nil {
+		return fmt.Errorf("could not marshal app data: %w", err)
+	}
+	relationData := map[string]string{
+		"certificates": string(appDataBytes),
+	}
+
+	err = commands.RelationSet(commandRunner, relationID, true, relationData)
+	if err != nil {
+		return fmt.Errorf("could not set relation data: %w", err)
+	}
+	return nil
 }
 
 func loadCertificateSigningRequest(pemString string) (CertificateSigningRequest, error) {

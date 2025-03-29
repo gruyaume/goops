@@ -60,6 +60,38 @@ func processOutstandingCertificateRequests(commandRunner *commands.DefaultRunner
 	}
 	for _, request := range outstandingCertificateRequests {
 		logger.Info("Received a certificate signing request from:", request.RelationID, "with common name:", request.CertificateSigningRequest.CommonName)
+		caCertificateSecret, err := commands.SecretGet(commandRunner, "", CaCertificateSecretLabel, false, true)
+		if err != nil {
+			return fmt.Errorf("could not get CA certificate secret: %w", err)
+		}
+		caKeyPEM, ok := caCertificateSecret["private-key"]
+		if !ok {
+			return fmt.Errorf("could not find CA private key in secret")
+		}
+		caCertPEM, ok := caCertificateSecret["ca-certificate"]
+		if !ok {
+			return fmt.Errorf("could not find CA certificate in secret")
+		}
+		certPEM, err := charm.GenerateCertificate(caKeyPEM)
+		if err != nil {
+			return fmt.Errorf("could not generate certificate: %w", err)
+		}
+		providerCertificatte := charm.ProviderCertificate{
+			RelationID:                request.RelationID,
+			Certificate:               charm.Certificate{Raw: certPEM},
+			CertificateSigningRequest: request.CertificateSigningRequest,
+			CA:                        charm.Certificate{Raw: caCertPEM},
+			Chain: []charm.Certificate{
+				{Raw: caCertPEM},
+			},
+			Revoked: false,
+		}
+		err = charm.SetRelationCertificate(commandRunner, request.RelationID, providerCertificatte)
+		if err != nil {
+			logger.Warning("Could not set relation certificate:", err.Error())
+			continue
+		}
+		logger.Info("Provided certificate to:", request.RelationID)
 	}
 	return nil
 }
