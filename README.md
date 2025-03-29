@@ -11,20 +11,10 @@
 
 ### 1. Use the Charmcraft `go` plugin
 
-Use the `go` plugin to build your charm. For example:
+Use the `go` plugin to build your charm:
 
 ```yaml
-name: go-operator
-summary: Write Juju charms in Go.
-description: |
-  Write Juju charms in Go.
-
-type: charm
-base: ubuntu@24.04
-build-base: ubuntu@24.04
-platforms:
-  amd64:
-
+...
 parts:
   charm:
     source: .
@@ -33,21 +23,11 @@ parts:
       - go
     organize:
       bin/go-operator: dispatch  # replace `go-operator` with your binary name
-
-config:
-  options:
-    key:
-      type: string
-      default: whatever value
-      description: >
-        Example configuration option
 ```
 
 ### 2. Write your charm
 
-In your charm's root directory, create a `main.go` file under the `cmd/<your-charm-name>` directory. This file will contain the main logic of your charm.
-
-Import the `go-operator` library and use its functions to interact with Juju. Here's a simple example of a charm that checks if it is leader, reads a configuration option, and sets its status to active:
+In your charm's root directory, create a `main.go` file under the `cmd/<your-charm-name>` directory. This file will contain the main logic of your charm. Import the `go-operator` library and use its functions to interact with Juju. For example:
 
 ```go
 package main
@@ -65,28 +45,7 @@ func main() {
 	logger := commands.NewLogger(commandRunner)
 	hookName := environment.JujuHookName(environmentGetter)
 	logger.Info("Hook name:", hookName)
-
-	isLeader, err := commands.IsLeader(commandRunner)
-	if err != nil {
-		logger.Info("Could not check if leader:", err.Error())
-		os.Exit(0)
-	}
-	if !isLeader {
-		logger.Info("not leader, exiting")
-		os.Exit(0)
-	}
-	logger.Info("Unit is leader")
-
-	keyConfig, err := commands.ConfigGet(commandRunner, "key")
-	if err != nil {
-		logger.Error("Could not get config:", err.Error())
-		os.Exit(0)
-	}
-	if keyConfig == "" {
-		logger.Error("Configuration option `key` is empty:", err.Error())
-		os.Exit(0)
-	}
-	err = commands.StatusSet(commandRunner, commands.StatusActive)
+	err := commands.StatusSet(commandRunner, commands.StatusActive)
 	if err != nil {
 		logger.Error("Could not set status:", err.Error())
 		os.Exit(0)
@@ -94,18 +53,6 @@ func main() {
 	logger.Info("Status set to active")
 	os.Exit(0)
 }
-```
-
-### 3. Build and deploy your charm
-
-Just like for any other charm, you can build your charm using `charmcraft`:
-
-```bash
-charmcraft pack
-```
-
-```bash
-juju deploy ./<your-charm-name>.charm
 ```
 
 ## Design principles
