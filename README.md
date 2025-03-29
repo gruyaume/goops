@@ -2,7 +2,7 @@
 
 ** Write Juju charms in Go**
 
-The `go-operator` library is a Go framework for developing Juju charms.
+`go-operator` is a Go library for developing Juju charms.
 
 > :construction: **Beta Notice**
 > Go-operator is in beta. If you encounter any issues, please [report them here](https://github.com/gruyaume/go-operator/issues). 
@@ -14,7 +14,7 @@ The `go-operator` library is a Go framework for developing Juju charms.
 ## Design principles
 
 - **Reliability**: The most important attribute of a charm; therefore, it is the most important attribute of a charm framework.
-- **Simplicity**: The framework should be simple to use and understand. It provides charm authors direct access to Juju via one-to-one mapping from the Juju commands and objects.
+- **Simplicity**: The library should be simple to use and understand via one-to-one mapping between Juju concepts and Go constructs.
 
 ## Why write a Charm in Go?
 

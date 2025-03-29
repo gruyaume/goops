@@ -6,6 +6,7 @@ import (
 
 	"github.com/gruyaume/go-operator/internal/charm"
 	"github.com/gruyaume/go-operator/internal/commands"
+	"github.com/gruyaume/go-operator/internal/environment"
 )
 
 const (
@@ -98,8 +99,14 @@ func processOutstandingCertificateRequests(commandRunner *commands.DefaultRunner
 
 func main() {
 	commandRunner := &commands.DefaultRunner{}
+	environmentGetter := &environment.DefaultEnvironment{}
 	logger := commands.NewLogger(commandRunner)
 	logger.Info("Started go-operator")
+
+	hookName := environment.JujuHookName(environmentGetter)
+	logger.Info("Hook name:", hookName)
+	jujuVersion := environment.JujuVersion(environmentGetter)
+	logger.Info("Juju version:", jujuVersion)
 
 	isLeader, err := commands.IsLeader(commandRunner)
 	if err != nil {
