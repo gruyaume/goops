@@ -15,3 +15,9 @@ func (r *ExecutionEnvironment) Get(name string) string {
 type Environment struct {
 	Getter EnvironmentGetter
 }
+
+func NewEnvironment() *Environment {
+	return &Environment{
+		Getter: &ExecutionEnvironment{},
+	}
+}
