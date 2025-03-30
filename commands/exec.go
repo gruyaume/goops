@@ -29,3 +29,9 @@ func (r *HookCommand) Run(name string, args ...string) ([]byte, error) {
 type Command struct {
 	Runner CommandRunner
 }
+
+func NewCommand() *Command {
+	return &Command{
+		Runner: &HookCommand{},
+	}
+}

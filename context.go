@@ -12,7 +12,7 @@ type HookContext struct {
 
 func NewHookContext() *HookContext {
 	return &HookContext{
-		Commands:    &commands.Command{},
-		Environment: &environment.Environment{},
+		Commands:    commands.NewCommand(),
+		Environment: environment.NewEnvironment(),
 	}
 }
