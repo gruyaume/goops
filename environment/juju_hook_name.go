@@ -2,6 +2,6 @@ package environment
 
 const JujuHookNameEnvVar = "JUJU_HOOK_NAME"
 
-func JujuHookName(getter EnvironmentGetter) string {
-	return getter.Get(JujuHookNameEnvVar)
+func (env Environment) JujuHookName() string {
+	return env.Getter.Get(JujuHookNameEnvVar)
 }

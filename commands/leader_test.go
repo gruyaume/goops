@@ -11,8 +11,11 @@ func TestIsLeader_Success(t *testing.T) {
 		Output: []byte(`true`),
 		Err:    nil,
 	}
+	command := commands.Command{
+		Runner: fakeRunner,
+	}
 
-	result, err := commands.IsLeader(fakeRunner)
+	result, err := command.IsLeader()
 	if err != nil {
 		t.Fatalf("IsLeader returned an error: %v", err)
 	}

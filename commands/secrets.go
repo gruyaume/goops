@@ -11,8 +11,8 @@ const (
 	SecretAddCommand = "secret-add"
 )
 
-func SecretIDs(runner CommandRunner) ([]string, error) {
-	output, err := runner.Run(SecredIDsCommand, "--format=json")
+func (command Command) SecretIDs() ([]string, error) {
+	output, err := command.Runner.Run(SecredIDsCommand, "--format=json")
 	if err != nil {
 		return nil, fmt.Errorf("failed to get secret IDs: %w", err)
 	}
@@ -24,7 +24,7 @@ func SecretIDs(runner CommandRunner) ([]string, error) {
 	return secretIDs, nil
 }
 
-func SecretGet(runner CommandRunner, id string, label string, peek bool, refresh bool) (map[string]string, error) {
+func (command Command) SecretGet(id string, label string, peek bool, refresh bool) (map[string]string, error) {
 	var args []string
 	if id != "" {
 		args = append(args, id)
@@ -39,7 +39,7 @@ func SecretGet(runner CommandRunner, id string, label string, peek bool, refresh
 		args = append(args, "--refresh")
 	}
 	args = append(args, "--format=json")
-	output, err := runner.Run(SecretGetCommand, args...)
+	output, err := command.Runner.Run(SecretGetCommand, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get secret: %w", err)
 	}
@@ -51,7 +51,7 @@ func SecretGet(runner CommandRunner, id string, label string, peek bool, refresh
 	return secretContent, nil
 }
 
-func SecretAdd(runner CommandRunner, content map[string]string, description string, label string) (string, error) {
+func (command Command) SecretAdd(content map[string]string, description string, label string) (string, error) {
 	if len(content) == 0 {
 		return "", fmt.Errorf("content cannot be empty")
 	}
@@ -65,7 +65,7 @@ func SecretAdd(runner CommandRunner, content map[string]string, description stri
 	if label != "" {
 		args = append(args, "--label="+label)
 	}
-	output, err := runner.Run(SecretAddCommand, args...)
+	output, err := command.Runner.Run(SecretAddCommand, args...)
 	if err != nil {
 		return "", fmt.Errorf("failed to add secret: %w", err)
 	}

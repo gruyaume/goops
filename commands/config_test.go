@@ -11,8 +11,10 @@ func TestConfigGet_Success(t *testing.T) {
 		Output: []byte(`"banana"`),
 		Err:    nil,
 	}
-
-	result, err := commands.ConfigGet(fakeRunner, "fruit")
+	command := commands.Command{
+		Runner: fakeRunner,
+	}
+	result, err := command.ConfigGet("fruit")
 	if err != nil {
 		t.Fatalf("ConfigGet returned an error: %v", err)
 	}
@@ -44,7 +46,10 @@ func TestConfigGetString_Success(t *testing.T) {
 		Output: []byte(`"banana"`),
 		Err:    nil,
 	}
-	result, err := commands.ConfigGetString(fakeRunner, "fruit")
+	command := commands.Command{
+		Runner: fakeRunner,
+	}
+	result, err := command.ConfigGetString("fruit")
 	if err != nil {
 		t.Fatalf("ConfigGetString returned an error: %v", err)
 	}
@@ -59,7 +64,10 @@ func TestConfigGetString_BadType(t *testing.T) {
 		Output: []byte(`123`),
 		Err:    nil,
 	}
-	_, err := commands.ConfigGetString(fakeRunner, "fruit")
+	command := commands.Command{
+		Runner: fakeRunner,
+	}
+	_, err := command.ConfigGetString("fruit")
 	if err == nil {
 		t.Fatalf("Expected error, got nil")
 	}
@@ -73,7 +81,10 @@ func TestConfigGetInt_Success(t *testing.T) {
 		Output: []byte(`123`),
 		Err:    nil,
 	}
-	result, err := commands.ConfigGetInt(fakeRunner, "fruit")
+	command := commands.Command{
+		Runner: fakeRunner,
+	}
+	result, err := command.ConfigGetInt("fruit")
 	if err != nil {
 		t.Fatalf("ConfigGetInt returned an error: %v", err)
 	}
@@ -87,7 +98,10 @@ func TestConfigGetInt_BadType(t *testing.T) {
 		Output: []byte(`"banana"`),
 		Err:    nil,
 	}
-	_, err := commands.ConfigGetInt(fakeRunner, "fruit")
+	command := commands.Command{
+		Runner: fakeRunner,
+	}
+	_, err := command.ConfigGetInt("fruit")
 	if err == nil {
 		t.Fatalf("Expected error, got nil")
 	}
@@ -101,7 +115,10 @@ func TestConfigGetBool_Success(t *testing.T) {
 		Output: []byte(`true`),
 		Err:    nil,
 	}
-	result, err := commands.ConfigGetBool(fakeRunner, "fruit")
+	command := commands.Command{
+		Runner: fakeRunner,
+	}
+	result, err := command.ConfigGetBool("fruit")
 	if err != nil {
 		t.Fatalf("ConfigGetBool returned an error: %v", err)
 	}
@@ -115,7 +132,10 @@ func TestConfigGetBool_BadType(t *testing.T) {
 		Output: []byte(`123`),
 		Err:    nil,
 	}
-	_, err := commands.ConfigGetBool(fakeRunner, "fruit")
+	command := commands.Command{
+		Runner: fakeRunner,
+	}
+	_, err := command.ConfigGetBool("fruit")
 	if err == nil {
 		t.Fatalf("Expected error, got nil")
 	}

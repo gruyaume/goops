@@ -22,35 +22,11 @@ var levelStrings = []string{
 	"ERROR",
 }
 
-func JujuLog(runner CommandRunner, message string, logLevel Level, extraArgs ...string) {
+func (command Command) JujuLog(logLevel Level, message string, extraArgs ...string) {
 	args := []string{"--log-level=" + levelStrings[logLevel], message}
 	args = append(args, extraArgs...)
-	_, err := runner.Run(JujuLogCommand, args...)
+	_, err := command.Runner.Run(JujuLogCommand, args...)
 	if err != nil {
 		log.Println("failed to run juju-log command:", err)
 	}
-}
-
-type Logger struct {
-	runner CommandRunner
-}
-
-func NewLogger(runner CommandRunner) *Logger {
-	return &Logger{runner: runner}
-}
-
-func (l *Logger) Debug(message string, extraArgs ...string) {
-	JujuLog(l.runner, message, Debug, extraArgs...)
-}
-
-func (l *Logger) Info(message string, extraArgs ...string) {
-	JujuLog(l.runner, message, Info, extraArgs...)
-}
-
-func (l *Logger) Warning(message string, extraArgs ...string) {
-	JujuLog(l.runner, message, Warning, extraArgs...)
-}
-
-func (l *Logger) Error(message string, extraArgs ...string) {
-	JujuLog(l.runner, message, Error, extraArgs...)
 }

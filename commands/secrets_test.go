@@ -11,8 +11,11 @@ func TestSecretIDs_Success(t *testing.T) {
 		Output: []byte(`["123", "456"]`),
 		Err:    nil,
 	}
+	command := commands.Command{
+		Runner: fakeRunner,
+	}
 
-	result, err := commands.SecretIDs(fakeRunner)
+	result, err := command.SecretIDs()
 	if err != nil {
 		t.Fatalf("SecretIDs returned an error: %v", err)
 	}
@@ -45,8 +48,11 @@ func TestSecretGet_Success(t *testing.T) {
 		Output: []byte(`{"username":"user1","password":"pass1"}`),
 		Err:    nil,
 	}
+	command := commands.Command{
+		Runner: fakeRunner,
+	}
 
-	result, err := commands.SecretGet(fakeRunner, "123", "my-label", false, true)
+	result, err := command.SecretGet("123", "my-label", false, true)
 	if err != nil {
 		t.Fatalf("SecretGet returned an error: %v", err)
 	}
@@ -101,8 +107,11 @@ func TestSecretAdd_Success(t *testing.T) {
 		Output: []byte(`{"result":"success"}`),
 		Err:    nil,
 	}
+	command := commands.Command{
+		Runner: fakeRunner,
+	}
 
-	result, err := commands.SecretAdd(fakeRunner, content, description, label)
+	result, err := command.SecretAdd(content, description, label)
 	if err != nil {
 		t.Fatalf("SecretAdd returned an error: %v", err)
 	}
@@ -144,8 +153,11 @@ func TestSecretAdd_EmptyContent(t *testing.T) {
 		Output: []byte(""),
 		Err:    nil,
 	}
+	command := commands.Command{
+		Runner: fakeRunner,
+	}
 
-	_, err := commands.SecretAdd(fakeRunner, map[string]string{}, "desc", "label")
+	_, err := command.SecretAdd(map[string]string{}, "desc", "label")
 	if err == nil {
 		t.Error("Expected error when content is empty, but got nil")
 	}

@@ -2,6 +2,6 @@ package environment
 
 const JujuVersionEnvVar = "JUJU_VERSION"
 
-func JujuVersion(getter EnvironmentGetter) string {
-	return getter.Get(JujuVersionEnvVar)
+func (env Environment) JujuVersion() string {
+	return env.Getter.Get(JujuVersionEnvVar)
 }

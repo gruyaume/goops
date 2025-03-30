@@ -11,8 +11,11 @@ func TestStatusSet_Success(t *testing.T) {
 		Output: nil,
 		Err:    nil,
 	}
+	command := commands.Command{
+		Runner: fakeRunner,
+	}
 
-	err := commands.StatusSet(fakeRunner, commands.StatusActive, "")
+	err := command.StatusSet(commands.StatusActive, "")
 	if err != nil {
 		t.Fatalf("StatusSet returned an error: %v", err)
 	}

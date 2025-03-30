@@ -11,9 +11,9 @@ const (
 	ActionSetCommand  = "action-set"
 )
 
-func ActionGet(runner CommandRunner, key string) (string, error) {
+func (command Command) ActionGet(key string) (string, error) {
 	args := []string{key, "--format=json"}
-	output, err := runner.Run(ActionGetCommand, args...)
+	output, err := command.Runner.Run(ActionGetCommand, args...)
 	if err != nil {
 		return "", fmt.Errorf("failed to get action parameter: %w", err)
 	}
@@ -25,12 +25,12 @@ func ActionGet(runner CommandRunner, key string) (string, error) {
 	return actionParameter, nil
 }
 
-func ActionFail(runner CommandRunner, message string) error {
+func (command Command) ActionFail(message string) error {
 	args := []string{}
 	if message != "" {
 		args = append(args, message)
 	}
-	_, err := runner.Run(ActionFailCommand, args...)
+	_, err := command.Runner.Run(ActionFailCommand, args...)
 	if err != nil {
 		return fmt.Errorf("failed to fail action: %w", err)
 	}
@@ -38,7 +38,7 @@ func ActionFail(runner CommandRunner, message string) error {
 	return nil
 }
 
-func ActionSet(runner CommandRunner, content map[string]string) error {
+func (command Command) ActionSet(content map[string]string) error {
 	if content == nil {
 		return fmt.Errorf("content cannot be empty")
 	}
@@ -46,7 +46,7 @@ func ActionSet(runner CommandRunner, content map[string]string) error {
 	for key, value := range content {
 		args = append(args, key+"="+value)
 	}
-	_, err := runner.Run(ActionSetCommand, args...)
+	_, err := command.Runner.Run(ActionSetCommand, args...)
 	if err != nil {
 		return fmt.Errorf("failed to set action parameters: %w", err)
 	}

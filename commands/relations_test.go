@@ -11,8 +11,11 @@ func TestRelationIDs_Success(t *testing.T) {
 		Output: []byte(`["123", "456"]`),
 		Err:    nil,
 	}
+	command := commands.Command{
+		Runner: fakeRunner,
+	}
 
-	result, err := commands.RelationIDs(fakeRunner, "tls-certificates")
+	result, err := command.RelationIDs("tls-certificates")
 	if err != nil {
 		t.Fatalf("RelationIDs returned an error: %v", err)
 	}
@@ -48,8 +51,11 @@ func TestRelationGet_Success(t *testing.T) {
 		Output: []byte(`{"username":"user1","password":"pass1"}`),
 		Err:    nil,
 	}
+	command := commands.Command{
+		Runner: fakeRunner,
+	}
 
-	result, err := commands.RelationGet(fakeRunner, "certificates:0", "tls-certificates-requirer/0", false)
+	result, err := command.RelationGet("certificates:0", "tls-certificates-requirer/0", false)
 	if err != nil {
 		t.Fatalf("RelationGet returned an error: %v", err)
 	}
@@ -91,8 +97,10 @@ func TestRelationList_Success(t *testing.T) {
 		Output: []byte(`["tls-certificates-requirer/0", "tls-certificates-requirer/1"]`),
 		Err:    nil,
 	}
-
-	result, err := commands.RelationList(fakeRunner, "certificates:0")
+	command := commands.Command{
+		Runner: fakeRunner,
+	}
+	result, err := command.RelationList("certificates:0")
 	if err != nil {
 		t.Fatalf("RelationList returned an error: %v", err)
 	}
@@ -122,8 +130,11 @@ func TestRelationSet_Success(t *testing.T) {
 		Output: nil,
 		Err:    nil,
 	}
+	command := commands.Command{
+		Runner: fakeRunner,
+	}
 
-	err := commands.RelationSet(fakeRunner, "certificates:0", true, map[string]string{"username": "user1", "password": "pass1"})
+	err := command.RelationSet("certificates:0", true, map[string]string{"username": "user1", "password": "pass1"})
 	if err != nil {
 		t.Fatalf("RelationSet returned an error: %v", err)
 	}
