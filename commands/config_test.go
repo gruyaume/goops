@@ -6,7 +6,7 @@ import (
 	"github.com/gruyaume/goops/commands"
 )
 
-func TestConfigGetString_Success(t *testing.T) {
+func TestConfigGet_Success(t *testing.T) {
 	fakeRunner := &FakeRunner{
 		Output: []byte(`"banana"`),
 		Err:    nil,
@@ -16,6 +16,11 @@ func TestConfigGetString_Success(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ConfigGet returned an error: %v", err)
 	}
+
+	if _, ok := result.(string); !ok {
+		t.Fatalf("Expected result to be a string, got %T", result)
+	}
+
 	if result != "banana" {
 		t.Fatalf("Expected %q, got %q", "banana", result)
 	}
@@ -34,28 +39,87 @@ func TestConfigGetString_Success(t *testing.T) {
 	}
 }
 
-func TestConfigGetFloat64_Success(t *testing.T) {
+func TestConfigGetString_Success(t *testing.T) {
 	fakeRunner := &FakeRunner{
-		Output: []byte(`1234`),
+		Output: []byte(`"banana"`),
 		Err:    nil,
 	}
-	result, err := commands.ConfigGet(fakeRunner, "fruit")
+	result, err := commands.ConfigGetString(fakeRunner, "fruit")
 	if err != nil {
-		t.Fatalf("ConfigGet returned an error: %v", err)
+		t.Fatalf("ConfigGetString returned an error: %v", err)
 	}
-	if result != float64(1234) {
-		t.Fatalf("Expected %f, got %f", 1234.0, result)
+	if result != "banana" {
+		t.Fatalf("Expected %q, got %q", "banana", result)
 	}
-	if fakeRunner.Command != commands.ConfigGetCommand {
-		t.Errorf("Expected command %q, got %q", commands.ConfigGetCommand, fakeRunner.Command)
+
+}
+
+func TestConfigGetString_BadType(t *testing.T) {
+	fakeRunner := &FakeRunner{
+		Output: []byte(`123`),
+		Err:    nil,
 	}
-	if len(fakeRunner.Args) != 2 {
-		t.Fatalf("Expected 2 arguments, got %d", len(fakeRunner.Args))
+	_, err := commands.ConfigGetString(fakeRunner, "fruit")
+	if err == nil {
+		t.Fatalf("Expected error, got nil")
 	}
-	if fakeRunner.Args[0] != "fruit" {
-		t.Errorf("Expected argument %q, got %q", "fruit", fakeRunner.Args[0])
+	if err.Error() != "config value is not a string: 123" {
+		t.Fatalf("Expected error %q, got %q", "config value is not a string: 123", err.Error())
 	}
-	if fakeRunner.Args[1] != "--format=json" {
-		t.Errorf("Expected argument %q, got %q", "--format=json", fakeRunner.Args[1])
+}
+
+func TestConfigGetInt_Success(t *testing.T) {
+	fakeRunner := &FakeRunner{
+		Output: []byte(`123`),
+		Err:    nil,
+	}
+	result, err := commands.ConfigGetInt(fakeRunner, "fruit")
+	if err != nil {
+		t.Fatalf("ConfigGetInt returned an error: %v", err)
+	}
+	if result != 123 {
+		t.Fatalf("Expected %d, got %d", 123, result)
+	}
+}
+
+func TestConfigGetInt_BadType(t *testing.T) {
+	fakeRunner := &FakeRunner{
+		Output: []byte(`"banana"`),
+		Err:    nil,
+	}
+	_, err := commands.ConfigGetInt(fakeRunner, "fruit")
+	if err == nil {
+		t.Fatalf("Expected error, got nil")
+	}
+	if err.Error() != "config value is not a number: banana" {
+		t.Fatalf("Expected error %q, got %q", "config value is not a number: banana", err.Error())
+	}
+}
+
+func TestConfigGetBool_Success(t *testing.T) {
+	fakeRunner := &FakeRunner{
+		Output: []byte(`true`),
+		Err:    nil,
+	}
+	result, err := commands.ConfigGetBool(fakeRunner, "fruit")
+	if err != nil {
+		t.Fatalf("ConfigGetBool returned an error: %v", err)
+	}
+	if result != true {
+		t.Fatalf("Expected %t, got %t", true, result)
+	}
+}
+
+func TestConfigGetBool_BadType(t *testing.T) {
+	fakeRunner := &FakeRunner{
+		Output: []byte(`123`),
+		Err:    nil,
+	}
+	_, err := commands.ConfigGetBool(fakeRunner, "fruit")
+	if err == nil {
+		t.Fatalf("Expected error, got nil")
+	}
+	if err.Error() != "config value is not a bool: 123" {
+		t.Fatalf("Expected error %q, got %q", "config value is not a bool: 123", err.Error())
 	}
 }
