@@ -22,7 +22,7 @@ parts:
     build-snaps:
       - go
     organize:
-      bin/goops: dispatch  # replace `goops` with your binary name
+      bin/<your-charm-name>: dispatch
 ```
 
 ### 2. Write your charm
@@ -55,7 +55,7 @@ func main() {
 }
 ```
 
-You can find an example of the library in the [certificates charm](https://github.com/gruyaume/certificates-operator) repository. 
+You can find an example of the library being used in the [certificates charm repository](https://github.com/gruyaume/certificates-operator). 
 
 ## Design principles
 
