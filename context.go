@@ -10,11 +10,9 @@ type HookContext struct {
 	Environment *environment.Environment
 }
 
-func NewHookContext() HookContext {
-	hookCommand := &commands.Command{}
-	environment := &environment.Environment{}
-	return HookContext{
-		Commands:    hookCommand,
-		Environment: environment,
+func NewHookContext() *HookContext {
+	return &HookContext{
+		Commands:    &commands.Command{},
+		Environment: &environment.Environment{},
 	}
 }
