@@ -2,6 +2,7 @@ package commands
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 )
 
@@ -9,16 +10,63 @@ const (
 	ConfigGetCommand = "config-get"
 )
 
-func ConfigGet(runner CommandRunner, key string) (string, error) {
+var ErrConfigNotSet = errors.New("config option not set")
+
+func ConfigGet(runner CommandRunner, key string) (any, error) {
 	args := []string{key, "--format=json"}
 	output, err := runner.Run(ConfigGetCommand, args...)
 	if err != nil {
 		return "", fmt.Errorf("failed to get config: %w", err)
 	}
-	var configValue string
+	var configValue any
 	err = json.Unmarshal(output, &configValue)
 	if err != nil {
 		return "", fmt.Errorf("failed to parse config value: %w", err)
 	}
 	return configValue, nil
+}
+
+func ConfigGetString(runner CommandRunner, key string) (string, error) {
+	value, err := ConfigGet(runner, key)
+	if err != nil {
+		return "", err
+	}
+	if value == nil {
+		return "", ErrConfigNotSet
+	}
+	strValue, ok := value.(string)
+	if !ok {
+		return "", fmt.Errorf("config value is not a string: %v", value)
+	}
+	return strValue, nil
+}
+
+func ConfigGetInt(runner CommandRunner, key string) (int, error) {
+	value, err := ConfigGet(runner, key)
+	if err != nil {
+		return 0, err
+	}
+	if value == nil {
+		return 0, ErrConfigNotSet
+	}
+	floatValue, ok := value.(float64)
+	if !ok {
+		return 0, fmt.Errorf("config value is not a number: %v", value)
+	}
+	return int(floatValue), nil
+}
+
+func ConfigGetBool(runner CommandRunner, key string) (bool, error) {
+	value, err := ConfigGet(runner, key)
+	if err != nil {
+		return false, err
+	}
+	if value == nil {
+		return false, ErrConfigNotSet
+	}
+	boolValue, ok := value.(bool)
+	if !ok {
+		return false, fmt.Errorf("config value is not a bool: %v", value)
+	}
+	return boolValue, nil
 }

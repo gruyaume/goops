@@ -12,7 +12,7 @@ func TestStatusSet_Success(t *testing.T) {
 		Err:    nil,
 	}
 
-	err := commands.StatusSet(fakeRunner, commands.StatusActive)
+	err := commands.StatusSet(fakeRunner, commands.StatusActive, "")
 	if err != nil {
 		t.Fatalf("StatusSet returned an error: %v", err)
 	}
