@@ -11,3 +11,7 @@ type ExecutionEnvironment struct{}
 func (r *ExecutionEnvironment) Get(name string) string {
 	return os.Getenv(name)
 }
+
+type Environment struct {
+	Getter EnvironmentGetter
+}

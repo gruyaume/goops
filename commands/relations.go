@@ -12,9 +12,9 @@ const (
 	RelationSetCommand  = "relation-set"
 )
 
-func RelationIDs(runner CommandRunner, name string) ([]string, error) {
+func (command Command) RelationIDs(name string) ([]string, error) {
 	args := []string{name, "--format=json"}
-	output, err := runner.Run(RelationIDsCommand, args...)
+	output, err := command.Runner.Run(RelationIDsCommand, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get relation IDs: %w", err)
 	}
@@ -26,7 +26,7 @@ func RelationIDs(runner CommandRunner, name string) ([]string, error) {
 	return relationIDs, nil
 }
 
-func RelationGet(runner CommandRunner, id string, unitID string, app bool) (map[string]string, error) {
+func (command Command) RelationGet(id string, unitID string, app bool) (map[string]string, error) {
 	if id == "" {
 		return nil, fmt.Errorf("relation ID is empty")
 	}
@@ -38,7 +38,7 @@ func RelationGet(runner CommandRunner, id string, unitID string, app bool) (map[
 		args = append(args, "--app")
 	}
 	args = append(args, "--format=json")
-	output, err := runner.Run(RelationGetCommand, args...)
+	output, err := command.Runner.Run(RelationGetCommand, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get relation data: %w", err)
 	}
@@ -50,12 +50,12 @@ func RelationGet(runner CommandRunner, id string, unitID string, app bool) (map[
 	return relationContent, nil
 }
 
-func RelationList(runner CommandRunner, id string) ([]string, error) {
+func (command Command) RelationList(id string) ([]string, error) {
 	if id == "" {
 		return nil, fmt.Errorf("relation ID is empty")
 	}
 	args := []string{"-r=" + id, "--format=json"}
-	output, err := runner.Run(RelationListCommand, args...)
+	output, err := command.Runner.Run(RelationListCommand, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list relation data: %w", err)
 	}
@@ -67,7 +67,7 @@ func RelationList(runner CommandRunner, id string) ([]string, error) {
 	return relationList, nil
 }
 
-func RelationSet(runner CommandRunner, id string, app bool, data map[string]string) error {
+func (command Command) RelationSet(id string, app bool, data map[string]string) error {
 	if id == "" {
 		return fmt.Errorf("relation ID is empty")
 	}
@@ -78,7 +78,7 @@ func RelationSet(runner CommandRunner, id string, app bool, data map[string]stri
 	for key, value := range data {
 		args = append(args, key+"="+value)
 	}
-	output, err := runner.Run(RelationSetCommand, args...)
+	output, err := command.Runner.Run(RelationSetCommand, args...)
 	if err != nil {
 		return fmt.Errorf("failed to set relation data: %w", err)
 	}

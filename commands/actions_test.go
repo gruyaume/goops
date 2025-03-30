@@ -11,8 +11,10 @@ func TestActionGet_Success(t *testing.T) {
 		Output: []byte(`"banana"`),
 		Err:    nil,
 	}
-
-	result, err := commands.ActionGet(fakeRunner, "fruit")
+	command := commands.Command{
+		Runner: fakeRunner,
+	}
+	result, err := command.ActionGet("fruit")
 	if err != nil {
 		t.Fatalf("ActionGet returned an error: %v", err)
 	}
@@ -40,8 +42,10 @@ func TestActionFail_Success(t *testing.T) {
 		Output: []byte(``),
 		Err:    nil,
 	}
-
-	err := commands.ActionFail(fakeRunner, "my failure message")
+	command := commands.Command{
+		Runner: fakeRunner,
+	}
+	err := command.ActionFail("my failure message")
 	if err != nil {
 		t.Fatalf("ActionFail returned an error: %v", err)
 	}
@@ -61,11 +65,14 @@ func TestActionSet_Success(t *testing.T) {
 		Output: []byte(``),
 		Err:    nil,
 	}
+	command := commands.Command{
+		Runner: fakeRunner,
+	}
 	actionSetValues := map[string]string{
 		"fruit": "banana",
 		"color": "yellow",
 	}
-	err := commands.ActionSet(fakeRunner, actionSetValues)
+	err := command.ActionSet(actionSetValues)
 	if err != nil {
 		t.Fatalf("ActionSet returned an error: %v", err)
 	}

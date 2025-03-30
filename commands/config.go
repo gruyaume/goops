@@ -12,9 +12,9 @@ const (
 
 var ErrConfigNotSet = errors.New("config option not set")
 
-func ConfigGet(runner CommandRunner, key string) (any, error) {
+func (command Command) ConfigGet(key string) (any, error) {
 	args := []string{key, "--format=json"}
-	output, err := runner.Run(ConfigGetCommand, args...)
+	output, err := command.Runner.Run(ConfigGetCommand, args...)
 	if err != nil {
 		return "", fmt.Errorf("failed to get config: %w", err)
 	}
@@ -26,8 +26,8 @@ func ConfigGet(runner CommandRunner, key string) (any, error) {
 	return configValue, nil
 }
 
-func ConfigGetString(runner CommandRunner, key string) (string, error) {
-	value, err := ConfigGet(runner, key)
+func (command Command) ConfigGetString(key string) (string, error) {
+	value, err := command.ConfigGet(key)
 	if err != nil {
 		return "", err
 	}
@@ -41,8 +41,8 @@ func ConfigGetString(runner CommandRunner, key string) (string, error) {
 	return strValue, nil
 }
 
-func ConfigGetInt(runner CommandRunner, key string) (int, error) {
-	value, err := ConfigGet(runner, key)
+func (command Command) ConfigGetInt(key string) (int, error) {
+	value, err := command.ConfigGet(key)
 	if err != nil {
 		return 0, err
 	}
@@ -56,8 +56,8 @@ func ConfigGetInt(runner CommandRunner, key string) (int, error) {
 	return int(floatValue), nil
 }
 
-func ConfigGetBool(runner CommandRunner, key string) (bool, error) {
-	value, err := ConfigGet(runner, key)
+func (command Command) ConfigGetBool(key string) (bool, error) {
+	value, err := command.ConfigGet(key)
 	if err != nil {
 		return false, err
 	}

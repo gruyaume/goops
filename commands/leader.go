@@ -9,9 +9,9 @@ const (
 	IsLeaderCommand = "is-leader"
 )
 
-func IsLeader(runner CommandRunner) (bool, error) {
+func (command Command) IsLeader() (bool, error) {
 	args := []string{"--format=json"}
-	output, err := runner.Run(IsLeaderCommand, args...)
+	output, err := command.Runner.Run(IsLeaderCommand, args...)
 	if err != nil {
 		return false, fmt.Errorf("failed to verify if unit is leader: %w", err)
 	}

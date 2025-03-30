@@ -34,22 +34,20 @@ package main
 import (
 	"os"
 
+	"github.com/gruyaume/goops"
 	"github.com/gruyaume/goops/commands"
-	"github.com/gruyaume/goops/environment"
 )
 
 func main() {
-	hookCommand := &commands.HookCommand{}
-	execEnv := &environment.ExecutionEnvironment{}
-	logger := commands.NewLogger(hookCommand)
-	hookName := environment.JujuHookName(execEnv)
-	logger.Info("Hook name:", hookName)
-	err := commands.StatusSet(hookCommand, commands.StatusActive)
+	hookContext := goops.NewHookContext()
+	hookName := hookContext.Environment.JujuHookName()
+	hookContext.Commands.JujuLog(commands.Info, "Hook name:", hookName)
+	err := hookContext.Commands.StatusSet(commands.StatusActive, "A happy charm")
 	if err != nil {
-		logger.Error("Could not set status:", err.Error())
+		hookContext.Commands.JujuLog(commands.Error, "Could not set status:", err.Error())
 		os.Exit(0)
 	}
-	logger.Info("Status set to active")
+	hookContext.Commands.JujuLog(commands.Info, "Status set to active")
 	os.Exit(0)
 }
 ```
