@@ -1,27 +1,41 @@
-
+version: "2"
 linters:
   enable:
-    - gofmt
-    - errcheck
-    - staticcheck
-    - unused
-    - gosimple
-    - typecheck
+    - asciicheck
+    - bodyclose
+    - dogsled
+    - gocognit
     - godox
     - gomodguard
-    - nakedret
     - misspell
-    - gofumpt
-    - whitespace
-    - unconvert
-    - predeclared
-    - noctx
-    - dogsled
-    - bodyclose
-    - asciicheck
-    - unparam
-    - gci
-    - stylecheck
-    - gocognit
+    - nakedret
     - nestif
+    - noctx
+    - predeclared
+    - staticcheck
+    - unconvert
+    - unparam
+    - whitespace
     - wsl
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
