@@ -27,17 +27,21 @@ func TestSecretIDs_Success(t *testing.T) {
 	if len(result) != len(expectedOutput) {
 		t.Fatalf("Expected %d secret IDs, got %d", len(expectedOutput), len(result))
 	}
+
 	for i, id := range result {
 		if id != expectedOutput[i] {
 			t.Errorf("Expected secret ID %q, got %q", expectedOutput[i], id)
 		}
 	}
+
 	if fakeRunner.Command != commands.SecredIDsCommand {
 		t.Errorf("Expected command %q, got %q", commands.SecredIDsCommand, fakeRunner.Command)
 	}
+
 	if len(fakeRunner.Args) != 1 {
 		t.Fatalf("Expected 1 argument, got %d", len(fakeRunner.Args))
 	}
+
 	if fakeRunner.Args[0] != "--format=json" {
 		t.Errorf("Expected argument %q, got %q", "--format=json", fakeRunner.Args[0])
 	}
@@ -64,6 +68,7 @@ func TestSecretGet_Success(t *testing.T) {
 	if len(result) != len(expectedOutput) {
 		t.Fatalf("Expected %d secret content keys, got %d", len(expectedOutput), len(result))
 	}
+
 	for key, value := range result {
 		if value != expectedOutput[key] {
 			t.Errorf("Expected secret content %q, got %q", expectedOutput[key], value)
@@ -145,7 +150,6 @@ func TestSecretAdd_Success(t *testing.T) {
 	if fakeRunner.Args[3] != "--label=my-label" {
 		t.Errorf("Expected label arg %q, got %q", "--label=my-label", fakeRunner.Args[3])
 	}
-
 }
 
 func TestSecretAdd_EmptyContent(t *testing.T) {

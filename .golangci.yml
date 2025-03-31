@@ -1,0 +1,27 @@
+
+linters:
+  enable:
+    - gofmt
+    - errcheck
+    - staticcheck
+    - unused
+    - gosimple
+    - typecheck
+    - godox
+    - gomodguard
+    - nakedret
+    - misspell
+    - gofumpt
+    - whitespace
+    - unconvert
+    - predeclared
+    - noctx
+    - dogsled
+    - bodyclose
+    - asciicheck
+    - unparam
+    - gci
+    - stylecheck
+    - gocognit
+    - nestif
+    - wsl
