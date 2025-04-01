@@ -122,6 +122,7 @@ func setPorts(hookContext *goops.HookContext) error {
 			Protocol: "tcp",
 		},
 	}
+
 	err := hookContext.Commands.SetPorts(ports)
 	if err != nil {
 		return fmt.Errorf("could not set ports: %w", err)
@@ -144,6 +145,7 @@ func HandleDefaultHook(hookContext *goops.HookContext) error {
 	if err != nil {
 		return fmt.Errorf("could not set ports: %w", err)
 	}
+
 	hookContext.Commands.JujuLog(commands.Info, "Set unit ports")
 
 	valid, err := isConfigValid(hookContext)

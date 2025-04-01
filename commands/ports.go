@@ -3,7 +3,6 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 )
 
 const (
@@ -43,7 +42,6 @@ func (command Command) SetPorts(ports []Port) error {
 			if err := command.OpenPort(port); err != nil {
 				return fmt.Errorf("failed to open port %s: %w", key, err)
 			}
-			log.Println("Opened port:", key)
 		}
 	}
 
@@ -53,7 +51,6 @@ func (command Command) SetPorts(ports []Port) error {
 			if err := command.ClosePort(port); err != nil {
 				return fmt.Errorf("failed to close port %s: %w", key, err)
 			}
-			log.Println("Closed port:", key)
 		}
 	}
 
