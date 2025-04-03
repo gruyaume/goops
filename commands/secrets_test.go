@@ -197,3 +197,62 @@ func TestSecretGrant_Success(t *testing.T) {
 		t.Errorf("Expected secret ID arg %q, got %q", "--relation=certificates:0", fakeRunner.Args[1])
 	}
 }
+
+func TestSecretInfoGet_Success(t *testing.T) {
+	fakeRunner := &FakeRunner{
+		Output: []byte(`{"cvng45vmp25c78cpk4u0":{"revision":1,"label":"active-ca-certificates","owner":"application","rotation":"never"}}`),
+		Err:    nil,
+	}
+	command := commands.Command{
+		Runner: fakeRunner,
+	}
+
+	secretInfo, err := command.SecretInfoGet("", "my-secret-label")
+	if err != nil {
+		t.Fatalf("SecretInfoGet returned an error: %v", err)
+	}
+
+	expectedOutput := map[string]commands.SecretInfo{
+		"cvng45vmp25c78cpk4u0": {
+			Revision: 1,
+			Label:    "active-ca-certificates",
+			Owner:    "application",
+			Rotation: "never",
+		},
+	}
+	if len(secretInfo) != len(expectedOutput) {
+		t.Fatalf("Expected %d secret info entries, got %d", len(expectedOutput), len(secretInfo))
+	}
+
+	if secretInfo["cvng45vmp25c78cpk4u0"].Revision != expectedOutput["cvng45vmp25c78cpk4u0"].Revision {
+		t.Errorf("Expected revision %d, got %d", expectedOutput["cvng45vmp25c78cpk4u0"].Revision, secretInfo["cvng45vmp25c78cpk4u0"].Revision)
+	}
+
+	if secretInfo["cvng45vmp25c78cpk4u0"].Label != expectedOutput["cvng45vmp25c78cpk4u0"].Label {
+		t.Errorf("Expected label %q, got %q", expectedOutput["cvng45vmp25c78cpk4u0"].Label, secretInfo["cvng45vmp25c78cpk4u0"].Label)
+	}
+
+	if secretInfo["cvng45vmp25c78cpk4u0"].Owner != expectedOutput["cvng45vmp25c78cpk4u0"].Owner {
+		t.Errorf("Expected owner %q, got %q", expectedOutput["cvng45vmp25c78cpk4u0"].Owner, secretInfo["cvng45vmp25c78cpk4u0"].Owner)
+	}
+
+	if secretInfo["cvng45vmp25c78cpk4u0"].Rotation != expectedOutput["cvng45vmp25c78cpk4u0"].Rotation {
+		t.Errorf("Expected rotation %q, got %q", expectedOutput["cvng45vmp25c78cpk4u0"].Rotation, secretInfo["cvng45vmp25c78cpk4u0"].Rotation)
+	}
+
+	if fakeRunner.Command != "secret-info-get" {
+		t.Fatalf("Expected command %q, got %q", "secret-info-get", fakeRunner.Command)
+	}
+
+	if len(fakeRunner.Args) != 2 {
+		t.Fatalf("Expected 2 arguments, got %d", len(fakeRunner.Args))
+	}
+
+	if fakeRunner.Args[0] != "--label=my-secret-label" {
+		t.Errorf("Expected label arg %q, got %q", "--label=my-secret-label", fakeRunner.Args[0])
+	}
+
+	if fakeRunner.Args[1] != "--format=json" {
+		t.Errorf("Expected format arg %q, got %q", "--format=json", fakeRunner.Args[1])
+	}
+}

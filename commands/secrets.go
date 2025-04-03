@@ -10,7 +10,15 @@ const (
 	secretGetCommand   = "secret-get"
 	secretGrantCommand = "secret-grant"
 	secredIDsCommand   = "secret-ids"
+	secretInfoGet      = "secret-info-get"
 )
+
+type SecretInfo struct {
+	Revision int    `json:"revision"`
+	Label    string `json:"label"`
+	Owner    string `json:"owner"`
+	Rotation string `json:"rotation"`
+}
 
 func (command Command) SecretAdd(content map[string]string, description string, label string) (string, error) {
 	if len(content) == 0 {
@@ -110,4 +118,45 @@ func (command Command) SecretIDs() ([]string, error) {
 	}
 
 	return secretIDs, nil
+}
+
+func (command Command) SecretInfoGet(id string, label string) (map[string]SecretInfo, error) {
+	if id == "" && label == "" {
+		return nil, fmt.Errorf("either secret ID or label must be provided")
+	}
+
+	if id != "" && label != "" {
+		return nil, fmt.Errorf("only one of secret ID or label can be provided")
+	}
+
+	args := []string{}
+	if id != "" {
+		args = append(args, id)
+	}
+
+	if label != "" {
+		args = append(args, "--label="+label)
+	}
+
+	args = append(args, "--format=json")
+
+	output, err := command.Runner.Run(secretInfoGet, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get secret info: %w", err)
+	}
+
+	// command.JujuLog(Warning, "SecretInfoGet output: %s", string(output))
+
+	var secretInfo map[string]SecretInfo
+
+	err = json.Unmarshal(output, &secretInfo)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse secret info: %w", err)
+	}
+
+	if len(secretInfo) == 0 {
+		return nil, fmt.Errorf("no secret info found for ID or label: %s", id)
+	}
+
+	return secretInfo, nil
 }

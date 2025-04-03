@@ -48,14 +48,24 @@ func generateAndStoreRootCertificate(hookContext *goops.HookContext) error {
 			"ca-certificate": caCertPEM,
 		}
 
-		_, err = hookContext.Commands.SecretAdd(secretContent, "", CaCertificateSecretLabel)
+		output, err := hookContext.Commands.SecretAdd(secretContent, "", CaCertificateSecretLabel)
 		if err != nil {
 			return fmt.Errorf("could not add secret: %w", err)
 		}
 
 		hookContext.Commands.JujuLog(commands.Info, "Created new secret")
+		hookContext.Commands.JujuLog(commands.Info, "Secret ID:", output)
 
 		return nil
+	} else {
+		secretInfo, err := hookContext.Commands.SecretInfoGet("", CaCertificateSecretLabel)
+		if err != nil {
+			return fmt.Errorf("could not get secret info: %w", err)
+		}
+
+		if secretInfo == nil {
+			return fmt.Errorf("secret info is nil")
+		}
 	}
 
 	hookContext.Commands.JujuLog(commands.Info, "Secret found")
