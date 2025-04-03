@@ -167,6 +167,44 @@ func HandleDefaultHook(hookContext *goops.HookContext) error {
 		return fmt.Errorf("could not process outstanding certificate requests: %w", err)
 	}
 
+	goalState, err := hookContext.Commands.GoalState()
+	if err != nil {
+		hookContext.Commands.JujuLog(commands.Error, "Could not get goal state:", err.Error())
+		return fmt.Errorf("could not get goal state: %w", err)
+	}
+
+	if goalState == nil {
+		hookContext.Commands.JujuLog(commands.Error, "Goal state is nil")
+		return fmt.Errorf("goal state is nil")
+	}
+
+	if goalState.Units == nil {
+		hookContext.Commands.JujuLog(commands.Error, "Goal state units is nil")
+		return fmt.Errorf("goal state units is nil")
+	}
+
+	if goalState.Units["example/0"] == nil {
+		hookContext.Commands.JujuLog(commands.Error, "Goal state unit is nil")
+		return fmt.Errorf("goal state unit is nil")
+	}
+
+	if goalState.Relations != nil {
+		hookContext.Commands.JujuLog(commands.Error, "Goal state relations is not nil")
+		return fmt.Errorf("goal state relations is not nil")
+	}
+
+	_, err = hookContext.Commands.CredentialGet()
+	if err == nil {
+		hookContext.Commands.JujuLog(commands.Error, "Expected not to get container on caas model")
+		return fmt.Errorf("expected not to get container on caas model: %w", err)
+	}
+
+	err = hookContext.Commands.ApplicationVersionSet("1.0.0")
+	if err != nil {
+		hookContext.Commands.JujuLog(commands.Error, "Could not set application version:", err.Error())
+		return fmt.Errorf("could not set application version: %w", err)
+	}
+
 	err = hookContext.Commands.StatusSet(commands.StatusActive, "")
 	if err != nil {
 		hookContext.Commands.JujuLog(commands.Error, "Could not set status:", err.Error())
