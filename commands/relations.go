@@ -6,11 +6,16 @@ import (
 )
 
 const (
-	RelationIDsCommand  = "relation-ids"
-	RelationGetCommand  = "relation-get"
-	RelationListCommand = "relation-list"
-	RelationSetCommand  = "relation-set"
+	RelationIDsCommand      = "relation-ids"
+	RelationGetCommand      = "relation-get"
+	RelationListCommand     = "relation-list"
+	RelationSetCommand      = "relation-set"
+	RelationModelGetCommand = "relation-model-get"
 )
+
+type RelationModel struct {
+	UUID string `json:"uuid"`
+}
 
 func (command Command) RelationIDs(name string) ([]string, error) {
 	args := []string{name, "--format=json"}
@@ -107,4 +112,26 @@ func (command Command) RelationSet(id string, app bool, data map[string]string) 
 	}
 
 	return nil
+}
+
+func (command Command) RelationModelGet(id string) (*RelationModel, error) {
+	if id == "" {
+		return nil, fmt.Errorf("relation ID is empty")
+	}
+
+	args := []string{"-r=" + id, "--format=json"}
+
+	output, err := command.Runner.Run(RelationModelGetCommand, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get relation model data: %w", err)
+	}
+
+	var relationModel RelationModel
+
+	err = json.Unmarshal(output, &relationModel)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse relation model data: %w", err)
+	}
+
+	return &relationModel, nil
 }

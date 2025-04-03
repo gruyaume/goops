@@ -179,3 +179,42 @@ func TestRelationSet_Success(t *testing.T) {
 		t.Errorf("Expected argument %q or %q, got %q", "username=user1", "password=pass1", fakeRunner.Args[3])
 	}
 }
+
+func TestRelationModelGet_Success(t *testing.T) {
+	fakeRunner := &FakeRunner{
+		Output: []byte(`{"uuid":"e7ba04d1-b5f2-4769-8ae2-22e9119bca60"}`),
+		Err:    nil,
+	}
+	command := commands.Command{
+		Runner: fakeRunner,
+	}
+
+	result, err := command.RelationModelGet("certificates:0")
+	if err != nil {
+		t.Fatalf("RelationModelGet returned an error: %v", err)
+	}
+
+	expectedOutput := commands.RelationModel{
+		UUID: "e7ba04d1-b5f2-4769-8ae2-22e9119bca60",
+	}
+
+	if result.UUID != expectedOutput.UUID {
+		t.Fatalf("Expected UUID %q, got %q", expectedOutput.UUID, result.UUID)
+	}
+
+	if fakeRunner.Command != commands.RelationModelGetCommand {
+		t.Errorf("Expected command %q, got %q", commands.RelationModelGetCommand, fakeRunner.Command)
+	}
+
+	if len(fakeRunner.Args) != 2 {
+		t.Fatalf("Expected 2 arguments, got %d", len(fakeRunner.Args))
+	}
+
+	if fakeRunner.Args[0] != "-r=certificates:0" {
+		t.Errorf("Expected argument %q, got %q", "-r=certificates:0", fakeRunner.Args[0])
+	}
+
+	if fakeRunner.Args[1] != "--format=json" {
+		t.Errorf("Expected argument %q, got %q", "--format=json", fakeRunner.Args[1])
+	}
+}

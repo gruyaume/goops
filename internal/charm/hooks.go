@@ -184,10 +184,6 @@ func HandleDefaultHook(hookContext *goops.HookContext) error {
 		return fmt.Errorf("goal state unit is nil")
 	}
 
-	if goalState.Relations != nil {
-		return fmt.Errorf("goal state relations is not nil")
-	}
-
 	_, err = hookContext.Commands.CredentialGet()
 	if err == nil {
 		return fmt.Errorf("expected not to get container on caas model: %w", err)
@@ -211,7 +207,7 @@ func HandleDefaultHook(hookContext *goops.HookContext) error {
 	}
 
 	if networkConfig.BindAddresses[0].Addresses[0].Value == "" {
-		return fmt.Errorf("network config bind address address value is empty")
+		return fmt.Errorf("network config bind address address value is empty- This can happen in the first stage of the deployment")
 	}
 
 	if len(networkConfig.IngressAddresses) == 0 {
@@ -228,6 +224,26 @@ func HandleDefaultHook(hookContext *goops.HookContext) error {
 
 	if networkConfig.EgressSubnets[0] == "" {
 		return fmt.Errorf("network config egress subnet is empty")
+	}
+
+	certificatesRelationID, err := hookContext.Commands.RelationIDs("certificates")
+	if err != nil {
+		return fmt.Errorf("could not get relation ID: %w", err)
+	}
+
+	if len(certificatesRelationID) > 0 {
+		relationModel, err := hookContext.Commands.RelationModelGet(certificatesRelationID[0])
+		if err != nil {
+			return fmt.Errorf("could not get relation model: %w", err)
+		}
+
+		if relationModel == nil {
+			return fmt.Errorf("relation model is nil")
+		}
+
+		if relationModel.UUID == "" {
+			return fmt.Errorf("relation model UUID is empty")
+		}
 	}
 
 	err = hookContext.Commands.ApplicationVersionSet("1.0.0")
