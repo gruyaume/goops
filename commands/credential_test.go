@@ -25,8 +25,8 @@ func TestCredentialGet_Success(t *testing.T) {
 		t.Fatalf("Expected %q, got %q", expected["key"], result["key"])
 	}
 
-	if fakeRunner.Command != commands.CredentialGetCommand {
-		t.Errorf("Expected command %q, got %q", commands.CredentialGetCommand, fakeRunner.Command)
+	if fakeRunner.Command != "credential-get" {
+		t.Errorf("Expected command %q, got %q", "credential-get", fakeRunner.Command)
 	}
 
 	if len(fakeRunner.Args) != 1 {

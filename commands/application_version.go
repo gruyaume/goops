@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	ApplicationVersionSetCommand = "application-version-set"
+	applicationVersionSetCommand = "application-version-set"
 )
 
 func (command Command) ApplicationVersionSet(message string) error {
@@ -14,7 +14,7 @@ func (command Command) ApplicationVersionSet(message string) error {
 		args = append(args, message)
 	}
 
-	_, err := command.Runner.Run(ApplicationVersionSetCommand, args...)
+	_, err := command.Runner.Run(applicationVersionSetCommand, args...)
 	if err != nil {
 		return fmt.Errorf("failed to set application version: %w", err)
 	}

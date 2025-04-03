@@ -90,8 +90,8 @@ func TestGoalState_Success(t *testing.T) {
 		}
 	}
 
-	if fakeRunner.Command != commands.GoalStateCommand {
-		t.Errorf("Expected command %q, got %q", commands.GoalStateCommand, fakeRunner.Command)
+	if fakeRunner.Command != "goal-state" {
+		t.Errorf("Expected command %q, got %q", "goal-state", fakeRunner.Command)
 	}
 
 	if len(fakeRunner.Args) != 1 {

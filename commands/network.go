@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	NetworkGetCommand = "network-get"
+	networkGetCommand = "network-get"
 )
 
 type Address struct {
@@ -54,7 +54,7 @@ func (command Command) NetworkGet(bindingName string, bindAddress bool, egressSu
 
 	args = append(args, bindingName, "--format=json")
 
-	output, err := command.Runner.Run(NetworkGetCommand, args...)
+	output, err := command.Runner.Run(networkGetCommand, args...)
 	if err != nil {
 		return nil, err
 	}

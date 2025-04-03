@@ -6,13 +6,13 @@ import (
 )
 
 const (
-	IsLeaderCommand = "is-leader"
+	isLeaderCommand = "is-leader"
 )
 
 func (command Command) IsLeader() (bool, error) {
 	args := []string{"--format=json"}
 
-	output, err := command.Runner.Run(IsLeaderCommand, args...)
+	output, err := command.Runner.Run(isLeaderCommand, args...)
 	if err != nil {
 		return false, fmt.Errorf("failed to verify if unit is leader: %w", err)
 	}

@@ -3,7 +3,7 @@ package commands
 import "encoding/json"
 
 const (
-	GoalStateCommand = "goal-state"
+	goalStateCommand = "goal-state"
 )
 
 type UnitStatus struct {
@@ -24,7 +24,7 @@ type GoalState struct {
 func (command Command) GoalState() (*GoalState, error) {
 	args := []string{"--format=json"}
 
-	output, err := command.Runner.Run(GoalStateCommand, args...)
+	output, err := command.Runner.Run(goalStateCommand, args...)
 	if err != nil {
 		return nil, err
 	}

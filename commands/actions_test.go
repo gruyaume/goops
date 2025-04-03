@@ -20,8 +20,8 @@ func TestActionFail_Success(t *testing.T) {
 		t.Fatalf("ActionFail returned an error: %v", err)
 	}
 
-	if fakeRunner.Command != commands.ActionFailCommand {
-		t.Errorf("Expected command %q, got %q", commands.ActionFailCommand, fakeRunner.Command)
+	if fakeRunner.Command != "action-fail" {
+		t.Errorf("Expected command %q, got %q", "action-fail", fakeRunner.Command)
 	}
 
 	if len(fakeRunner.Args) != 1 {
@@ -51,8 +51,8 @@ func TestActionGet_Success(t *testing.T) {
 		t.Fatalf("Expected %q, got %q", "banana", result)
 	}
 
-	if fakeRunner.Command != commands.ActionGetCommand {
-		t.Errorf("Expected command %q, got %q", commands.ActionGetCommand, fakeRunner.Command)
+	if fakeRunner.Command != "action-get" {
+		t.Errorf("Expected command %q, got %q", "action-get", fakeRunner.Command)
 	}
 
 	if len(fakeRunner.Args) != 2 {
@@ -82,8 +82,8 @@ func TestActionLog_Success(t *testing.T) {
 		t.Fatalf("ActionLog returned an error: %v", err)
 	}
 
-	if fakeRunner.Command != commands.ActionLogCommand {
-		t.Errorf("Expected command %q, got %q", commands.ActionLogCommand, fakeRunner.Command)
+	if fakeRunner.Command != "action-log" {
+		t.Errorf("Expected command %q, got %q", "action-log", fakeRunner.Command)
 	}
 
 	if len(fakeRunner.Args) != 1 {
@@ -113,8 +113,8 @@ func TestActionSet_Success(t *testing.T) {
 		t.Fatalf("ActionSet returned an error: %v", err)
 	}
 
-	if fakeRunner.Command != commands.ActionSetCommand {
-		t.Errorf("Expected command %q, got %q", commands.ActionSetCommand, fakeRunner.Command)
+	if fakeRunner.Command != "action-set" {
+		t.Errorf("Expected command %q, got %q", "action-set", fakeRunner.Command)
 	}
 
 	if len(fakeRunner.Args) != 2 {

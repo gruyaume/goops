@@ -4,7 +4,7 @@ import (
 	"log"
 )
 
-const JujuLogCommand = "juju-log"
+const jujuLogCommand = "juju-log"
 
 type Level int
 
@@ -26,7 +26,7 @@ func (command Command) JujuLog(logLevel Level, message string, extraArgs ...stri
 	args := []string{"--log-level=" + levelStrings[logLevel], message}
 	args = append(args, extraArgs...)
 
-	_, err := command.Runner.Run(JujuLogCommand, args...)
+	_, err := command.Runner.Run(jujuLogCommand, args...)
 	if err != nil {
 		log.Println("failed to run juju-log command:", err)
 	}

@@ -17,8 +17,8 @@ func TestJujuLogStatusSet_Success(t *testing.T) {
 
 	command.JujuLog(commands.Debug, "my message")
 
-	if fakeRunner.Command != commands.JujuLogCommand {
-		t.Errorf("Expected command %q, got %q", commands.JujuLogCommand, fakeRunner.Command)
+	if fakeRunner.Command != "juju-log" {
+		t.Errorf("Expected command %q, got %q", "juju-log", fakeRunner.Command)
 	}
 
 	if len(fakeRunner.Args) != 2 {

@@ -6,9 +6,9 @@ import (
 )
 
 const (
-	OpenPortCommand    = "open-port"
-	ClosePortCommand   = "close-port"
-	OpenedPortsCommand = "opened-ports"
+	openPortCommand    = "open-port"
+	closePortCommand   = "close-port"
+	openedPortsCommand = "opened-ports"
 )
 
 type Port struct {
@@ -68,7 +68,7 @@ func (command Command) OpenPort(port Port) error {
 
 	args := []string{fmt.Sprintf("%d/%s", port.Port, port.Protocol)}
 
-	_, err := command.Runner.Run(OpenPortCommand, args...)
+	_, err := command.Runner.Run(openPortCommand, args...)
 	if err != nil {
 		return fmt.Errorf("failed to open port %d/%s: %w", port.Port, port.Protocol, err)
 	}
@@ -87,7 +87,7 @@ func (command Command) ClosePort(port Port) error {
 
 	args := []string{fmt.Sprintf("%d/%s", port.Port, port.Protocol)}
 
-	_, err := command.Runner.Run(ClosePortCommand, args...)
+	_, err := command.Runner.Run(closePortCommand, args...)
 	if err != nil {
 		return fmt.Errorf("failed to open port %d/%s: %w", port.Port, port.Protocol, err)
 	}
@@ -98,7 +98,7 @@ func (command Command) ClosePort(port Port) error {
 func (command Command) OpenedPorts() ([]Port, error) {
 	args := []string{"--format=json"}
 
-	output, err := command.Runner.Run(OpenedPortsCommand, args...)
+	output, err := command.Runner.Run(openedPortsCommand, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get opened ports: %w", err)
 	}

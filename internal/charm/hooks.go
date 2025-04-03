@@ -131,6 +131,47 @@ func setPorts(hookContext *goops.HookContext) error {
 	return nil
 }
 
+func validateNetworkGet(hookContext *goops.HookContext) error {
+	networkConfig, err := hookContext.Commands.NetworkGet("certificates", false, false, false, false, "")
+	if err != nil {
+		return fmt.Errorf("could not get network config: %w", err)
+	}
+
+	if networkConfig == nil {
+		return fmt.Errorf("network config is nil")
+	}
+
+	if len(networkConfig.BindAddresses) == 0 {
+		return fmt.Errorf("network config bind addresses is empty")
+	}
+
+	if len(networkConfig.BindAddresses[0].Addresses) == 0 {
+		return fmt.Errorf("network config bind address addresses is empty")
+	}
+
+	if networkConfig.BindAddresses[0].Addresses[0].Value == "" {
+		return fmt.Errorf("network config bind address address value is empty- This can happen in the first stage of the deployment")
+	}
+
+	if len(networkConfig.IngressAddresses) == 0 {
+		return fmt.Errorf("network config ingress addresses is empty")
+	}
+
+	if networkConfig.IngressAddresses[0] == "" {
+		return fmt.Errorf("network config ingress address is empty")
+	}
+
+	if len(networkConfig.EgressSubnets) == 0 {
+		return fmt.Errorf("network config egress subnets is empty")
+	}
+
+	if networkConfig.EgressSubnets[0] == "" {
+		return fmt.Errorf("network config egress subnet is empty")
+	}
+
+	return nil
+}
+
 func HandleDefaultHook(hookContext *goops.HookContext) error {
 	isLeader, err := hookContext.Commands.IsLeader()
 	if err != nil {
@@ -189,41 +230,9 @@ func HandleDefaultHook(hookContext *goops.HookContext) error {
 		return fmt.Errorf("expected not to get container on caas model: %w", err)
 	}
 
-	networkConfig, err := hookContext.Commands.NetworkGet("certificates", false, false, false, false, "")
+	err = validateNetworkGet(hookContext)
 	if err != nil {
-		return fmt.Errorf("could not get network config: %w", err)
-	}
-
-	if networkConfig == nil {
-		return fmt.Errorf("network config is nil")
-	}
-
-	if len(networkConfig.BindAddresses) == 0 {
-		return fmt.Errorf("network config bind addresses is empty")
-	}
-
-	if len(networkConfig.BindAddresses[0].Addresses) == 0 {
-		return fmt.Errorf("network config bind address addresses is empty")
-	}
-
-	if networkConfig.BindAddresses[0].Addresses[0].Value == "" {
-		return fmt.Errorf("network config bind address address value is empty- This can happen in the first stage of the deployment")
-	}
-
-	if len(networkConfig.IngressAddresses) == 0 {
-		return fmt.Errorf("network config ingress addresses is empty")
-	}
-
-	if networkConfig.IngressAddresses[0] == "" {
-		return fmt.Errorf("network config ingress address is empty")
-	}
-
-	if len(networkConfig.EgressSubnets) == 0 {
-		return fmt.Errorf("network config egress subnets is empty")
-	}
-
-	if networkConfig.EgressSubnets[0] == "" {
-		return fmt.Errorf("network config egress subnet is empty")
+		return fmt.Errorf("could not validate network get: %w", err)
 	}
 
 	certificatesRelationID, err := hookContext.Commands.RelationIDs("certificates")

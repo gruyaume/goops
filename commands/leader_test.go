@@ -24,8 +24,8 @@ func TestIsLeader_Success(t *testing.T) {
 		t.Errorf("Expected true, got %v", result)
 	}
 
-	if fakeRunner.Command != commands.IsLeaderCommand {
-		t.Errorf("Expected command %q, got %q", commands.IsLeaderCommand, fakeRunner.Command)
+	if fakeRunner.Command != "is-leader" {
+		t.Errorf("Expected command %q, got %q", "is-leader", fakeRunner.Command)
 	}
 
 	if len(fakeRunner.Args) != 1 {
