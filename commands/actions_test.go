@@ -6,6 +6,33 @@ import (
 	"github.com/gruyaume/goops/commands"
 )
 
+func TestActionFail_Success(t *testing.T) {
+	fakeRunner := &FakeRunner{
+		Output: []byte(``),
+		Err:    nil,
+	}
+	command := commands.Command{
+		Runner: fakeRunner,
+	}
+
+	err := command.ActionFail("my failure message")
+	if err != nil {
+		t.Fatalf("ActionFail returned an error: %v", err)
+	}
+
+	if fakeRunner.Command != commands.ActionFailCommand {
+		t.Errorf("Expected command %q, got %q", commands.ActionFailCommand, fakeRunner.Command)
+	}
+
+	if len(fakeRunner.Args) != 1 {
+		t.Fatalf("Expected 1 argument, got %d", len(fakeRunner.Args))
+	}
+
+	if fakeRunner.Args[0] != "my failure message" {
+		t.Errorf("Expected argument %q, got %q", "my failure message", fakeRunner.Args[0])
+	}
+}
+
 func TestActionGet_Success(t *testing.T) {
 	fakeRunner := &FakeRunner{
 		Output: []byte(`"banana"`),
@@ -41,7 +68,7 @@ func TestActionGet_Success(t *testing.T) {
 	}
 }
 
-func TestActionFail_Success(t *testing.T) {
+func TestActionLog_Success(t *testing.T) {
 	fakeRunner := &FakeRunner{
 		Output: []byte(``),
 		Err:    nil,
@@ -50,21 +77,21 @@ func TestActionFail_Success(t *testing.T) {
 		Runner: fakeRunner,
 	}
 
-	err := command.ActionFail("my failure message")
+	err := command.ActionLog("my log message")
 	if err != nil {
-		t.Fatalf("ActionFail returned an error: %v", err)
+		t.Fatalf("ActionLog returned an error: %v", err)
 	}
 
-	if fakeRunner.Command != commands.ActionFailCommand {
-		t.Errorf("Expected command %q, got %q", commands.ActionFailCommand, fakeRunner.Command)
+	if fakeRunner.Command != commands.ActionLogCommand {
+		t.Errorf("Expected command %q, got %q", commands.ActionLogCommand, fakeRunner.Command)
 	}
 
 	if len(fakeRunner.Args) != 1 {
 		t.Fatalf("Expected 1 argument, got %d", len(fakeRunner.Args))
 	}
 
-	if fakeRunner.Args[0] != "my failure message" {
-		t.Errorf("Expected argument %q, got %q", "my failure message", fakeRunner.Args[0])
+	if fakeRunner.Args[0] != "my log message" {
+		t.Errorf("Expected argument %q, got %q", "my log message", fakeRunner.Args[0])
 	}
 }
 
