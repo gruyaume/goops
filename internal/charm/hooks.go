@@ -169,45 +169,74 @@ func HandleDefaultHook(hookContext *goops.HookContext) error {
 
 	goalState, err := hookContext.Commands.GoalState()
 	if err != nil {
-		hookContext.Commands.JujuLog(commands.Error, "Could not get goal state:", err.Error())
 		return fmt.Errorf("could not get goal state: %w", err)
 	}
 
 	if goalState == nil {
-		hookContext.Commands.JujuLog(commands.Error, "Goal state is nil")
 		return fmt.Errorf("goal state is nil")
 	}
 
 	if goalState.Units == nil {
-		hookContext.Commands.JujuLog(commands.Error, "Goal state units is nil")
 		return fmt.Errorf("goal state units is nil")
 	}
 
 	if goalState.Units["example/0"] == nil {
-		hookContext.Commands.JujuLog(commands.Error, "Goal state unit is nil")
 		return fmt.Errorf("goal state unit is nil")
 	}
 
 	if goalState.Relations != nil {
-		hookContext.Commands.JujuLog(commands.Error, "Goal state relations is not nil")
 		return fmt.Errorf("goal state relations is not nil")
 	}
 
 	_, err = hookContext.Commands.CredentialGet()
 	if err == nil {
-		hookContext.Commands.JujuLog(commands.Error, "Expected not to get container on caas model")
 		return fmt.Errorf("expected not to get container on caas model: %w", err)
+	}
+
+	networkConfig, err := hookContext.Commands.NetworkGet("certificates", false, false, false, false, "")
+	if err != nil {
+		return fmt.Errorf("could not get network config: %w", err)
+	}
+
+	if networkConfig == nil {
+		return fmt.Errorf("network config is nil")
+	}
+
+	if len(networkConfig.BindAddresses) == 0 {
+		return fmt.Errorf("network config bind addresses is empty")
+	}
+
+	if len(networkConfig.BindAddresses[0].Addresses) == 0 {
+		return fmt.Errorf("network config bind address addresses is empty")
+	}
+
+	if networkConfig.BindAddresses[0].Addresses[0].Value == "" {
+		return fmt.Errorf("network config bind address address value is empty")
+	}
+
+	if len(networkConfig.IngressAddresses) == 0 {
+		return fmt.Errorf("network config ingress addresses is empty")
+	}
+
+	if networkConfig.IngressAddresses[0] == "" {
+		return fmt.Errorf("network config ingress address is empty")
+	}
+
+	if len(networkConfig.EgressSubnets) == 0 {
+		return fmt.Errorf("network config egress subnets is empty")
+	}
+
+	if networkConfig.EgressSubnets[0] == "" {
+		return fmt.Errorf("network config egress subnet is empty")
 	}
 
 	err = hookContext.Commands.ApplicationVersionSet("1.0.0")
 	if err != nil {
-		hookContext.Commands.JujuLog(commands.Error, "Could not set application version:", err.Error())
 		return fmt.Errorf("could not set application version: %w", err)
 	}
 
 	err = hookContext.Commands.StatusSet(commands.StatusActive, "")
 	if err != nil {
-		hookContext.Commands.JujuLog(commands.Error, "Could not set status:", err.Error())
 		return fmt.Errorf("could not set status: %w", err)
 	}
 

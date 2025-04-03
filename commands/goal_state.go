@@ -29,13 +29,15 @@ func (command Command) GoalState() (*GoalState, error) {
 		return nil, err
 	}
 
-	// command.JujuLog(Warning, "goal-state output: %s", string(output))
-
 	var goalState GoalState
 
 	err = json.Unmarshal(output, &goalState)
 	if err != nil {
 		return nil, err
+	}
+
+	if len(goalState.Relations) == 0 {
+		goalState.Relations = nil
 	}
 
 	return &goalState, nil

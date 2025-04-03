@@ -3,7 +3,7 @@ package commands
 import "encoding/json"
 
 const (
-	CredentialGetCommand = "credential-get"
+	CredentialGetCommand = "credential-get" // #nosec G101
 )
 
 func (command Command) CredentialGet() (map[string]string, error) {
