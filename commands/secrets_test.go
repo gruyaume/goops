@@ -166,3 +166,34 @@ func TestSecretAdd_EmptyContent(t *testing.T) {
 		t.Error("Expected error when content is empty, but got nil")
 	}
 }
+
+func TestSecretGrant_Success(t *testing.T) {
+	fakeRunner := &FakeRunner{
+		Output: []byte(`{"result":"success"}`),
+		Err:    nil,
+	}
+	command := commands.Command{
+		Runner: fakeRunner,
+	}
+
+	err := command.SecretGrant("123", "certificates:0", "")
+	if err != nil {
+		t.Fatalf("SecretGrant returned an error: %v", err)
+	}
+
+	if fakeRunner.Command != "secret-grant" {
+		t.Fatalf("Expected command %q, got %q", "secret-grant", fakeRunner.Command)
+	}
+
+	if len(fakeRunner.Args) != 2 {
+		t.Fatalf("Expected 2 arguments, got %d", len(fakeRunner.Args))
+	}
+
+	if fakeRunner.Args[0] != "123" {
+		t.Errorf("Expected ID arg %q, got %q", "123", fakeRunner.Args[0])
+	}
+
+	if fakeRunner.Args[1] != "--relation=certificates:0" {
+		t.Errorf("Expected secret ID arg %q, got %q", "--relation=certificates:0", fakeRunner.Args[1])
+	}
+}
