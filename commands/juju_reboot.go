@@ -1,7 +1,7 @@
 package commands
 
 const (
-	JujuRebootCommand = "juju-reboot"
+	jujuRebootCommand = "juju-reboot"
 )
 
 func (command Command) JujuReboot(now bool) error {
@@ -10,7 +10,7 @@ func (command Command) JujuReboot(now bool) error {
 		args = append(args, "--now")
 	}
 
-	_, err := command.Runner.Run(JujuRebootCommand, args...)
+	_, err := command.Runner.Run(jujuRebootCommand, args...)
 	if err != nil {
 		return err
 	}

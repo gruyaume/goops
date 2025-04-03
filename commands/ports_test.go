@@ -24,8 +24,8 @@ func TestOpenPortTCP_Success(t *testing.T) {
 		t.Fatalf("OpenPort returned an error: %v", err)
 	}
 
-	if fakeRunner.Command != commands.OpenPortCommand {
-		t.Errorf("Expected command %q, got %q", commands.OpenPortCommand, fakeRunner.Command)
+	if fakeRunner.Command != "open-port" {
+		t.Errorf("Expected command %q, got %q", "open-port", fakeRunner.Command)
 	}
 
 	if len(fakeRunner.Args) != 1 {
@@ -55,8 +55,8 @@ func TestOpenPortUDP_Success(t *testing.T) {
 		t.Fatalf("OpenPort returned an error: %v", err)
 	}
 
-	if fakeRunner.Command != commands.OpenPortCommand {
-		t.Errorf("Expected command %q, got %q", commands.OpenPortCommand, fakeRunner.Command)
+	if fakeRunner.Command != "open-port" {
+		t.Errorf("Expected command %q, got %q", "open-port", fakeRunner.Command)
 	}
 
 	if len(fakeRunner.Args) != 1 {
@@ -140,8 +140,8 @@ func TestClosePortTCP_Success(t *testing.T) {
 		t.Fatalf("ClosePort returned an error: %v", err)
 	}
 
-	if fakeRunner.Command != commands.ClosePortCommand {
-		t.Errorf("Expected command %q, got %q", commands.ClosePortCommand, fakeRunner.Command)
+	if fakeRunner.Command != "close-port" {
+		t.Errorf("Expected command %q, got %q", "close-port", fakeRunner.Command)
 	}
 
 	if len(fakeRunner.Args) != 1 {
@@ -171,8 +171,8 @@ func TestClosePortUDP_Success(t *testing.T) {
 		t.Fatalf("ClosePort returned an error: %v", err)
 	}
 
-	if fakeRunner.Command != commands.ClosePortCommand {
-		t.Errorf("Expected command %q, got %q", commands.ClosePortCommand, fakeRunner.Command)
+	if fakeRunner.Command != "close-port" {
+		t.Errorf("Expected command %q, got %q", "close-port", fakeRunner.Command)
 	}
 
 	if len(fakeRunner.Args) != 1 {

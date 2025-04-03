@@ -34,8 +34,8 @@ func TestSecretIDs_Success(t *testing.T) {
 		}
 	}
 
-	if fakeRunner.Command != commands.SecredIDsCommand {
-		t.Errorf("Expected command %q, got %q", commands.SecredIDsCommand, fakeRunner.Command)
+	if fakeRunner.Command != "secret-ids" {
+		t.Errorf("Expected command %q, got %q", "secret-ids", fakeRunner.Command)
 	}
 
 	if len(fakeRunner.Args) != 1 {
@@ -75,8 +75,8 @@ func TestSecretGet_Success(t *testing.T) {
 		}
 	}
 
-	if fakeRunner.Command != commands.SecretGetCommand {
-		t.Errorf("Expected command %q, got %q", commands.SecretGetCommand, fakeRunner.Command)
+	if fakeRunner.Command != "secret-get" {
+		t.Errorf("Expected command %q, got %q", "secret-get", fakeRunner.Command)
 	}
 
 	if len(fakeRunner.Args) != 4 {
@@ -126,8 +126,8 @@ func TestSecretAdd_Success(t *testing.T) {
 		t.Errorf("Expected output %q, got %q", expectedOutput, result)
 	}
 
-	if fakeRunner.Command != commands.SecretAddCommand {
-		t.Errorf("Expected command %q, got %q", commands.SecretAddCommand, fakeRunner.Command)
+	if fakeRunner.Command != "secret-add" {
+		t.Errorf("Expected command %q, got %q", "secret-add", fakeRunner.Command)
 	}
 
 	if len(fakeRunner.Args) != 4 {

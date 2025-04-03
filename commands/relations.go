@@ -6,16 +6,21 @@ import (
 )
 
 const (
-	RelationIDsCommand  = "relation-ids"
-	RelationGetCommand  = "relation-get"
-	RelationListCommand = "relation-list"
-	RelationSetCommand  = "relation-set"
+	relationIDsCommand      = "relation-ids"
+	relationGetCommand      = "relation-get"
+	relationListCommand     = "relation-list"
+	relationSetCommand      = "relation-set"
+	relationModelGetCommand = "relation-model-get"
 )
+
+type RelationModel struct {
+	UUID string `json:"uuid"`
+}
 
 func (command Command) RelationIDs(name string) ([]string, error) {
 	args := []string{name, "--format=json"}
 
-	output, err := command.Runner.Run(RelationIDsCommand, args...)
+	output, err := command.Runner.Run(relationIDsCommand, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get relation IDs: %w", err)
 	}
@@ -46,7 +51,7 @@ func (command Command) RelationGet(id string, unitID string, app bool) (map[stri
 
 	args = append(args, "--format=json")
 
-	output, err := command.Runner.Run(RelationGetCommand, args...)
+	output, err := command.Runner.Run(relationGetCommand, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get relation data: %w", err)
 	}
@@ -68,7 +73,7 @@ func (command Command) RelationList(id string) ([]string, error) {
 
 	args := []string{"-r=" + id, "--format=json"}
 
-	output, err := command.Runner.Run(RelationListCommand, args...)
+	output, err := command.Runner.Run(relationListCommand, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list relation data: %w", err)
 	}
@@ -97,7 +102,7 @@ func (command Command) RelationSet(id string, app bool, data map[string]string) 
 		args = append(args, key+"="+value)
 	}
 
-	output, err := command.Runner.Run(RelationSetCommand, args...)
+	output, err := command.Runner.Run(relationSetCommand, args...)
 	if err != nil {
 		return fmt.Errorf("failed to set relation data: %w", err)
 	}
@@ -107,4 +112,26 @@ func (command Command) RelationSet(id string, app bool, data map[string]string) 
 	}
 
 	return nil
+}
+
+func (command Command) RelationModelGet(id string) (*RelationModel, error) {
+	if id == "" {
+		return nil, fmt.Errorf("relation ID is empty")
+	}
+
+	args := []string{"-r=" + id, "--format=json"}
+
+	output, err := command.Runner.Run(relationModelGetCommand, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get relation model data: %w", err)
+	}
+
+	var relationModel RelationModel
+
+	err = json.Unmarshal(output, &relationModel)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse relation model data: %w", err)
+	}
+
+	return &relationModel, nil
 }

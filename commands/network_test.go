@@ -63,8 +63,8 @@ func TestNetworkGet_Success(t *testing.T) {
 		t.Fatalf("Expected %q, got %q", expected.BindAddresses[0].Addresses[0].CIDR, result.BindAddresses[0].Addresses[0].CIDR)
 	}
 
-	if fakeRunner.Command != commands.NetworkGetCommand {
-		t.Errorf("Expected command %q, got %q", commands.NetworkGetCommand, fakeRunner.Command)
+	if fakeRunner.Command != "network-get" {
+		t.Errorf("Expected command %q, got %q", "network-get", fakeRunner.Command)
 	}
 
 	if len(fakeRunner.Args) != 2 {

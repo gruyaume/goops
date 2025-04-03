@@ -21,8 +21,8 @@ func TestApplicationVersionSet_Success(t *testing.T) {
 		t.Fatalf("ApplicationVersionSet returned an error: %v", err)
 	}
 
-	if fakeRunner.Command != commands.ApplicationVersionSetCommand {
-		t.Errorf("Expected command %q, got %q", commands.ApplicationVersionSetCommand, fakeRunner.Command)
+	if fakeRunner.Command != "application-version-set" {
+		t.Errorf("Expected command %q, got %q", "application-version-set", fakeRunner.Command)
 	}
 
 	if len(fakeRunner.Args) != 1 {

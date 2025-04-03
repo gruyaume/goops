@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	ConfigGetCommand = "config-get"
+	configGetCommand = "config-get"
 )
 
 var ErrConfigNotSet = errors.New("config option not set")
@@ -15,7 +15,7 @@ var ErrConfigNotSet = errors.New("config option not set")
 func (command Command) ConfigGet(key string) (any, error) {
 	args := []string{key, "--format=json"}
 
-	output, err := command.Runner.Run(ConfigGetCommand, args...)
+	output, err := command.Runner.Run(configGetCommand, args...)
 	if err != nil {
 		return "", fmt.Errorf("failed to get config: %w", err)
 	}

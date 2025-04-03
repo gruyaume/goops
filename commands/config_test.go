@@ -28,8 +28,8 @@ func TestConfigGet_Success(t *testing.T) {
 		t.Fatalf("Expected %q, got %q", "banana", result)
 	}
 
-	if fakeRunner.Command != commands.ConfigGetCommand {
-		t.Errorf("Expected command %q, got %q", commands.ConfigGetCommand, fakeRunner.Command)
+	if fakeRunner.Command != "config-get" {
+		t.Errorf("Expected command %q, got %q", "config-get", fakeRunner.Command)
 	}
 
 	if len(fakeRunner.Args) != 2 {

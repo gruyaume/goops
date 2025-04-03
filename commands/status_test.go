@@ -20,8 +20,8 @@ func TestStatusSet_Success(t *testing.T) {
 		t.Fatalf("StatusSet returned an error: %v", err)
 	}
 
-	if fakeRunner.Command != commands.StatusSetCommand {
-		t.Errorf("Expected command %q, got %q", commands.StatusSetCommand, fakeRunner.Command)
+	if fakeRunner.Command != "status-set" {
+		t.Errorf("Expected command %q, got %q", "status-set", fakeRunner.Command)
 	}
 
 	if len(fakeRunner.Args) != 1 {

@@ -6,13 +6,13 @@ import (
 )
 
 const (
-	SecredIDsCommand = "secret-ids"
-	SecretGetCommand = "secret-get"
-	SecretAddCommand = "secret-add"
+	secredIDsCommand = "secret-ids"
+	secretGetCommand = "secret-get"
+	secretAddCommand = "secret-add"
 )
 
 func (command Command) SecretIDs() ([]string, error) {
-	output, err := command.Runner.Run(SecredIDsCommand, "--format=json")
+	output, err := command.Runner.Run(secredIDsCommand, "--format=json")
 	if err != nil {
 		return nil, fmt.Errorf("failed to get secret IDs: %w", err)
 	}
@@ -47,7 +47,7 @@ func (command Command) SecretGet(id string, label string, peek bool, refresh boo
 
 	args = append(args, "--format=json")
 
-	output, err := command.Runner.Run(SecretGetCommand, args...)
+	output, err := command.Runner.Run(secretGetCommand, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get secret: %w", err)
 	}
@@ -80,7 +80,7 @@ func (command Command) SecretAdd(content map[string]string, description string, 
 		args = append(args, "--label="+label)
 	}
 
-	output, err := command.Runner.Run(SecretAddCommand, args...)
+	output, err := command.Runner.Run(secretAddCommand, args...)
 	if err != nil {
 		return "", fmt.Errorf("failed to add secret: %w", err)
 	}

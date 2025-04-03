@@ -6,10 +6,10 @@ import (
 )
 
 const (
-	ActionFailCommand = "action-fail"
-	ActionGetCommand  = "action-get"
-	ActionLogCommand  = "action-log"
-	ActionSetCommand  = "action-set"
+	actionFailCommand = "action-fail"
+	actionGetCommand  = "action-get"
+	actionLogCommand  = "action-log"
+	actionSetCommand  = "action-set"
 )
 
 func (command Command) ActionFail(message string) error {
@@ -18,7 +18,7 @@ func (command Command) ActionFail(message string) error {
 		args = append(args, message)
 	}
 
-	_, err := command.Runner.Run(ActionFailCommand, args...)
+	_, err := command.Runner.Run(actionFailCommand, args...)
 	if err != nil {
 		return fmt.Errorf("failed to fail action: %w", err)
 	}
@@ -29,7 +29,7 @@ func (command Command) ActionFail(message string) error {
 func (command Command) ActionGet(key string) (string, error) {
 	args := []string{key, "--format=json"}
 
-	output, err := command.Runner.Run(ActionGetCommand, args...)
+	output, err := command.Runner.Run(actionGetCommand, args...)
 	if err != nil {
 		return "", fmt.Errorf("failed to get action parameter: %w", err)
 	}
@@ -51,7 +51,7 @@ func (command Command) ActionLog(message string) error {
 
 	args := []string{message}
 
-	_, err := command.Runner.Run(ActionLogCommand, args...)
+	_, err := command.Runner.Run(actionLogCommand, args...)
 	if err != nil {
 		return fmt.Errorf("failed to log action message: %w", err)
 	}
@@ -69,7 +69,7 @@ func (command Command) ActionSet(content map[string]string) error {
 		args = append(args, key+"="+value)
 	}
 
-	_, err := command.Runner.Run(ActionSetCommand, args...)
+	_, err := command.Runner.Run(actionSetCommand, args...)
 	if err != nil {
 		return fmt.Errorf("failed to set action parameters: %w", err)
 	}

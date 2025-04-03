@@ -3,13 +3,13 @@ package commands
 import "encoding/json"
 
 const (
-	CredentialGetCommand = "credential-get" // #nosec G101
+	credentialGetCommand = "credential-get" // #nosec G101
 )
 
 func (command Command) CredentialGet() (map[string]string, error) {
 	args := []string{"--format=json"}
 
-	output, err := command.Runner.Run(CredentialGetCommand, args...)
+	output, err := command.Runner.Run(credentialGetCommand, args...)
 	if err != nil {
 		return nil, err
 	}

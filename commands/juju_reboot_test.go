@@ -20,8 +20,8 @@ func TestJujuReboot_Success(t *testing.T) {
 		t.Fatalf("JujuReboot returned an error: %v", err)
 	}
 
-	if fakeRunner.Command != commands.JujuRebootCommand {
-		t.Errorf("Expected command %q, got %q", commands.JujuRebootCommand, fakeRunner.Command)
+	if fakeRunner.Command != "juju-reboot" {
+		t.Errorf("Expected command %q, got %q", "juju-reboot", fakeRunner.Command)
 	}
 
 	if len(fakeRunner.Args) != 1 {
