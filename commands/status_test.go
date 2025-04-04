@@ -15,7 +15,11 @@ func TestStatusSet_Success(t *testing.T) {
 		Runner: fakeRunner,
 	}
 
-	err := command.StatusSet(commands.StatusActive, "")
+	statusOpts := &commands.StatusOptions{
+		Name: commands.StatusActive,
+	}
+
+	err := command.StatusSet(statusOpts)
 	if err != nil {
 		t.Fatalf("StatusSet returned an error: %v", err)
 	}

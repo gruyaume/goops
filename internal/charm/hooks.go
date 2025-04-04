@@ -311,7 +311,19 @@ func HandleDefaultHook(hookContext *goops.HookContext) error {
 		return fmt.Errorf("could not set application version: %w", err)
 	}
 
-	err = hookContext.Commands.StatusSet(commands.StatusActive, "")
+	existingStatus, err := hookContext.Commands.StatusGet()
+	if err != nil {
+		return fmt.Errorf("could not get status: %w", err)
+	}
+
+	hookContext.Commands.JujuLog(commands.Info, "Current status:", string(existingStatus.Name), existingStatus.Message)
+
+	statusOpts := &commands.StatusOptions{
+		Name:    commands.StatusActive,
+		Message: "A happy charm",
+	}
+
+	err = hookContext.Commands.StatusSet(statusOpts)
 	if err != nil {
 		return fmt.Errorf("could not set status: %w", err)
 	}
