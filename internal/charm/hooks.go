@@ -15,7 +15,11 @@ const (
 )
 
 func isConfigValid(hookContext *goops.HookContext) (bool, error) {
-	caCommonNameConfig, err := hookContext.Commands.ConfigGet("ca-common-name")
+	configGetOptions := &commands.ConfigGetOptions{
+		Key: "ca-common-name",
+	}
+
+	caCommonNameConfig, err := hookContext.Commands.ConfigGet(configGetOptions)
 	if err != nil {
 		return false, fmt.Errorf("could not get config: %w", err)
 	}
@@ -28,12 +32,21 @@ func isConfigValid(hookContext *goops.HookContext) (bool, error) {
 }
 
 func generateAndStoreRootCertificate(hookContext *goops.HookContext) error {
-	caCommonName, err := hookContext.Commands.ConfigGetString("ca-common-name")
+	configGetOptions := &commands.ConfigGetOptions{
+		Key: "ca-common-name",
+	}
+
+	caCommonName, err := hookContext.Commands.ConfigGetString(configGetOptions)
 	if err != nil {
 		return fmt.Errorf("could not get config: %w", err)
 	}
 
-	_, err = hookContext.Commands.SecretGet("", CaCertificateSecretLabel, false, true)
+	secretGetOptions := &commands.SecretGetOptions{
+		Label:   CaCertificateSecretLabel,
+		Refresh: true,
+	}
+
+	_, err = hookContext.Commands.SecretGet(secretGetOptions)
 	if err != nil {
 		hookContext.Commands.JujuLog(commands.Info, "could not get secret:", err.Error())
 
@@ -51,12 +64,14 @@ func generateAndStoreRootCertificate(hookContext *goops.HookContext) error {
 
 		expiry := time.Now().AddDate(1, 0, 0)
 
-		output, err := hookContext.Commands.SecretAdd(
-			secretContent,
-			"ca certificate and private key for the certificates charm",
-			expiry,
-			CaCertificateSecretLabel,
-			"", "")
+		secretAddOptions := &commands.SecretAddOptions{
+			Content:     secretContent,
+			Description: "ca certificate and private key for the certificates charm",
+			Expire:      expiry,
+			Label:       CaCertificateSecretLabel,
+		}
+
+		output, err := hookContext.Commands.SecretAdd(secretAddOptions)
 		if err != nil {
 			return fmt.Errorf("could not add secret: %w", err)
 		}
@@ -67,7 +82,11 @@ func generateAndStoreRootCertificate(hookContext *goops.HookContext) error {
 		return nil
 	}
 
-	secretInfo, err := hookContext.Commands.SecretInfoGet("", CaCertificateSecretLabel)
+	secretInfoGetOpts := &commands.SecretInfoGetOptions{
+		Label: CaCertificateSecretLabel,
+	}
+
+	secretInfo, err := hookContext.Commands.SecretInfoGet(secretInfoGetOpts)
 	if err != nil {
 		return fmt.Errorf("could not get secret info: %w", err)
 	}
@@ -88,7 +107,12 @@ func processOutstandingCertificateRequests(hookContext *goops.HookContext) error
 	for _, request := range outstandingCertificateRequests {
 		hookContext.Commands.JujuLog(commands.Info, "Received a certificate signing request from:", request.RelationID, "with common name:", request.CertificateSigningRequest.CommonName)
 
-		caCertificateSecret, err := hookContext.Commands.SecretGet("", CaCertificateSecretLabel, false, true)
+		secretGetOptions := &commands.SecretGetOptions{
+			Label:   CaCertificateSecretLabel,
+			Refresh: true,
+		}
+
+		caCertificateSecret, err := hookContext.Commands.SecretGet(secretGetOptions)
 		if err != nil {
 			return fmt.Errorf("could not get CA certificate secret: %w", err)
 		}
@@ -132,10 +156,12 @@ func processOutstandingCertificateRequests(hookContext *goops.HookContext) error
 }
 
 func setPorts(hookContext *goops.HookContext) error {
-	ports := []commands.Port{
-		{
-			Port:     443,
-			Protocol: "tcp",
+	ports := &commands.SetPortOptions{
+		Ports: []*commands.Port{
+			{
+				Port:     443,
+				Protocol: "tcp",
+			},
 		},
 	}
 
@@ -148,7 +174,11 @@ func setPorts(hookContext *goops.HookContext) error {
 }
 
 func validateNetworkGet(hookContext *goops.HookContext) error {
-	networkConfig, err := hookContext.Commands.NetworkGet("certificates", false, false, false, false, "")
+	networkGetOpts := &commands.NetworkGetOptions{
+		BindingName: "certificates",
+	}
+
+	networkConfig, err := hookContext.Commands.NetworkGet(networkGetOpts)
 	if err != nil {
 		return fmt.Errorf("could not get network config: %w", err)
 	}
@@ -192,11 +222,20 @@ func validateState(hookContext *goops.HookContext) error {
 	stateKey := "my-key"
 	stateValue := "my-value"
 
-	_, err := hookContext.Commands.StateGet(stateKey)
+	stateGetOptions := &commands.StateGetOptions{
+		Key: stateKey,
+	}
+
+	_, err := hookContext.Commands.StateGet(stateGetOptions)
 	if err != nil {
 		hookContext.Commands.JujuLog(commands.Info, "could not get state:", err.Error())
 
-		err := hookContext.Commands.StateSet(stateKey, stateValue)
+		stateSetOptions := &commands.StateSetOptions{
+			Key:   stateKey,
+			Value: stateValue,
+		}
+
+		err := hookContext.Commands.StateSet(stateSetOptions)
 		if err != nil {
 			return fmt.Errorf("could not set state: %w", err)
 		}
@@ -207,7 +246,11 @@ func validateState(hookContext *goops.HookContext) error {
 	} else {
 		hookContext.Commands.JujuLog(commands.Info, "state already set:", stateKey, "=", stateValue)
 
-		err := hookContext.Commands.StateDelete(stateKey)
+		stateDeleteOptions := &commands.StateDeleteOptions{
+			Key: stateKey,
+		}
+
+		err := hookContext.Commands.StateDelete(stateDeleteOptions)
 		if err != nil {
 			return fmt.Errorf("could not delete state: %w", err)
 		}
@@ -281,13 +324,21 @@ func HandleDefaultHook(hookContext *goops.HookContext) error {
 		return fmt.Errorf("could not validate network get: %w", err)
 	}
 
-	certificatesRelationID, err := hookContext.Commands.RelationIDs("certificates")
+	relationIDsOptions := &commands.RelationIDsOptions{
+		Name: TLSCertificatesIntegration,
+	}
+
+	certificatesRelationID, err := hookContext.Commands.RelationIDs(relationIDsOptions)
 	if err != nil {
 		return fmt.Errorf("could not get relation ID: %w", err)
 	}
 
 	if len(certificatesRelationID) > 0 {
-		relationModel, err := hookContext.Commands.RelationModelGet(certificatesRelationID[0])
+		relationModelGetOptions := &commands.RelationModelGetOptions{
+			ID: certificatesRelationID[0],
+		}
+
+		relationModel, err := hookContext.Commands.RelationModelGet(relationModelGetOptions)
 		if err != nil {
 			return fmt.Errorf("could not get relation model: %w", err)
 		}
@@ -306,7 +357,11 @@ func HandleDefaultHook(hookContext *goops.HookContext) error {
 		return fmt.Errorf("could not validate state: %w", err)
 	}
 
-	err = hookContext.Commands.ApplicationVersionSet("1.0.0")
+	applicationVersionSetOptions := &commands.ApplicationVersionSetOptions{
+		Version: "1.0.0",
+	}
+
+	err = hookContext.Commands.ApplicationVersionSet(applicationVersionSetOptions)
 	if err != nil {
 		return fmt.Errorf("could not set application version: %w", err)
 	}

@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/gruyaume/goops"
+	"github.com/gruyaume/goops/commands"
 )
 
 type CertificateSigningRequestRequirerRelationData struct {
@@ -76,7 +77,11 @@ func GetOutstandingCertificateRequests(hookContext *goops.HookContext, relationN
 		return nil, fmt.Errorf("relation name is empty")
 	}
 
-	relationIDs, err := hookContext.Commands.RelationIDs(relationName)
+	relationIDsOptions := &commands.RelationIDsOptions{
+		Name: relationName,
+	}
+
+	relationIDs, err := hookContext.Commands.RelationIDs(relationIDsOptions)
 	if err != nil {
 		return nil, fmt.Errorf("could not get relation IDs: %w", err)
 	}
@@ -84,13 +89,22 @@ func GetOutstandingCertificateRequests(hookContext *goops.HookContext, relationN
 	requirerCertificateRequests := make([]RequirerCertificateRequest, 0)
 
 	for _, relationID := range relationIDs {
-		relationUnits, err := hookContext.Commands.RelationList(relationID)
+		relationListOptions := &commands.RelationListOptions{
+			ID: relationID,
+		}
+
+		relationUnits, err := hookContext.Commands.RelationList(relationListOptions)
 		if err != nil {
 			return nil, fmt.Errorf("could not list relation data: %w", err)
 		}
 
 		for _, unitID := range relationUnits {
-			relationData, err := hookContext.Commands.RelationGet(relationID, unitID, false)
+			relationGetOptions := &commands.RelationGetOptions{
+				ID:     relationID,
+				UnitID: unitID,
+			}
+
+			relationData, err := hookContext.Commands.RelationGet(relationGetOptions)
 			if err != nil {
 				return nil, fmt.Errorf("could not get relation data: %w", err)
 			}
@@ -150,7 +164,13 @@ func SetRelationCertificate(hookContext *goops.HookContext, relationID string, p
 		"certificates": string(appDataJSON),
 	}
 
-	err = hookContext.Commands.RelationSet(relationID, true, relationData)
+	relationSetOptions := &commands.RelationSetOptions{
+		ID:   relationID,
+		App:  true,
+		Data: relationData,
+	}
+
+	err = hookContext.Commands.RelationSet(relationSetOptions)
 	if err != nil {
 		return fmt.Errorf("could not set relation data: %w", err)
 	}

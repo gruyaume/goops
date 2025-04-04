@@ -15,7 +15,11 @@ func TestStateDelete_Success(t *testing.T) {
 		Runner: fakeRunner,
 	}
 
-	err := command.StateDelete("key")
+	stateDeleteOpts := &commands.StateDeleteOptions{
+		Key: "key",
+	}
+
+	err := command.StateDelete(stateDeleteOpts)
 	if err != nil {
 		t.Fatalf("StateDelete returned an error: %v", err)
 	}
@@ -42,7 +46,11 @@ func TestStateGet_Success(t *testing.T) {
 		Runner: fakeRunner,
 	}
 
-	state, err := command.StateGet("key")
+	stateGetOpts := &commands.StateGetOptions{
+		Key: "key",
+	}
+
+	state, err := command.StateGet(stateGetOpts)
 	if err != nil {
 		t.Fatalf("StateGet returned an error: %v", err)
 	}

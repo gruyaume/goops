@@ -4,9 +4,13 @@ const (
 	jujuRebootCommand = "juju-reboot"
 )
 
-func (command Command) JujuReboot(now bool) error {
+type JujuRebootOptions struct {
+	Now bool
+}
+
+func (command Command) JujuReboot(opts *JujuRebootOptions) error {
 	var args []string
-	if now {
+	if opts.Now {
 		args = append(args, "--now")
 	}
 

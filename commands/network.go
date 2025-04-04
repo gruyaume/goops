@@ -25,34 +25,43 @@ type Network struct {
 	EgressSubnets    []string      `json:"egress-subnets"`
 }
 
-func (command Command) NetworkGet(bindingName string, bindAddress bool, egressSubnets bool, ingressAddress bool, primaryAddress bool, relation string) (*Network, error) {
+type NetworkGetOptions struct {
+	BindingName    string
+	BindAddress    bool
+	EgressSubnets  bool
+	IngressAddress bool
+	PrimaryAddress bool
+	Relation       string
+}
+
+func (command Command) NetworkGet(opts *NetworkGetOptions) (*Network, error) {
 	var args []string
 
-	if bindingName == "" {
+	if opts.BindingName == "" {
 		return nil, fmt.Errorf("binding name cannot be empty")
 	}
 
-	if bindAddress {
+	if opts.BindAddress {
 		args = append(args, "--bind-address")
 	}
 
-	if egressSubnets {
+	if opts.EgressSubnets {
 		args = append(args, "--egress-subnets")
 	}
 
-	if ingressAddress {
+	if opts.IngressAddress {
 		args = append(args, "--ingress-address")
 	}
 
-	if primaryAddress {
+	if opts.PrimaryAddress {
 		args = append(args, "--primary-address")
 	}
 
-	if relation != "" {
-		args = append(args, "--relation="+relation)
+	if opts.Relation != "" {
+		args = append(args, "--relation="+opts.Relation)
 	}
 
-	args = append(args, bindingName, "--format=json")
+	args = append(args, opts.BindingName, "--format=json")
 
 	output, err := command.Runner.Run(networkGetCommand, args...)
 	if err != nil {

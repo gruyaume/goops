@@ -6,12 +6,16 @@ const (
 	resourceGetCommand = "resource-get"
 )
 
-func (command Command) ResourceGet(resourceName string) (string, error) {
-	if resourceName == "" {
+type ResourceGetOptions struct {
+	Name string
+}
+
+func (command Command) ResourceGet(opts *ResourceGetOptions) (string, error) {
+	if opts.Name == "" {
 		return "", fmt.Errorf("resource name cannot be empty")
 	}
 
-	args := []string{resourceName}
+	args := []string{opts.Name}
 
 	output, err := command.Runner.Run(resourceGetCommand, args...)
 	if err != nil {

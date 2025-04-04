@@ -15,7 +15,11 @@ func TestJujuReboot_Success(t *testing.T) {
 		Runner: fakeRunner,
 	}
 
-	err := command.JujuReboot(true)
+	jujuRebootOptions := &commands.JujuRebootOptions{
+		Now: true,
+	}
+
+	err := command.JujuReboot(jujuRebootOptions)
 	if err != nil {
 		t.Fatalf("JujuReboot returned an error: %v", err)
 	}

@@ -57,7 +57,13 @@ func TestSecretGet_Success(t *testing.T) {
 		Runner: fakeRunner,
 	}
 
-	result, err := command.SecretGet("123", "my-label", false, true)
+	secretGetOptions := &commands.SecretGetOptions{
+		ID:      "123",
+		Label:   "my-label",
+		Refresh: true,
+	}
+
+	result, err := command.SecretGet(secretGetOptions)
 	if err != nil {
 		t.Fatalf("SecretGet returned an error: %v", err)
 	}
@@ -119,7 +125,14 @@ func TestSecretAdd_Success(t *testing.T) {
 
 	expiry := time.Now().Add(24 * time.Hour)
 
-	result, err := command.SecretAdd(content, description, expiry, label, "", "")
+	secretAddOptions := &commands.SecretAddOptions{
+		Content:     content,
+		Description: description,
+		Expire:      time.Now().Add(24 * time.Hour),
+		Label:       label,
+	}
+
+	result, err := command.SecretAdd(secretAddOptions)
 	if err != nil {
 		t.Fatalf("SecretAdd returned an error: %v", err)
 	}
@@ -167,9 +180,14 @@ func TestSecretAdd_EmptyContent(t *testing.T) {
 	command := commands.Command{
 		Runner: fakeRunner,
 	}
-	expiry := time.Now().Add(24 * time.Hour)
 
-	_, err := command.SecretAdd(map[string]string{}, "desc", expiry, "my-label", "", "")
+	secretAddOptions := &commands.SecretAddOptions{
+		Description: "my secret",
+		Expire:      time.Now().Add(24 * time.Hour),
+		Label:       "my-label",
+	}
+
+	_, err := command.SecretAdd(secretAddOptions)
 	if err == nil {
 		t.Error("Expected error when content is empty, but got nil")
 	}
@@ -184,7 +202,12 @@ func TestSecretGrant_Success(t *testing.T) {
 		Runner: fakeRunner,
 	}
 
-	err := command.SecretGrant("123", "certificates:0", "")
+	secretGrantOptions := &commands.SecretGrantOptions{
+		ID:       "123",
+		Relation: "certificates:0",
+	}
+
+	err := command.SecretGrant(secretGrantOptions)
 	if err != nil {
 		t.Fatalf("SecretGrant returned an error: %v", err)
 	}
@@ -215,7 +238,11 @@ func TestSecretInfoGet_Success(t *testing.T) {
 		Runner: fakeRunner,
 	}
 
-	secretInfo, err := command.SecretInfoGet("", "my-secret-label")
+	secretInfoGetOpts := &commands.SecretInfoGetOptions{
+		Label: "my-secret-label",
+	}
+
+	secretInfo, err := command.SecretInfoGet(secretInfoGetOpts)
 	if err != nil {
 		t.Fatalf("SecretInfoGet returned an error: %v", err)
 	}
@@ -274,7 +301,11 @@ func TestSecretRemove_Success(t *testing.T) {
 		Runner: fakeRunner,
 	}
 
-	err := command.SecretRemove("123")
+	secretRemoveOptions := &commands.SecretRemoveOptions{
+		ID: "123",
+	}
+
+	err := command.SecretRemove(secretRemoveOptions)
 	if err != nil {
 		t.Fatalf("SecretRemove returned an error: %v", err)
 	}
@@ -297,7 +328,11 @@ func TestSecretRevoke_Success(t *testing.T) {
 		Runner: fakeRunner,
 	}
 
-	err := command.SecretRevoke("123", "", "", "")
+	secretRevokeOpts := &commands.SecretRevokeOptions{
+		ID: "123",
+	}
+
+	err := command.SecretRevoke(secretRevokeOpts)
 	if err != nil {
 		t.Fatalf("SecretRevoke returned an error: %v", err)
 	}
@@ -325,7 +360,14 @@ func TestSecretSet_Success(t *testing.T) {
 	}
 	expiry := time.Now().Add(24 * time.Hour)
 
-	err := command.SecretSet("123", secretContent, "", expiry, "my-label", "", "")
+	secretSetOpts := &commands.SecretSetOptions{
+		ID:      "123",
+		Content: secretContent,
+		Expire:  expiry,
+		Label:   "my-label",
+	}
+
+	err := command.SecretSet(secretSetOpts)
 	if err != nil {
 		t.Fatalf("SecretSet returned an error: %v", err)
 	}
