@@ -43,7 +43,12 @@ func main() {
 	hookName := hookContext.Environment.JujuHookName()
 	hookContext.Commands.JujuLog(commands.Info, "Hook name:", hookName)
 
-	err := hookContext.Commands.StatusSet(commands.StatusActive, "A happy charm")
+	statusOpts := &commands.StatusOptions{
+		Name:    commands.StatusActive,
+		Message: "A happy charm",
+	}
+
+	err := hookContext.Commands.StatusSet(statusOpts)
 	if err != nil {
 		hookContext.Commands.JujuLog(commands.Error, "Could not set status:", err.Error())
 		os.Exit(0)

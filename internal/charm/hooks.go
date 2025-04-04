@@ -276,6 +276,21 @@ func HandleDefaultHook(hookContext *goops.HookContext) error {
 		return fmt.Errorf("could not set ports: %w", err)
 	}
 
+	unitGetOpts := &commands.UnitGetOptions{
+		PrivateAddress: true,
+	}
+
+	privateAddress, err := hookContext.Commands.UnitGet(unitGetOpts)
+	if err != nil {
+		return fmt.Errorf("could not get unit private address: %w", err)
+	}
+
+	if privateAddress == "" {
+		return fmt.Errorf("unit private address is empty")
+	}
+
+	hookContext.Commands.JujuLog(commands.Info, "Unit private address:", privateAddress)
+
 	hookContext.Commands.JujuLog(commands.Info, "Set unit ports")
 
 	valid, err := isConfigValid(hookContext)
