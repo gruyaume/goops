@@ -6,25 +6,44 @@ import (
 )
 
 const (
-	secredIDsCommand = "secret-ids"
-	secretGetCommand = "secret-get"
-	secretAddCommand = "secret-add"
+	secretAddCommand   = "secret-add"
+	secretGetCommand   = "secret-get"
+	secretGrantCommand = "secret-grant"
+	secredIDsCommand   = "secret-ids"
+	secretInfoGet      = "secret-info-get"
 )
 
-func (command Command) SecretIDs() ([]string, error) {
-	output, err := command.Runner.Run(secredIDsCommand, "--format=json")
-	if err != nil {
-		return nil, fmt.Errorf("failed to get secret IDs: %w", err)
+type SecretInfo struct {
+	Revision int    `json:"revision"`
+	Label    string `json:"label"`
+	Owner    string `json:"owner"`
+	Rotation string `json:"rotation"`
+}
+
+func (command Command) SecretAdd(content map[string]string, description string, label string) (string, error) {
+	if len(content) == 0 {
+		return "", fmt.Errorf("content cannot be empty")
 	}
 
-	var secretIDs []string
-
-	err = json.Unmarshal(output, &secretIDs)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse secret IDs: %w", err)
+	var args []string
+	for key, value := range content {
+		args = append(args, key+"="+value)
 	}
 
-	return secretIDs, nil
+	if description != "" {
+		args = append(args, "--description="+description)
+	}
+
+	if label != "" {
+		args = append(args, "--label="+label)
+	}
+
+	output, err := command.Runner.Run(secretAddCommand, args...)
+	if err != nil {
+		return "", fmt.Errorf("failed to add secret: %w", err)
+	}
+
+	return string(output), nil
 }
 
 func (command Command) SecretGet(id string, label string, peek bool, refresh bool) (map[string]string, error) {
@@ -62,28 +81,82 @@ func (command Command) SecretGet(id string, label string, peek bool, refresh boo
 	return secretContent, nil
 }
 
-func (command Command) SecretAdd(content map[string]string, description string, label string) (string, error) {
-	if len(content) == 0 {
-		return "", fmt.Errorf("content cannot be empty")
+func (command Command) SecretGrant(id string, relation string, unit string) error {
+	if id == "" {
+		return fmt.Errorf("secret ID cannot be empty")
 	}
 
-	var args []string
-	for key, value := range content {
-		args = append(args, key+"="+value)
+	if relation == "" {
+		return fmt.Errorf("relation cannot be empty")
 	}
 
-	if description != "" {
-		args = append(args, "--description="+description)
+	args := []string{id, "--relation=" + relation}
+
+	if unit != "" {
+		args = append(args, "--unit="+unit)
+	}
+
+	_, err := command.Runner.Run(secretGrantCommand, args...)
+	if err != nil {
+		return fmt.Errorf("failed to grant secret: %w", err)
+	}
+
+	return nil
+}
+
+func (command Command) SecretIDs() ([]string, error) {
+	output, err := command.Runner.Run(secredIDsCommand, "--format=json")
+	if err != nil {
+		return nil, fmt.Errorf("failed to get secret IDs: %w", err)
+	}
+
+	var secretIDs []string
+
+	err = json.Unmarshal(output, &secretIDs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse secret IDs: %w", err)
+	}
+
+	return secretIDs, nil
+}
+
+func (command Command) SecretInfoGet(id string, label string) (map[string]SecretInfo, error) {
+	if id == "" && label == "" {
+		return nil, fmt.Errorf("either secret ID or label must be provided")
+	}
+
+	if id != "" && label != "" {
+		return nil, fmt.Errorf("only one of secret ID or label can be provided")
+	}
+
+	args := []string{}
+	if id != "" {
+		args = append(args, id)
 	}
 
 	if label != "" {
 		args = append(args, "--label="+label)
 	}
 
-	output, err := command.Runner.Run(secretAddCommand, args...)
+	args = append(args, "--format=json")
+
+	output, err := command.Runner.Run(secretInfoGet, args...)
 	if err != nil {
-		return "", fmt.Errorf("failed to add secret: %w", err)
+		return nil, fmt.Errorf("failed to get secret info: %w", err)
 	}
 
-	return string(output), nil
+	// command.JujuLog(Warning, "SecretInfoGet output: %s", string(output))
+
+	var secretInfo map[string]SecretInfo
+
+	err = json.Unmarshal(output, &secretInfo)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse secret info: %w", err)
+	}
+
+	if len(secretInfo) == 0 {
+		return nil, fmt.Errorf("no secret info found for ID or label: %s", id)
+	}
+
+	return secretInfo, nil
 }
