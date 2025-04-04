@@ -188,6 +188,36 @@ func validateNetworkGet(hookContext *goops.HookContext) error {
 	return nil
 }
 
+func validateState(hookContext *goops.HookContext) error {
+	stateKey := "my-key"
+	stateValue := "my-value"
+
+	_, err := hookContext.Commands.StateGet(stateKey)
+	if err != nil {
+		hookContext.Commands.JujuLog(commands.Info, "could not get state:", err.Error())
+
+		err := hookContext.Commands.StateSet(stateKey, stateValue)
+		if err != nil {
+			return fmt.Errorf("could not set state: %w", err)
+		}
+
+		hookContext.Commands.JujuLog(commands.Info, "set state:", stateKey, "=", stateValue)
+
+		return nil
+	} else {
+		hookContext.Commands.JujuLog(commands.Info, "state already set:", stateKey, "=", stateValue)
+
+		err := hookContext.Commands.StateDelete(stateKey)
+		if err != nil {
+			return fmt.Errorf("could not delete state: %w", err)
+		}
+
+		hookContext.Commands.JujuLog(commands.Info, "deleted state:", stateKey)
+	}
+
+	return nil
+}
+
 func HandleDefaultHook(hookContext *goops.HookContext) error {
 	isLeader, err := hookContext.Commands.IsLeader()
 	if err != nil {
@@ -269,6 +299,11 @@ func HandleDefaultHook(hookContext *goops.HookContext) error {
 		if relationModel.UUID == "" {
 			return fmt.Errorf("relation model UUID is empty")
 		}
+	}
+
+	err = validateState(hookContext)
+	if err != nil {
+		return fmt.Errorf("could not validate state: %w", err)
 	}
 
 	err = hookContext.Commands.ApplicationVersionSet("1.0.0")
