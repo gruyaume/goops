@@ -3,6 +3,7 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 )
 
 const (
@@ -11,6 +12,9 @@ const (
 	secretGrantCommand = "secret-grant"
 	secredIDsCommand   = "secret-ids"
 	secretInfoGet      = "secret-info-get"
+	secretRemove       = "secret-remove"
+	secretRevoke       = "secret-revoke"
+	secretSet          = "secret-set"
 )
 
 type SecretInfo struct {
@@ -20,7 +24,7 @@ type SecretInfo struct {
 	Rotation string `json:"rotation"`
 }
 
-func (command Command) SecretAdd(content map[string]string, description string, label string) (string, error) {
+func (command Command) SecretAdd(content map[string]string, description string, expire time.Time, label string, owner string, rotate string) (string, error) {
 	if len(content) == 0 {
 		return "", fmt.Errorf("content cannot be empty")
 	}
@@ -36,6 +40,18 @@ func (command Command) SecretAdd(content map[string]string, description string, 
 
 	if label != "" {
 		args = append(args, "--label="+label)
+	}
+
+	if owner != "" {
+		args = append(args, "--owner="+owner)
+	}
+
+	if rotate != "" {
+		args = append(args, "--rotate="+rotate)
+	}
+
+	if !expire.IsZero() {
+		args = append(args, "--expire="+expire.Format(time.RFC3339))
 	}
 
 	output, err := command.Runner.Run(secretAddCommand, args...)
@@ -145,8 +161,6 @@ func (command Command) SecretInfoGet(id string, label string) (map[string]Secret
 		return nil, fmt.Errorf("failed to get secret info: %w", err)
 	}
 
-	// command.JujuLog(Warning, "SecretInfoGet output: %s", string(output))
-
 	var secretInfo map[string]SecretInfo
 
 	err = json.Unmarshal(output, &secretInfo)
@@ -159,4 +173,88 @@ func (command Command) SecretInfoGet(id string, label string) (map[string]Secret
 	}
 
 	return secretInfo, nil
+}
+
+func (command Command) SecretRemove(id string) error {
+	if id == "" {
+		return fmt.Errorf("secret ID cannot be empty")
+	}
+
+	args := []string{id}
+
+	_, err := command.Runner.Run(secretRemove, args...)
+	if err != nil {
+		return fmt.Errorf("failed to remove secret: %w", err)
+	}
+
+	return nil
+}
+
+func (command Command) SecretRevoke(id string, unit string, app string, relation string) error {
+	if id == "" {
+		return fmt.Errorf("secret ID cannot be empty")
+	}
+
+	args := []string{id}
+
+	if unit != "" {
+		args = append(args, "--unit="+unit)
+	}
+
+	if app != "" {
+		args = append(args, "--app="+app)
+	}
+
+	if relation != "" {
+		args = append(args, "--relation="+relation)
+	}
+
+	_, err := command.Runner.Run(secretRevoke, args...)
+	if err != nil {
+		return fmt.Errorf("failed to revoke secret: %w", err)
+	}
+
+	return nil
+}
+
+func (command Command) SecretSet(id string, content map[string]string, description string, expire time.Time, label string, owner string, rotate string) error {
+	if id == "" {
+		return fmt.Errorf("secret ID cannot be empty")
+	}
+
+	if len(content) == 0 {
+		return fmt.Errorf("content cannot be empty")
+	}
+
+	var args []string
+	for key, value := range content {
+		args = append(args, key+"="+value)
+	}
+
+	if description != "" {
+		args = append(args, "--description="+description)
+	}
+
+	if label != "" {
+		args = append(args, "--label="+label)
+	}
+
+	if owner != "" {
+		args = append(args, "--owner="+owner)
+	}
+
+	if rotate != "" {
+		args = append(args, "--rotate="+rotate)
+	}
+
+	if !expire.IsZero() {
+		args = append(args, "--expire="+expire.Format(time.RFC3339))
+	}
+
+	_, err := command.Runner.Run(secretSet, args...)
+	if err != nil {
+		return fmt.Errorf("failed to set secret: %w", err)
+	}
+
+	return nil
 }

@@ -2,6 +2,7 @@ package charm
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/gruyaume/goops"
 	"github.com/gruyaume/goops/commands"
@@ -48,7 +49,14 @@ func generateAndStoreRootCertificate(hookContext *goops.HookContext) error {
 			"ca-certificate": caCertPEM,
 		}
 
-		output, err := hookContext.Commands.SecretAdd(secretContent, "", CaCertificateSecretLabel)
+		expiry := time.Now().AddDate(1, 0, 0)
+
+		output, err := hookContext.Commands.SecretAdd(
+			secretContent,
+			"ca certificate and private key for the certificates charm",
+			expiry,
+			CaCertificateSecretLabel,
+			"", "")
 		if err != nil {
 			return fmt.Errorf("could not add secret: %w", err)
 		}
