@@ -15,7 +15,11 @@ func TestActionFail_Success(t *testing.T) {
 		Runner: fakeRunner,
 	}
 
-	err := command.ActionFail("my failure message")
+	actionFailOptions := &commands.ActionFailOptions{
+		Message: "my failure message",
+	}
+
+	err := command.ActionFail(actionFailOptions)
 	if err != nil {
 		t.Fatalf("ActionFail returned an error: %v", err)
 	}
@@ -42,7 +46,11 @@ func TestActionGet_Success(t *testing.T) {
 		Runner: fakeRunner,
 	}
 
-	result, err := command.ActionGet("fruit")
+	actionGetOptions := &commands.ActionGetOptions{
+		Key: "fruit",
+	}
+
+	result, err := command.ActionGet(actionGetOptions)
 	if err != nil {
 		t.Fatalf("ActionGet returned an error: %v", err)
 	}
@@ -77,7 +85,11 @@ func TestActionLog_Success(t *testing.T) {
 		Runner: fakeRunner,
 	}
 
-	err := command.ActionLog("my log message")
+	actionLogOptions := &commands.ActionLogOptions{
+		Message: "my log message",
+	}
+
+	err := command.ActionLog(actionLogOptions)
 	if err != nil {
 		t.Fatalf("ActionLog returned an error: %v", err)
 	}
@@ -108,7 +120,11 @@ func TestActionSet_Success(t *testing.T) {
 		"color": "yellow",
 	}
 
-	err := command.ActionSet(actionSetValues)
+	actionSetOptions := &commands.ActionSetOptions{
+		Content: actionSetValues,
+	}
+
+	err := command.ActionSet(actionSetOptions)
 	if err != nil {
 		t.Fatalf("ActionSet returned an error: %v", err)
 	}

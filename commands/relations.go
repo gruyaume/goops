@@ -17,8 +17,32 @@ type RelationModel struct {
 	UUID string `json:"uuid"`
 }
 
-func (command Command) RelationIDs(name string) ([]string, error) {
-	args := []string{name, "--format=json"}
+type RelationIDsOptions struct {
+	Name string
+}
+
+type RelationGetOptions struct {
+	ID     string
+	UnitID string
+	App    bool
+}
+
+type RelationListOptions struct {
+	ID string
+}
+
+type RelationSetOptions struct {
+	ID   string
+	App  bool
+	Data map[string]string
+}
+
+type RelationModelGetOptions struct {
+	ID string
+}
+
+func (command Command) RelationIDs(opts *RelationIDsOptions) ([]string, error) {
+	args := []string{opts.Name, "--format=json"}
 
 	output, err := command.Runner.Run(relationIDsCommand, args...)
 	if err != nil {
@@ -35,17 +59,17 @@ func (command Command) RelationIDs(name string) ([]string, error) {
 	return relationIDs, nil
 }
 
-func (command Command) RelationGet(id string, unitID string, app bool) (map[string]string, error) {
-	if id == "" {
+func (command Command) RelationGet(opts *RelationGetOptions) (map[string]string, error) {
+	if opts.ID == "" {
 		return nil, fmt.Errorf("relation ID is empty")
 	}
 
-	if unitID == "" {
+	if opts.UnitID == "" {
 		return nil, fmt.Errorf("unit ID is empty")
 	}
 
-	args := []string{"-r=" + id, "-", unitID}
-	if app {
+	args := []string{"-r=" + opts.ID, "-", opts.UnitID}
+	if opts.App {
 		args = append(args, "--app")
 	}
 
@@ -66,12 +90,12 @@ func (command Command) RelationGet(id string, unitID string, app bool) (map[stri
 	return relationContent, nil
 }
 
-func (command Command) RelationList(id string) ([]string, error) {
-	if id == "" {
+func (command Command) RelationList(opts *RelationListOptions) ([]string, error) {
+	if opts.ID == "" {
 		return nil, fmt.Errorf("relation ID is empty")
 	}
 
-	args := []string{"-r=" + id, "--format=json"}
+	args := []string{"-r=" + opts.ID, "--format=json"}
 
 	output, err := command.Runner.Run(relationListCommand, args...)
 	if err != nil {
@@ -88,17 +112,17 @@ func (command Command) RelationList(id string) ([]string, error) {
 	return relationList, nil
 }
 
-func (command Command) RelationSet(id string, app bool, data map[string]string) error {
-	if id == "" {
+func (command Command) RelationSet(opts *RelationSetOptions) error {
+	if opts.ID == "" {
 		return fmt.Errorf("relation ID is empty")
 	}
 
-	args := []string{"-r=" + id}
-	if app {
+	args := []string{"-r=" + opts.ID}
+	if opts.App {
 		args = append(args, "--app")
 	}
 
-	for key, value := range data {
+	for key, value := range opts.Data {
 		args = append(args, key+"="+value)
 	}
 
@@ -114,12 +138,12 @@ func (command Command) RelationSet(id string, app bool, data map[string]string) 
 	return nil
 }
 
-func (command Command) RelationModelGet(id string) (*RelationModel, error) {
-	if id == "" {
+func (command Command) RelationModelGet(opts *RelationModelGetOptions) (*RelationModel, error) {
+	if opts.ID == "" {
 		return nil, fmt.Errorf("relation ID is empty")
 	}
 
-	args := []string{"-r=" + id, "--format=json"}
+	args := []string{"-r=" + opts.ID, "--format=json"}
 
 	output, err := command.Runner.Run(relationModelGetCommand, args...)
 	if err != nil {

@@ -12,10 +12,26 @@ const (
 	actionSetCommand  = "action-set"
 )
 
-func (command Command) ActionFail(message string) error {
+type ActionFailOptions struct {
+	Message string
+}
+
+type ActionGetOptions struct {
+	Key string
+}
+
+type ActionLogOptions struct {
+	Message string
+}
+
+type ActionSetOptions struct {
+	Content map[string]string
+}
+
+func (command Command) ActionFail(opts *ActionFailOptions) error {
 	args := []string{}
-	if message != "" {
-		args = append(args, message)
+	if opts.Message != "" {
+		args = append(args, opts.Message)
 	}
 
 	_, err := command.Runner.Run(actionFailCommand, args...)
@@ -26,8 +42,8 @@ func (command Command) ActionFail(message string) error {
 	return nil
 }
 
-func (command Command) ActionGet(key string) (string, error) {
-	args := []string{key, "--format=json"}
+func (command Command) ActionGet(opts *ActionGetOptions) (string, error) {
+	args := []string{opts.Key, "--format=json"}
 
 	output, err := command.Runner.Run(actionGetCommand, args...)
 	if err != nil {
@@ -44,12 +60,12 @@ func (command Command) ActionGet(key string) (string, error) {
 	return actionParameter, nil
 }
 
-func (command Command) ActionLog(message string) error {
-	if message == "" {
+func (command Command) ActionLog(opts *ActionLogOptions) error {
+	if opts.Message == "" {
 		return fmt.Errorf("message cannot be empty")
 	}
 
-	args := []string{message}
+	args := []string{opts.Message}
 
 	_, err := command.Runner.Run(actionLogCommand, args...)
 	if err != nil {
@@ -59,13 +75,13 @@ func (command Command) ActionLog(message string) error {
 	return nil
 }
 
-func (command Command) ActionSet(content map[string]string) error {
-	if content == nil {
+func (command Command) ActionSet(opts *ActionSetOptions) error {
+	if opts.Content == nil {
 		return fmt.Errorf("content cannot be empty")
 	}
 
 	var args []string
-	for key, value := range content {
+	for key, value := range opts.Content {
 		args = append(args, key+"="+value)
 	}
 

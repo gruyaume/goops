@@ -15,8 +15,11 @@ func TestApplicationVersionSet_Success(t *testing.T) {
 		Runner: fakeRunner,
 	}
 	version := "1.2.3"
+	applicationVersionSetOptions := &commands.ApplicationVersionSetOptions{
+		Version: version,
+	}
 
-	err := command.ApplicationVersionSet(version)
+	err := command.ApplicationVersionSet(applicationVersionSetOptions)
 	if err != nil {
 		t.Fatalf("ApplicationVersionSet returned an error: %v", err)
 	}

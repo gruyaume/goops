@@ -8,10 +8,14 @@ const (
 	applicationVersionSetCommand = "application-version-set"
 )
 
-func (command Command) ApplicationVersionSet(message string) error {
+type ApplicationVersionSetOptions struct {
+	Version string
+}
+
+func (command Command) ApplicationVersionSet(opts *ApplicationVersionSetOptions) error {
 	args := []string{}
-	if message != "" {
-		args = append(args, message)
+	if opts.Version != "" {
+		args = append(args, opts.Version)
 	}
 
 	_, err := command.Runner.Run(applicationVersionSetCommand, args...)

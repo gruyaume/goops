@@ -14,7 +14,7 @@ func TestOpenPortTCP_Success(t *testing.T) {
 	command := commands.Command{
 		Runner: fakeRunner,
 	}
-	port := commands.Port{
+	port := &commands.OpenPortOptions{
 		Port:     80,
 		Protocol: "tcp",
 	}
@@ -45,7 +45,7 @@ func TestOpenPortUDP_Success(t *testing.T) {
 	command := commands.Command{
 		Runner: fakeRunner,
 	}
-	port := commands.Port{
+	port := &commands.OpenPortOptions{
 		Port:     80,
 		Protocol: "udp",
 	}
@@ -76,7 +76,7 @@ func TestOpenPortInvalidPort_Failure(t *testing.T) {
 	command := commands.Command{
 		Runner: fakeRunner,
 	}
-	port := commands.Port{
+	port := &commands.OpenPortOptions{
 		Port:     -1,
 		Protocol: "tcp",
 	}
@@ -103,7 +103,7 @@ func TestOpenPortInvalidProtocol_Failure(t *testing.T) {
 	command := commands.Command{
 		Runner: fakeRunner,
 	}
-	port := commands.Port{
+	port := &commands.OpenPortOptions{
 		Port:     80,
 		Protocol: "invalid",
 	}
@@ -130,7 +130,7 @@ func TestClosePortTCP_Success(t *testing.T) {
 	command := commands.Command{
 		Runner: fakeRunner,
 	}
-	port := commands.Port{
+	port := &commands.ClosePortOptions{
 		Port:     80,
 		Protocol: "tcp",
 	}
@@ -161,7 +161,7 @@ func TestClosePortUDP_Success(t *testing.T) {
 	command := commands.Command{
 		Runner: fakeRunner,
 	}
-	port := commands.Port{
+	port := &commands.ClosePortOptions{
 		Port:     80,
 		Protocol: "udp",
 	}
@@ -192,7 +192,7 @@ func TestClosePortInvalidPort_Failure(t *testing.T) {
 	command := commands.Command{
 		Runner: fakeRunner,
 	}
-	port := commands.Port{
+	port := &commands.ClosePortOptions{
 		Port:     -1,
 		Protocol: "tcp",
 	}
@@ -219,7 +219,7 @@ func TestClosePortInvalidProtocol_Failure(t *testing.T) {
 	command := commands.Command{
 		Runner: fakeRunner,
 	}
-	port := commands.Port{
+	port := &commands.ClosePortOptions{
 		Port:     80,
 		Protocol: "invalid",
 	}

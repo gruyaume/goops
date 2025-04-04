@@ -15,7 +15,11 @@ func TestNetworkGet_Success(t *testing.T) {
 		Runner: fakeRunner,
 	}
 
-	result, err := command.NetworkGet("whatever", false, false, false, false, "")
+	networkGetOptions := &commands.NetworkGetOptions{
+		BindingName: "whatever",
+	}
+
+	result, err := command.NetworkGet(networkGetOptions)
 	if err != nil {
 		t.Fatalf("NetworkGet returned an error: %v", err)
 	}

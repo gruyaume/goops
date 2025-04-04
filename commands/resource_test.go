@@ -15,7 +15,11 @@ func TestResourceGet_Success(t *testing.T) {
 		Runner: fakeRunner,
 	}
 
-	result, err := command.ResourceGet("software")
+	resourceGetOptions := &commands.ResourceGetOptions{
+		Name: "software",
+	}
+
+	result, err := command.ResourceGet(resourceGetOptions)
 	if err != nil {
 		t.Fatalf("ResourceGet returned an error: %v", err)
 	}

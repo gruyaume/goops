@@ -12,8 +12,12 @@ const (
 
 var ErrConfigNotSet = errors.New("config option not set")
 
-func (command Command) ConfigGet(key string) (any, error) {
-	args := []string{key, "--format=json"}
+type ConfigGetOptions struct {
+	Key string
+}
+
+func (command Command) ConfigGet(opts *ConfigGetOptions) (any, error) {
+	args := []string{opts.Key, "--format=json"}
 
 	output, err := command.Runner.Run(configGetCommand, args...)
 	if err != nil {
@@ -30,8 +34,8 @@ func (command Command) ConfigGet(key string) (any, error) {
 	return configValue, nil
 }
 
-func (command Command) ConfigGetString(key string) (string, error) {
-	value, err := command.ConfigGet(key)
+func (command Command) ConfigGetString(opts *ConfigGetOptions) (string, error) {
+	value, err := command.ConfigGet(opts)
 	if err != nil {
 		return "", err
 	}
@@ -48,8 +52,8 @@ func (command Command) ConfigGetString(key string) (string, error) {
 	return strValue, nil
 }
 
-func (command Command) ConfigGetInt(key string) (int, error) {
-	value, err := command.ConfigGet(key)
+func (command Command) ConfigGetInt(opts *ConfigGetOptions) (int, error) {
+	value, err := command.ConfigGet(opts)
 	if err != nil {
 		return 0, err
 	}
@@ -66,8 +70,8 @@ func (command Command) ConfigGetInt(key string) (int, error) {
 	return int(floatValue), nil
 }
 
-func (command Command) ConfigGetBool(key string) (bool, error) {
-	value, err := command.ConfigGet(key)
+func (command Command) ConfigGetBool(opts *ConfigGetOptions) (bool, error) {
+	value, err := command.ConfigGet(opts)
 	if err != nil {
 		return false, err
 	}

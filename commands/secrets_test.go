@@ -2,6 +2,7 @@ package commands_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/gruyaume/goops/commands"
 )
@@ -56,7 +57,13 @@ func TestSecretGet_Success(t *testing.T) {
 		Runner: fakeRunner,
 	}
 
-	result, err := command.SecretGet("123", "my-label", false, true)
+	secretGetOptions := &commands.SecretGetOptions{
+		ID:      "123",
+		Label:   "my-label",
+		Refresh: true,
+	}
+
+	result, err := command.SecretGet(secretGetOptions)
 	if err != nil {
 		t.Fatalf("SecretGet returned an error: %v", err)
 	}
@@ -116,7 +123,16 @@ func TestSecretAdd_Success(t *testing.T) {
 		Runner: fakeRunner,
 	}
 
-	result, err := command.SecretAdd(content, description, label)
+	expiry := time.Now().Add(24 * time.Hour)
+
+	secretAddOptions := &commands.SecretAddOptions{
+		Content:     content,
+		Description: description,
+		Expire:      time.Now().Add(24 * time.Hour),
+		Label:       label,
+	}
+
+	result, err := command.SecretAdd(secretAddOptions)
 	if err != nil {
 		t.Fatalf("SecretAdd returned an error: %v", err)
 	}
@@ -130,8 +146,8 @@ func TestSecretAdd_Success(t *testing.T) {
 		t.Errorf("Expected command %q, got %q", "secret-add", fakeRunner.Command)
 	}
 
-	if len(fakeRunner.Args) != 4 {
-		t.Fatalf("Expected 4 arguments, got %d", len(fakeRunner.Args))
+	if len(fakeRunner.Args) != 5 {
+		t.Fatalf("Expected 5 arguments, got %d", len(fakeRunner.Args))
 	}
 
 	contentArg := fakeRunner.Args[0]
@@ -150,6 +166,10 @@ func TestSecretAdd_Success(t *testing.T) {
 	if fakeRunner.Args[3] != "--label=my-label" {
 		t.Errorf("Expected label arg %q, got %q", "--label=my-label", fakeRunner.Args[3])
 	}
+
+	if fakeRunner.Args[4] != "--expire="+expiry.Format(time.RFC3339) {
+		t.Errorf("Expected expire arg %q, got %q", "--expire="+expiry.Format(time.RFC3339), fakeRunner.Args[4])
+	}
 }
 
 func TestSecretAdd_EmptyContent(t *testing.T) {
@@ -161,7 +181,13 @@ func TestSecretAdd_EmptyContent(t *testing.T) {
 		Runner: fakeRunner,
 	}
 
-	_, err := command.SecretAdd(map[string]string{}, "desc", "label")
+	secretAddOptions := &commands.SecretAddOptions{
+		Description: "my secret",
+		Expire:      time.Now().Add(24 * time.Hour),
+		Label:       "my-label",
+	}
+
+	_, err := command.SecretAdd(secretAddOptions)
 	if err == nil {
 		t.Error("Expected error when content is empty, but got nil")
 	}
@@ -176,7 +202,12 @@ func TestSecretGrant_Success(t *testing.T) {
 		Runner: fakeRunner,
 	}
 
-	err := command.SecretGrant("123", "certificates:0", "")
+	secretGrantOptions := &commands.SecretGrantOptions{
+		ID:       "123",
+		Relation: "certificates:0",
+	}
+
+	err := command.SecretGrant(secretGrantOptions)
 	if err != nil {
 		t.Fatalf("SecretGrant returned an error: %v", err)
 	}
@@ -207,7 +238,11 @@ func TestSecretInfoGet_Success(t *testing.T) {
 		Runner: fakeRunner,
 	}
 
-	secretInfo, err := command.SecretInfoGet("", "my-secret-label")
+	secretInfoGetOpts := &commands.SecretInfoGetOptions{
+		Label: "my-secret-label",
+	}
+
+	secretInfo, err := command.SecretInfoGet(secretInfoGetOpts)
 	if err != nil {
 		t.Fatalf("SecretInfoGet returned an error: %v", err)
 	}
@@ -254,5 +289,102 @@ func TestSecretInfoGet_Success(t *testing.T) {
 
 	if fakeRunner.Args[1] != "--format=json" {
 		t.Errorf("Expected format arg %q, got %q", "--format=json", fakeRunner.Args[1])
+	}
+}
+
+func TestSecretRemove_Success(t *testing.T) {
+	fakeRunner := &FakeRunner{
+		Output: []byte(`{"result":"success"}`),
+		Err:    nil,
+	}
+	command := commands.Command{
+		Runner: fakeRunner,
+	}
+
+	secretRemoveOptions := &commands.SecretRemoveOptions{
+		ID: "123",
+	}
+
+	err := command.SecretRemove(secretRemoveOptions)
+	if err != nil {
+		t.Fatalf("SecretRemove returned an error: %v", err)
+	}
+
+	if len(fakeRunner.Args) != 1 {
+		t.Fatalf("Expected 1 arguments, got %d", len(fakeRunner.Args))
+	}
+
+	if fakeRunner.Args[0] != "123" {
+		t.Errorf("Expected ID arg %q, got %q", "123", fakeRunner.Args[0])
+	}
+}
+
+func TestSecretRevoke_Success(t *testing.T) {
+	fakeRunner := &FakeRunner{
+		Output: []byte(`{"result":"success"}`),
+		Err:    nil,
+	}
+	command := commands.Command{
+		Runner: fakeRunner,
+	}
+
+	secretRevokeOpts := &commands.SecretRevokeOptions{
+		ID: "123",
+	}
+
+	err := command.SecretRevoke(secretRevokeOpts)
+	if err != nil {
+		t.Fatalf("SecretRevoke returned an error: %v", err)
+	}
+
+	if len(fakeRunner.Args) != 1 {
+		t.Fatalf("Expected 1 arguments, got %d", len(fakeRunner.Args))
+	}
+
+	if fakeRunner.Args[0] != "123" {
+		t.Errorf("Expected ID arg %q, got %q", "123", fakeRunner.Args[0])
+	}
+}
+
+func TestSecretSet_Success(t *testing.T) {
+	fakeRunner := &FakeRunner{
+		Output: []byte(`{"result":"success"}`),
+		Err:    nil,
+	}
+	command := commands.Command{
+		Runner: fakeRunner,
+	}
+	secretContent := map[string]string{
+		"username": "user1",
+		"password": "pass1",
+	}
+	expiry := time.Now().Add(24 * time.Hour)
+
+	secretSetOpts := &commands.SecretSetOptions{
+		ID:      "123",
+		Content: secretContent,
+		Expire:  expiry,
+		Label:   "my-label",
+	}
+
+	err := command.SecretSet(secretSetOpts)
+	if err != nil {
+		t.Fatalf("SecretSet returned an error: %v", err)
+	}
+
+	if len(fakeRunner.Args) != 4 {
+		t.Fatalf("Expected 4 arguments, got %d", len(fakeRunner.Args))
+	}
+
+	if fakeRunner.Args[0] != "username=user1" && fakeRunner.Args[1] != "username=user1" {
+		t.Errorf("Expected ID arg %q", "username=user1")
+	}
+
+	if fakeRunner.Args[0] != "password=pass1" && fakeRunner.Args[1] != "password=pass1" {
+		t.Errorf("Expected ID arg %q", "password=pass1")
+	}
+
+	if fakeRunner.Args[2] != "--label=my-label" {
+		t.Errorf("Expected ID arg %q, got %q", "--label=my-label", fakeRunner.Args[2])
 	}
 }
