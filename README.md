@@ -7,7 +7,7 @@
 
 `goops` is a Go library for developing robust Juju charms. While charm developers traditionally use the [ops Python framework](https://github.com/canonical/operator), Python's dynamic typing and interpreter-based execution often lead to runtime errors and portability issues across different bases. In contrast, Go compiles to a single, self-contained binary, ensuring greater reliability and consistent behavior in any environment.
 
-## Tutorial
+## Getting Started
 
 ### 1. Use the Charmcraft `go` plugin
 
