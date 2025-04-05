@@ -1,0 +1,25 @@
+name: Integration Tests
+
+permissions:
+  contents: read
+
+on:
+  workflow_call:
+
+jobs:  
+  integration-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup operator environment
+        uses: charmed-kubernetes/actions-operator@main
+        with:
+          provider: microk8s
+          channel: 1.32-strict/stable
+          juju-channel: 3.6/stable
+          lxd-channel: 5.21/stable
+    
+      - name: Run integration tests
+        run: |
+          go test -v ./...

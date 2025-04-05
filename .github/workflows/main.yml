@@ -21,3 +21,5 @@ jobs:
     uses: ./.github/workflows/go-lint.yaml
   go-sec:
     uses: ./.github/workflows/go-sec.yaml
+  integration-tests:
+    uses: ./.github/workflows/integration-tests.yaml
