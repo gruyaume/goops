@@ -15,7 +15,7 @@ func TestStatusSet_Success(t *testing.T) {
 		Runner: fakeRunner,
 	}
 
-	statusOpts := &commands.StatusOptions{
+	statusOpts := &commands.StatusGetOptions{
 		Name: commands.StatusActive,
 	}
 

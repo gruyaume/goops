@@ -388,7 +388,7 @@ func HandleDefaultHook(hookContext *goops.HookContext) error {
 
 	hookContext.Commands.JujuLog(commands.Info, "Current status:", string(existingStatus.Name), existingStatus.Message)
 
-	statusOpts := &commands.StatusOptions{
+	statusOpts := &commands.StatusGetOptions{
 		Name:    commands.StatusActive,
 		Message: "A happy charm",
 	}
