@@ -156,7 +156,7 @@ func processOutstandingCertificateRequests(hookContext *goops.HookContext) error
 }
 
 func setPorts(hookContext *goops.HookContext) error {
-	ports := &commands.SetPortOptions{
+	ports := &commands.SetPortsOptions{
 		Ports: []*commands.Port{
 			{
 				Port:     443,
@@ -388,7 +388,7 @@ func HandleDefaultHook(hookContext *goops.HookContext) error {
 
 	hookContext.Commands.JujuLog(commands.Info, "Current status:", string(existingStatus.Name), existingStatus.Message)
 
-	statusOpts := &commands.StatusGetOptions{
+	statusOpts := &commands.StatusSetOptions{
 		Name:    commands.StatusActive,
 		Message: "A happy charm",
 	}

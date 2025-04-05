@@ -19,7 +19,7 @@ const (
 	statusSetCommand = "status-set"
 )
 
-type StatusGetOptions struct {
+type StatusSetOptions struct {
 	Name    StatusName
 	Message string
 }
@@ -29,7 +29,7 @@ type Status struct {
 	Message string     `json:"message"`
 }
 
-func (command Command) StatusSet(opts *StatusGetOptions) error {
+func (command Command) StatusSet(opts *StatusSetOptions) error {
 	var args []string
 
 	args = append(args, string(opts.Name))
