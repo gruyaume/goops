@@ -7,6 +7,17 @@
 
 `goops` is a Go library for developing robust Juju charms. While charm developers traditionally use the [ops Python framework](https://github.com/canonical/operator), Python's dynamic typing and interpreter-based execution often lead to runtime errors and portability issues across different bases. In contrast, Go compiles to a single, self-contained binary, ensuring greater reliability and consistent behavior in any environment.
 
+Building a charm with `goops` is 2-3 times faster.
+
+<p align="center">
+  <img src="docs/time_comparison.png" width="350" title="Time comparison">
+</p>
+
+<p align="center">
+  <i>Running charmcraft pack for an X.509 certificates provider charm from a clean cache.</i>
+</p>
+
+
 ## Getting Started
 
 ### 1. Use the Charmcraft `go` plugin
@@ -26,7 +37,7 @@ parts:
 
 ### 2. Write your charm
 
-In your charm's root directory, create a `main.go` file under the `cmd/<your-charm-name>` directory. This file will contain the main logic of your charm. Import the `goops` library and use its functions to interact with Juju. For example:
+Create a `main.go` file under the `cmd/<your-charm-name>/` directory in your charm's root directory. This file will contain the main logic of your charm. Import the `goops` library and use its functions to interact with Juju. For example:
 
 ```go
 package main
@@ -59,13 +70,13 @@ func main() {
 }
 ```
 
-You can find an example of the library being used in the [certificates charm repository](https://github.com/gruyaume/certificates-operator). 
+The [certificates charm repository](https://github.com/gruyaume/certificates-operator) provides an example of the library's use.
 
 ## Reference
 
 ### Design principles
 
-- **Reliability**: Building predictable, robust charms is our top priority.
+- **Reliability**: Our top priority is building predictable and robust charms.
 - **Simplicity**: `goops` serves as a minimal, one-to-one mapping between Juju concepts and Go constructs. It is not a framework; it does not impose charm design patterns. The library has no dependencies.
 
 ### Juju compatibility
