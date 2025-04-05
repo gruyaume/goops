@@ -16,7 +16,7 @@ type Port struct {
 	Protocol string // allowed values: tcp, udp
 }
 
-type SetPortOptions struct {
+type SetPortsOptions struct {
 	Ports []*Port
 }
 
@@ -30,7 +30,7 @@ type ClosePortOptions struct {
 	Protocol string // allowed values: tcp, udp
 }
 
-func (command Command) SetPorts(opts *SetPortOptions) error {
+func (command Command) SetPorts(opts *SetPortsOptions) error {
 	openedPorts, err := command.OpenedPorts()
 	if err != nil {
 		return fmt.Errorf("failed to get opened ports: %w", err)
