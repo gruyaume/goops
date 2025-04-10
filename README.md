@@ -1,8 +1,5 @@
 # goops
 
-> :construction: **Beta Notice**
-> goops is in beta. If you encounter any issues, please [report them here](https://github.com/gruyaume/goops/issues). 
-
 **Develop Reliable, Portable, and Fast Juju Charms in Go**
 
 `goops` is a Go library for developing robust Juju charms. While charm developers traditionally use the [ops Python framework](https://github.com/canonical/operator), Python's dynamic typing and interpreter-based execution often lead to runtime errors and portability issues across different bases. In contrast, Go compiles to a single, self-contained binary, ensuring greater reliability and consistent behavior in any environment.
