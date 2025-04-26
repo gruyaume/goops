@@ -67,14 +67,16 @@ func main() {
 }
 ```
 
-The [certificates charm repository](https://github.com/gruyaume/certificates-operator) provides an example of the library's use.
+The following charms use `goops` and can be used as examples:
+- [Certificates charm](https://github.com/gruyaume/certificates-operator)
+- [Notary K8s charm](https://github.com/gruyaume/notary-k8s-operator)
 
 ## Reference
 
 ### Design principles
 
 - **Reliability**: Our top priority is building predictable and robust charms.
-- **Simplicity**: `goops` serves as a minimal, one-to-one mapping between Juju concepts and Go constructs. It is not a framework; it does not impose charm design patterns. The library has no dependencies.
+- **Simplicity**: `goops` serves as a minimal, one-to-one mapping between Juju concepts and Go constructs. It is not a framework; it does not impose charm design patterns. The library has a minimal number of dependencies.
 
 ### Juju compatibility
 

@@ -6,6 +6,7 @@ type EnvironmentGetter interface {
 	Get(name string) string
 }
 
+// ExecutionEnvironment is the default implementation of EnvironmentGetter.
 type ExecutionEnvironment struct{}
 
 func (r *ExecutionEnvironment) Get(name string) string {

@@ -7,7 +7,7 @@
 ### Run tests
 
 ```shell
-go test -short ./...     # unit tests
+go test ./...     # unit tests
 go vet ./...             # static analysis
 golangci-lint run ./...  # linting
 ```
@@ -18,5 +18,5 @@ Pre-requisites:
 - A Juju controller
 
 ```shell
-go test ./...  # integration tests
+INTEGRATION=1 go test ./...  # integration tests
 ```
