@@ -3,6 +3,7 @@ package integration_test
 import (
 	"bytes"
 	"fmt"
+	"os"
 	"os/exec"
 	"testing"
 	"time"
@@ -52,8 +53,8 @@ func waitForActiveStatus(client *juju.Client, timeout time.Duration) error {
 }
 
 func TestIntegration(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration test")
+	if os.Getenv("INTEGRATION") == "" {
+		t.Skip("skipping integration tests, set environment variable INTEGRATION")
 	}
 
 	jujuClient := juju.New()
