@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/gruyaume/goops/environment"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 type Mount struct {
