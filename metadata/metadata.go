@@ -47,7 +47,7 @@ func GetCharmMetadata(env *environment.Environment) (Metadata, error) {
 	charmDir := env.JujuCharmDir()
 	metadataPath := charmDir + "/metadata.yaml"
 
-	yamlFile, err := os.ReadFile(metadataPath)
+	yamlFile, err := os.ReadFile(metadataPath) // #nosec G304
 	if err != nil {
 		return Metadata{}, fmt.Errorf("error reading metadata.yaml: %w", err)
 	}
