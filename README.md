@@ -67,7 +67,9 @@ func main() {
 }
 ```
 
-The [certificates charm repository](https://github.com/gruyaume/certificates-operator) provides an example of the library's use.
+The following charms use `goops` and can be used as examples:
+- [Certificates charm](https://github.com/gruyaume/certificates-operator)
+- [Notary K8s charm](https://github.com/gruyaume/notary-k8s-operator)
 
 ## Reference
 
