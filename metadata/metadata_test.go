@@ -5,7 +5,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/gruyaume/goops/environment"
 	"github.com/gruyaume/goops/metadata"
 )
 
@@ -61,15 +60,9 @@ func TestGetCharmMetadata_Success(t *testing.T) {
 		t.Fatalf("failed to write metadata.yaml: %v", err)
 	}
 
-	env := &environment.Environment{
-		Getter: &TestExecutionEnvironment{
-			CharmDir: tmpDir,
-		},
-	}
-
-	meta, err := metadata.GetCharmMetadata(env)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+	meta := metadata.GetCharmMetadata(metadataPath)
+	if meta == nil {
+		t.Fatalf("GetCharmMetadata returned nil")
 	}
 
 	if meta.Name != "notary-k8s" {

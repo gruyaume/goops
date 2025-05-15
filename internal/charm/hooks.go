@@ -7,7 +7,6 @@ import (
 	"github.com/gruyaume/goops"
 	"github.com/gruyaume/goops/commands"
 	"github.com/gruyaume/goops/internal/integrations/tls_certificates"
-	"github.com/gruyaume/goops/metadata"
 )
 
 const (
@@ -272,12 +271,7 @@ func HandleDefaultHook(hookContext *goops.HookContext) error {
 		return fmt.Errorf("unit is not leader")
 	}
 
-	meta, err := metadata.GetCharmMetadata(hookContext.Environment)
-	if err != nil {
-		return fmt.Errorf("could not get charm metadata: %w", err)
-	}
-
-	hookContext.Commands.JujuLog(commands.Info, "Charm Name:", meta.Name)
+	hookContext.Commands.JujuLog(commands.Info, "Charm Name:", hookContext.Metadata.Name)
 
 	err = setPorts(hookContext)
 	if err != nil {

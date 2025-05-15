@@ -1,10 +1,8 @@
 package metadata
 
 import (
-	"fmt"
 	"os"
 
-	"github.com/gruyaume/goops/environment"
 	"gopkg.in/yaml.v3"
 )
 
@@ -43,21 +41,18 @@ type Metadata struct {
 	Summary     string                 `yaml:"summary"`
 }
 
-func GetCharmMetadata(env *environment.Environment) (Metadata, error) {
-	charmDir := env.JujuCharmDir()
-	metadataPath := charmDir + "/metadata.yaml"
-
-	yamlFile, err := os.ReadFile(metadataPath) // #nosec G304
+func GetCharmMetadata(path string) *Metadata {
+	yamlFile, err := os.ReadFile(path) // #nosec G304
 	if err != nil {
-		return Metadata{}, fmt.Errorf("error reading metadata.yaml: %w", err)
+		return nil
 	}
 
 	var c Metadata
 
 	err = yaml.Unmarshal(yamlFile, &c)
 	if err != nil {
-		return Metadata{}, fmt.Errorf("error unmarshalling metadata.yaml: %w", err)
+		return nil
 	}
 
-	return c, nil
+	return &c
 }
