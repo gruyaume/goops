@@ -160,45 +160,47 @@ func setPorts() error {
 	return nil
 }
 
-func validateNetworkGet(hookContext *goops.HookContext) error {
-	networkGetOpts := &commands.NetworkGetOptions{
-		BindingName: "certificates",
-	}
-
-	networkConfig, err := hookContext.Commands.NetworkGet(networkGetOpts)
+func validateNetworkGet() error {
+	bindAddresses, err := goops.GetNetworkBindAddresses("certificates")
 	if err != nil {
 		return fmt.Errorf("could not get network config: %w", err)
 	}
 
-	if networkConfig == nil {
-		return fmt.Errorf("network config is nil")
-	}
-
-	if len(networkConfig.BindAddresses) == 0 {
+	if len(bindAddresses) == 0 {
 		return fmt.Errorf("network config bind addresses is empty")
 	}
 
-	if len(networkConfig.BindAddresses[0].Addresses) == 0 {
+	if len(bindAddresses[0].Addresses) == 0 {
 		return fmt.Errorf("network config bind address addresses is empty")
 	}
 
-	if networkConfig.BindAddresses[0].Addresses[0].Value == "" {
+	if bindAddresses[0].Addresses[0].Value == "" {
 		return fmt.Errorf("network config bind address address value is empty- This can happen in the first stage of the deployment")
 	}
 
-	if len(networkConfig.IngressAddresses) == 0 {
+	ingressAddresses, err := goops.GetNetworkIngressAddresses("certificates")
+	if err != nil {
+		return fmt.Errorf("could not get network ingress addresses: %w", err)
+	}
+
+	if len(ingressAddresses) == 0 {
 		return fmt.Errorf("network config ingress addresses is empty")
 	}
 
-	if networkConfig.IngressAddresses[0] == "" {
+	if ingressAddresses[0] == "" {
 		return fmt.Errorf("network config ingress address is empty")
 	}
 
-	if len(networkConfig.EgressSubnets) == 0 {
+	egressSubnets, err := goops.GetNetworkEgressSubnets("certificates")
+	if err != nil {
+		return fmt.Errorf("could not get network egress subnets: %w", err)
+	}
+
+	if len(egressSubnets) == 0 {
 		return fmt.Errorf("network config egress subnets is empty")
 	}
 
-	if networkConfig.EgressSubnets[0] == "" {
+	if egressSubnets[0] == "" {
 		return fmt.Errorf("network config egress subnet is empty")
 	}
 
@@ -324,7 +326,7 @@ func HandleDefaultHook(hookContext *goops.HookContext) error {
 		return fmt.Errorf("expected not to get container on caas model: %w", err)
 	}
 
-	err = validateNetworkGet(hookContext)
+	err = validateNetworkGet()
 	if err != nil {
 		return fmt.Errorf("could not validate network get: %w", err)
 	}

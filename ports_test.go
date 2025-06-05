@@ -14,12 +14,7 @@ func TestOpenPortTCP_Success(t *testing.T) {
 
 	goops.SetRunner(fakeRunner)
 
-	port := &goops.OpenPortOptions{
-		Port:     80,
-		Protocol: "tcp",
-	}
-
-	err := goops.OpenPort(port)
+	err := goops.OpenPort(80, "tcp")
 	if err != nil {
 		t.Fatalf("OpenPort returned an error: %v", err)
 	}
@@ -45,12 +40,7 @@ func TestOpenPortUDP_Success(t *testing.T) {
 
 	goops.SetRunner(fakeRunner)
 
-	port := &goops.OpenPortOptions{
-		Port:     80,
-		Protocol: "udp",
-	}
-
-	err := goops.OpenPort(port)
+	err := goops.OpenPort(80, "udp")
 	if err != nil {
 		t.Fatalf("OpenPort returned an error: %v", err)
 	}
@@ -76,12 +66,7 @@ func TestOpenPortInvalidPort_Failure(t *testing.T) {
 
 	goops.SetRunner(fakeRunner)
 
-	port := &goops.OpenPortOptions{
-		Port:     -1,
-		Protocol: "tcp",
-	}
-
-	err := goops.OpenPort(port)
+	err := goops.OpenPort(-1, "tcp")
 	if err == nil {
 		t.Fatalf("OpenPort did not return an error for invalid port")
 	}
@@ -103,12 +88,7 @@ func TestOpenPortInvalidProtocol_Failure(t *testing.T) {
 
 	goops.SetRunner(fakeRunner)
 
-	port := &goops.OpenPortOptions{
-		Port:     80,
-		Protocol: "invalid",
-	}
-
-	err := goops.OpenPort(port)
+	err := goops.OpenPort(80, "invalid")
 	if err == nil {
 		t.Fatalf("OpenPort did not return an error for invalid protocol")
 	}
@@ -130,12 +110,7 @@ func TestClosePortTCP_Success(t *testing.T) {
 
 	goops.SetRunner(fakeRunner)
 
-	port := &goops.ClosePortOptions{
-		Port:     80,
-		Protocol: "tcp",
-	}
-
-	err := goops.ClosePort(port)
+	err := goops.ClosePort(80, "tcp")
 	if err != nil {
 		t.Fatalf("ClosePort returned an error: %v", err)
 	}
@@ -161,12 +136,7 @@ func TestClosePortUDP_Success(t *testing.T) {
 
 	goops.SetRunner(fakeRunner)
 
-	port := &goops.ClosePortOptions{
-		Port:     80,
-		Protocol: "udp",
-	}
-
-	err := goops.ClosePort(port)
+	err := goops.ClosePort(80, "udp")
 	if err != nil {
 		t.Fatalf("ClosePort returned an error: %v", err)
 	}
@@ -192,12 +162,7 @@ func TestClosePortInvalidPort_Failure(t *testing.T) {
 
 	goops.SetRunner(fakeRunner)
 
-	port := &goops.ClosePortOptions{
-		Port:     -1,
-		Protocol: "tcp",
-	}
-
-	err := goops.ClosePort(port)
+	err := goops.ClosePort(-1, "tcp")
 	if err == nil {
 		t.Fatalf("ClosePort did not return an error for invalid port")
 	}
@@ -219,12 +184,7 @@ func TestClosePortInvalidProtocol_Failure(t *testing.T) {
 
 	goops.SetRunner(fakeRunner)
 
-	port := &goops.ClosePortOptions{
-		Port:     80,
-		Protocol: "invalid",
-	}
-
-	err := goops.ClosePort(port)
+	err := goops.ClosePort(80, "invalid")
 	if err == nil {
 		t.Fatalf("ClosePort did not return an error for invalid protocol")
 	}

@@ -16,16 +16,6 @@ type Port struct {
 	Protocol string // allowed values: tcp, udp
 }
 
-type OpenPortOptions struct {
-	Port     int
-	Protocol string // allowed values: tcp, udp
-}
-
-type ClosePortOptions struct {
-	Port     int
-	Protocol string // allowed values: tcp, udp
-}
-
 func SetPorts(ports []*Port) error {
 	openedPorts, err := OpenedPorts()
 	if err != nil {
@@ -49,11 +39,7 @@ func SetPorts(ports []*Port) error {
 	// Open ports that are desired but not currently opened.
 	for key, port := range desiredMap {
 		if _, exists := openedMap[key]; !exists {
-			openPortOpts := &OpenPortOptions{
-				Port:     port.Port,
-				Protocol: port.Protocol,
-			}
-			if err := OpenPort(openPortOpts); err != nil {
+			if err := OpenPort(port.Port, port.Protocol); err != nil {
 				return fmt.Errorf("failed to open port %s: %w", key, err)
 			}
 		}
@@ -62,11 +48,7 @@ func SetPorts(ports []*Port) error {
 	// Close ports that are currently opened but not desired.
 	for key, port := range openedMap {
 		if _, exists := desiredMap[key]; !exists {
-			closePortOpts := &ClosePortOptions{
-				Port:     port.Port,
-				Protocol: port.Protocol,
-			}
-			if err := ClosePort(closePortOpts); err != nil {
+			if err := ClosePort(port.Port, port.Protocol); err != nil {
 				return fmt.Errorf("failed to close port %s: %w", key, err)
 			}
 		}
@@ -75,43 +57,43 @@ func SetPorts(ports []*Port) error {
 	return nil
 }
 
-func OpenPort(opts *OpenPortOptions) error {
+func OpenPort(port int, protocol string) error {
 	commandRunner := GetRunner()
 
-	if opts.Port < 0 || opts.Port > 65535 {
-		return fmt.Errorf("port %d is out of range", opts.Port)
+	if port < 0 || port > 65535 {
+		return fmt.Errorf("port %d is out of range", port)
 	}
 
-	if opts.Protocol != "tcp" && opts.Protocol != "udp" {
-		return fmt.Errorf("protocol %s is not supported", opts.Protocol)
+	if protocol != "tcp" && protocol != "udp" {
+		return fmt.Errorf("protocol %s is not supported", protocol)
 	}
 
-	args := []string{fmt.Sprintf("%d/%s", opts.Port, opts.Protocol)}
+	args := []string{fmt.Sprintf("%d/%s", port, protocol)}
 
 	_, err := commandRunner.Run(openPortCommand, args...)
 	if err != nil {
-		return fmt.Errorf("failed to open port %d/%s: %w", opts.Port, opts.Protocol, err)
+		return fmt.Errorf("failed to open port %d/%s: %w", port, protocol, err)
 	}
 
 	return nil
 }
 
-func ClosePort(opts *ClosePortOptions) error {
+func ClosePort(port int, protocol string) error {
 	commandRunner := GetRunner()
 
-	if opts.Port < 0 || opts.Port > 65535 {
-		return fmt.Errorf("port %d is out of range", opts.Port)
+	if port < 0 || port > 65535 {
+		return fmt.Errorf("port %d is out of range", port)
 	}
 
-	if opts.Protocol != "tcp" && opts.Protocol != "udp" {
-		return fmt.Errorf("protocol %s is not supported", opts.Protocol)
+	if protocol != "tcp" && protocol != "udp" {
+		return fmt.Errorf("protocol %s is not supported", protocol)
 	}
 
-	args := []string{fmt.Sprintf("%d/%s", opts.Port, opts.Protocol)}
+	args := []string{fmt.Sprintf("%d/%s", port, protocol)}
 
 	_, err := commandRunner.Run(closePortCommand, args...)
 	if err != nil {
-		return fmt.Errorf("failed to open port %d/%s: %w", opts.Port, opts.Protocol, err)
+		return fmt.Errorf("failed to open port %d/%s: %w", port, protocol, err)
 	}
 
 	return nil

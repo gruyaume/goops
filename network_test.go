@@ -1,9 +1,9 @@
-package commands_test
+package goops_test
 
 import (
 	"testing"
 
-	"github.com/gruyaume/goops/commands"
+	"github.com/gruyaume/goops"
 )
 
 func TestNetworkGet_Success(t *testing.T) {
@@ -11,24 +11,23 @@ func TestNetworkGet_Success(t *testing.T) {
 		Output: []byte(`{"bind-addresses":[{"mac-address":"","interface-name":"","addresses":[{"hostname":"","value":"10.1.107.220","cidr":""}]}],"egress-subnets":["10.152.183.78/32"],"ingress-addresses":["10.152.183.78"]}`),
 		Err:    nil,
 	}
-	command := commands.Command{
-		Runner: fakeRunner,
-	}
 
-	networkGetOptions := &commands.NetworkGetOptions{
+	goops.SetRunner(fakeRunner)
+
+	networkGetOptions := &goops.NetworkGetOptions{
 		BindingName: "whatever",
 	}
 
-	result, err := command.NetworkGet(networkGetOptions)
+	result, err := goops.GetNetwork(networkGetOptions)
 	if err != nil {
 		t.Fatalf("NetworkGet returned an error: %v", err)
 	}
 
-	expected := commands.Network{
-		BindAddresses: []commands.BindAddress{
+	expected := goops.Network{
+		BindAddresses: []goops.BindAddress{
 			{
 				InterfaceName: "",
-				Addresses: []commands.Address{
+				Addresses: []goops.Address{
 					{
 						Value: "10.1.107.220",
 						CIDR:  "",
