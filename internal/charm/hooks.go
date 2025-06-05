@@ -48,14 +48,14 @@ func generateAndStoreRootCertificate(hookContext *goops.HookContext) error {
 
 	_, err = hookContext.Commands.SecretGet(secretGetOptions)
 	if err != nil {
-		hookContext.Commands.JujuLog(commands.Info, "could not get secret:", err.Error())
+		goops.LogInfof("could not get secret: %s", err.Error())
 
 		caCertPEM, caKeyPEM, err := GenerateRootCertificate(caCommonName)
 		if err != nil {
 			return fmt.Errorf("could not generate root certificate: %w", err)
 		}
 
-		hookContext.Commands.JujuLog(commands.Info, "Generated new root certificate")
+		goops.LogInfof("Generated new root certificate with common name: %s", caCommonName)
 
 		secretContent := map[string]string{
 			"private-key":    caKeyPEM,
@@ -76,8 +76,7 @@ func generateAndStoreRootCertificate(hookContext *goops.HookContext) error {
 			return fmt.Errorf("could not add secret: %w", err)
 		}
 
-		hookContext.Commands.JujuLog(commands.Info, "Created new secret")
-		hookContext.Commands.JujuLog(commands.Info, "Secret ID:", output)
+		goops.LogInfof("Created new secret with ID: %s", output)
 
 		return nil
 	}
@@ -105,7 +104,7 @@ func processOutstandingCertificateRequests(hookContext *goops.HookContext) error
 	}
 
 	for _, request := range outstandingCertificateRequests {
-		hookContext.Commands.JujuLog(commands.Info, "Received a certificate signing request from:", request.RelationID, "with common name:", request.CertificateSigningRequest.CommonName)
+		goops.LogInfof("Received a certificate signing request from: %s with common name: %s", request.RelationID, request.CertificateSigningRequest.CommonName)
 
 		secretGetOptions := &commands.SecretGetOptions{
 			Label:   CaCertificateSecretLabel,
@@ -145,11 +144,11 @@ func processOutstandingCertificateRequests(hookContext *goops.HookContext) error
 
 		err = tls_certificates.SetRelationCertificate(hookContext, request.RelationID, providerCertificatte)
 		if err != nil {
-			hookContext.Commands.JujuLog(commands.Warning, "Could not set relation certificate:", err.Error())
+			goops.LogWarningf("Could not set relation certificate: %s", err.Error())
 			continue
 		}
 
-		hookContext.Commands.JujuLog(commands.Info, "Provided certificate to:", request.RelationID)
+		goops.LogInfof("Provided certificate to: %s", request.RelationID)
 	}
 
 	return nil
@@ -228,7 +227,7 @@ func validateState(hookContext *goops.HookContext) error {
 
 	_, err := hookContext.Commands.StateGet(stateGetOptions)
 	if err != nil {
-		hookContext.Commands.JujuLog(commands.Info, "could not get state:", err.Error())
+		goops.LogInfof("could not get state: %s", err.Error())
 
 		stateSetOptions := &commands.StateSetOptions{
 			Key:   stateKey,
@@ -240,11 +239,11 @@ func validateState(hookContext *goops.HookContext) error {
 			return fmt.Errorf("could not set state: %w", err)
 		}
 
-		hookContext.Commands.JujuLog(commands.Info, "set state:", stateKey, "=", stateValue)
+		goops.LogInfof("set state: %s = %s", stateKey, stateValue)
 
 		return nil
 	} else {
-		hookContext.Commands.JujuLog(commands.Info, "state already set:", stateKey, "=", stateValue)
+		goops.LogInfof("state already set: %s = %s", stateKey, stateValue)
 
 		stateDeleteOptions := &commands.StateDeleteOptions{
 			Key: stateKey,
@@ -255,13 +254,18 @@ func validateState(hookContext *goops.HookContext) error {
 			return fmt.Errorf("could not delete state: %w", err)
 		}
 
-		hookContext.Commands.JujuLog(commands.Info, "deleted state:", stateKey)
+		goops.LogInfof("deleted state: %s", stateKey)
 	}
 
 	return nil
 }
 
 func HandleDefaultHook(hookContext *goops.HookContext) error {
+	meta, err := goops.ReadMetadata()
+	if err != nil {
+		return fmt.Errorf("could not read metadata: %w", err)
+	}
+
 	isLeader, err := hookContext.Commands.IsLeader()
 	if err != nil {
 		return fmt.Errorf("could not check if unit is leader: %w", err)
@@ -271,7 +275,7 @@ func HandleDefaultHook(hookContext *goops.HookContext) error {
 		return fmt.Errorf("unit is not leader")
 	}
 
-	hookContext.Commands.JujuLog(commands.Info, "Charm Name:", hookContext.Metadata.Name)
+	goops.LogInfof("Charm Name: %s", meta.Name)
 
 	err = setPorts(hookContext)
 	if err != nil {
@@ -291,9 +295,9 @@ func HandleDefaultHook(hookContext *goops.HookContext) error {
 		return fmt.Errorf("unit private address is empty")
 	}
 
-	hookContext.Commands.JujuLog(commands.Info, "Unit private address:", privateAddress)
+	goops.LogInfof("Unit private address: %s", privateAddress)
 
-	hookContext.Commands.JujuLog(commands.Info, "Set unit ports")
+	goops.LogInfof("Set unit ports")
 
 	valid, err := isConfigValid(hookContext)
 	if err != nil {
@@ -388,19 +392,14 @@ func HandleDefaultHook(hookContext *goops.HookContext) error {
 		return fmt.Errorf("could not get status: %w", err)
 	}
 
-	hookContext.Commands.JujuLog(commands.Info, "Current status:", string(existingStatus.Name), existingStatus.Message)
+	goops.LogInfof("Current status: %s %s", existingStatus.Name, existingStatus.Message)
 
-	statusOpts := &commands.StatusSetOptions{
-		Name:    commands.StatusActive,
-		Message: "A happy charm",
-	}
-
-	err = hookContext.Commands.StatusSet(statusOpts)
+	err = goops.SetUnitStatus(goops.StatusActive, "A happy charm")
 	if err != nil {
-		return fmt.Errorf("could not set status: %w", err)
+		return fmt.Errorf("could not set unit status: %w", err)
 	}
 
-	hookContext.Commands.JujuLog(commands.Info, "Status set to active")
+	goops.LogInfof("Status set to active")
 
 	return nil
 }

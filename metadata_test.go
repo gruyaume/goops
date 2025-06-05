@@ -1,11 +1,11 @@
-package metadata_test
+package goops_test
 
 import (
 	"os"
 	"path/filepath"
 	"testing"
 
-	"github.com/gruyaume/goops/metadata"
+	"github.com/gruyaume/goops"
 )
 
 const exampleMetadata = `
@@ -60,7 +60,11 @@ func TestGetCharmMetadata_Success(t *testing.T) {
 		t.Fatalf("failed to write metadata.yaml: %v", err)
 	}
 
-	meta := metadata.GetCharmMetadata(metadataPath)
+	meta, err := goops.ReadMetadata()
+	if err != nil {
+		t.Fatalf("ReadMetadata failed: %v", err)
+	}
+
 	if meta == nil {
 		t.Fatalf("GetCharmMetadata returned nil")
 	}

@@ -16,33 +16,11 @@ const (
 
 const (
 	statusGetCommand = "status-get"
-	statusSetCommand = "status-set"
 )
-
-type StatusSetOptions struct {
-	Name    StatusName
-	Message string
-}
 
 type Status struct {
 	Name    StatusName `json:"status"`
 	Message string     `json:"message"`
-}
-
-func (command Command) StatusSet(opts *StatusSetOptions) error {
-	var args []string
-
-	args = append(args, string(opts.Name))
-	if opts.Message != "" {
-		args = append(args, opts.Message)
-	}
-
-	_, err := command.Runner.Run(statusSetCommand, args...)
-	if err != nil {
-		return fmt.Errorf("failed to set status: %w", err)
-	}
-
-	return nil
 }
 
 func (command Command) StatusGet() (*Status, error) {

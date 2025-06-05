@@ -4,41 +4,40 @@ import (
 	"os"
 
 	"github.com/gruyaume/goops"
-	"github.com/gruyaume/goops/commands"
 	"github.com/gruyaume/goops/internal/charm"
 )
 
 // Example charm using `goops`
 func main() {
 	hookContext := goops.NewHookContext()
-	actionName := hookContext.Environment.JujuActionName()
 
-	if actionName != "" {
-		hookContext.Commands.JujuLog(commands.Info, "Action name: "+actionName)
+	env := goops.ReadEnv()
 
-		switch actionName {
+	if env.ActionName != "" {
+		goops.LogInfof("Action name: %s", env.ActionName)
+
+		switch env.ActionName {
 		case "get-ca-certificate":
 			err := charm.HandleGetCACertificateAction(hookContext)
 			if err != nil {
-				hookContext.Commands.JujuLog(commands.Error, "Error handling get-ca-certificate action: "+err.Error())
+				goops.LogErrorf("Error handling get-ca-certificate action: %s", err.Error())
 				os.Exit(0)
 			}
 
-			hookContext.Commands.JujuLog(commands.Info, "Handled get-ca-certificate action successfully")
+			goops.LogInfof("Handled get-ca-certificate action successfully")
 			os.Exit(0)
 		default:
-			hookContext.Commands.JujuLog(commands.Error, "Action not recognized, exiting")
+			goops.LogErrorf("Action '%s' not recognized, exiting", env.ActionName)
 			os.Exit(0)
 		}
 	}
 
-	hookName := hookContext.Environment.JujuHookName()
-	if hookName != "" {
-		hookContext.Commands.JujuLog(commands.Info, "Hook name: "+hookName)
+	if env.HookName != "" {
+		goops.LogInfof("Hook name: %s", env.HookName)
 
 		err := charm.HandleDefaultHook(hookContext)
 		if err != nil {
-			hookContext.Commands.JujuLog(commands.Error, "Error handling default hook: "+err.Error())
+			goops.LogErrorf("Error handling default hook: %s", err.Error())
 			os.Exit(0)
 		}
 	}

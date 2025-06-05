@@ -1,6 +1,7 @@
-package metadata
+package goops
 
 import (
+	"fmt"
 	"os"
 
 	"gopkg.in/yaml.v3"
@@ -41,18 +42,22 @@ type Metadata struct {
 	Summary     string                 `yaml:"summary"`
 }
 
-func GetCharmMetadata(path string) *Metadata {
+func ReadMetadata() (*Metadata, error) {
+	env := ReadEnv()
+
+	path := env.CharmDir + "/metadata.yaml"
+
 	yamlFile, err := os.ReadFile(path) // #nosec G304
 	if err != nil {
-		return nil
+		return nil, fmt.Errorf("failed to read metadata file: %w", err)
 	}
 
 	var c Metadata
 
 	err = yaml.Unmarshal(yamlFile, &c)
 	if err != nil {
-		return nil
+		return nil, fmt.Errorf("failed to unmarshal metadata: %w", err)
 	}
 
-	return &c
+	return &c, nil
 }

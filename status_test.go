@@ -1,8 +1,9 @@
-package commands_test
+package goops_test
 
 import (
 	"testing"
 
+	"github.com/gruyaume/goops"
 	"github.com/gruyaume/goops/commands"
 )
 
@@ -11,15 +12,10 @@ func TestStatusSet_Success(t *testing.T) {
 		Output: nil,
 		Err:    nil,
 	}
-	command := commands.Command{
-		Runner: fakeRunner,
-	}
 
-	statusOpts := &commands.StatusSetOptions{
-		Name: commands.StatusActive,
-	}
+	goops.SetRunner(fakeRunner)
 
-	err := command.StatusSet(statusOpts)
+	err := goops.SetUnitStatus(goops.StatusActive)
 	if err != nil {
 		t.Fatalf("StatusSet returned an error: %v", err)
 	}

@@ -1,9 +1,9 @@
-package commands_test
+package goops_test
 
 import (
 	"testing"
 
-	"github.com/gruyaume/goops/commands"
+	"github.com/gruyaume/goops"
 )
 
 func TestJujuLogStatusSet_Success(t *testing.T) {
@@ -11,11 +11,10 @@ func TestJujuLogStatusSet_Success(t *testing.T) {
 		Output: nil,
 		Err:    nil,
 	}
-	command := commands.Command{
-		Runner: fakeRunner,
-	}
 
-	command.JujuLog(commands.Debug, "my message")
+	goops.SetRunner(fakeRunner)
+
+	goops.LogDebugf("my message")
 
 	if fakeRunner.Command != "juju-log" {
 		t.Errorf("Expected command %q, got %q", "juju-log", fakeRunner.Command)
