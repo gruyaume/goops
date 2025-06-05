@@ -32,26 +32,20 @@ import (
 	"os"
 
 	"github.com/gruyaume/goops"
-	"github.com/gruyaume/goops/commands"
 )
 
 func main() {
-	hookContext := goops.NewHookContext()
-	hookName := hookContext.Environment.JujuHookName()
-	hookContext.Commands.JujuLog(commands.Info, "Hook name:", hookName)
+	env := goops.ReadEnv()
 
-	statusOpts := &commands.StatusOptions{
-		Name:    commands.StatusActive,
-		Message: "A happy charm",
-	}
+    goops.LogInfof("Hook name: %s", env.HookName)
 
-	err := hookContext.Commands.StatusSet(statusOpts)
+	err = goops.SetUnitStatus(goops.StatusActive, "A happy charm")
 	if err != nil {
-		hookContext.Commands.JujuLog(commands.Error, "Could not set status:", err.Error())
+		goops.LogErrorf("Could not set status: %v", err)
 		os.Exit(0)
 	}
 
-	hookContext.Commands.JujuLog(commands.Info, "Status set to active")
+	goops.LogInfo("Status set to active")
 	os.Exit(0)
 }
 ```

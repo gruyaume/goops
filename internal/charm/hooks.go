@@ -144,35 +144,27 @@ func setPorts() error {
 }
 
 func validateNetworkGet() error {
-	bindAddresses, err := goops.GetNetworkBindAddresses("certificates")
+	bindAddress, err := goops.GetNetworkBindAddress("certificates")
 	if err != nil {
 		return fmt.Errorf("could not get network config: %w", err)
 	}
 
-	if len(bindAddresses) == 0 {
+	if bindAddress == "" {
 		return fmt.Errorf("network config bind addresses is empty")
 	}
 
-	if len(bindAddresses[0].Addresses) == 0 {
-		return fmt.Errorf("network config bind address addresses is empty")
-	}
+	goops.LogInfof("Bind address: %s", bindAddress)
 
-	if bindAddresses[0].Addresses[0].Value == "" {
-		return fmt.Errorf("network config bind address address value is empty- This can happen in the first stage of the deployment")
-	}
-
-	ingressAddresses, err := goops.GetNetworkIngressAddresses("certificates")
+	ingressAddress, err := goops.GetNetworkIngressAddress("certificates")
 	if err != nil {
 		return fmt.Errorf("could not get network ingress addresses: %w", err)
 	}
 
-	if len(ingressAddresses) == 0 {
-		return fmt.Errorf("network config ingress addresses is empty")
-	}
-
-	if ingressAddresses[0] == "" {
+	if ingressAddress == "" {
 		return fmt.Errorf("network config ingress address is empty")
 	}
+
+	goops.LogInfof("Ingress address: %s", ingressAddress)
 
 	egressSubnets, err := goops.GetNetworkEgressSubnets("certificates")
 	if err != nil {

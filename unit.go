@@ -12,9 +12,7 @@ const (
 func getUnit(key string) (string, error) {
 	commandRunner := GetRunner()
 
-	args := []string{}
-
-	args = append(args, key)
+	args := []string{key}
 
 	args = append(args, "--format=json")
 

@@ -80,14 +80,10 @@ func GetNetwork(opts *NetworkGetOptions) (*Network, error) {
 	return &network, nil
 }
 
-func GetNetworkBindAddresses(bindingName string) ([]BindAddress, error) {
+func GetNetworkBindAddress(bindingName string) (string, error) {
 	commandRunner := GetRunner()
 
 	var args []string
-
-	if bindingName == "" {
-		return nil, fmt.Errorf("binding name cannot be empty")
-	}
 
 	args = append(args, "--bind-address")
 
@@ -95,26 +91,26 @@ func GetNetworkBindAddresses(bindingName string) ([]BindAddress, error) {
 
 	output, err := commandRunner.Run(networkGetCommand, args...)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	var network Network
+	var bindAddress string
 
-	err = json.Unmarshal(output, &network)
+	err = json.Unmarshal(output, &bindAddress)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse network data: %w", err)
+		return "", fmt.Errorf("failed to parse network data: %w", err)
 	}
 
-	return network.BindAddresses, nil
+	return bindAddress, nil
 }
 
-func GetNetworkIngressAddresses(bindingName string) ([]string, error) {
+func GetNetworkIngressAddress(bindingName string) (string, error) {
 	commandRunner := GetRunner()
 
 	var args []string
 
 	if bindingName == "" {
-		return nil, fmt.Errorf("binding name cannot be empty")
+		return "", fmt.Errorf("binding name cannot be empty")
 	}
 
 	args = append(args, "--ingress-address")
@@ -123,17 +119,17 @@ func GetNetworkIngressAddresses(bindingName string) ([]string, error) {
 
 	output, err := commandRunner.Run(networkGetCommand, args...)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	var network Network
+	var ingressAddress string
 
-	err = json.Unmarshal(output, &network)
+	err = json.Unmarshal(output, &ingressAddress)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse network data: %w", err)
+		return "", fmt.Errorf("failed to parse network data: %w", err)
 	}
 
-	return network.IngressAddresses, nil
+	return ingressAddress, nil
 }
 
 func GetNetworkEgressSubnets(bindingName string) ([]string, error) {
@@ -154,12 +150,12 @@ func GetNetworkEgressSubnets(bindingName string) ([]string, error) {
 		return nil, err
 	}
 
-	var network Network
+	var egressSubnets []string
 
-	err = json.Unmarshal(output, &network)
+	err = json.Unmarshal(output, &egressSubnets)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse network data: %w", err)
 	}
 
-	return network.EgressSubnets, nil
+	return egressSubnets, nil
 }
