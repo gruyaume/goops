@@ -1,9 +1,9 @@
-package commands_test
+package goops_test
 
 import (
 	"testing"
 
-	"github.com/gruyaume/goops/commands"
+	"github.com/gruyaume/goops"
 )
 
 func TestConfigGet_Success(t *testing.T) {
@@ -11,15 +11,10 @@ func TestConfigGet_Success(t *testing.T) {
 		Output: []byte(`"banana"`),
 		Err:    nil,
 	}
-	command := commands.Command{
-		Runner: fakeRunner,
-	}
 
-	configGetOptions := &commands.ConfigGetOptions{
-		Key: "fruit",
-	}
+	goops.SetRunner(fakeRunner)
 
-	result, err := command.ConfigGet(configGetOptions)
+	result, err := goops.GetConfig("fruit")
 	if err != nil {
 		t.Fatalf("ConfigGet returned an error: %v", err)
 	}
@@ -54,15 +49,10 @@ func TestConfigGetString_Success(t *testing.T) {
 		Output: []byte(`"banana"`),
 		Err:    nil,
 	}
-	command := commands.Command{
-		Runner: fakeRunner,
-	}
 
-	configGetOptions := &commands.ConfigGetOptions{
-		Key: "fruit",
-	}
+	goops.SetRunner(fakeRunner)
 
-	result, err := command.ConfigGetString(configGetOptions)
+	result, err := goops.GetConfigString("fruit")
 	if err != nil {
 		t.Fatalf("ConfigGetString returned an error: %v", err)
 	}
@@ -77,15 +67,10 @@ func TestConfigGetString_BadType(t *testing.T) {
 		Output: []byte(`123`),
 		Err:    nil,
 	}
-	command := commands.Command{
-		Runner: fakeRunner,
-	}
 
-	configGetOptions := &commands.ConfigGetOptions{
-		Key: "fruit",
-	}
+	goops.SetRunner(fakeRunner)
 
-	_, err := command.ConfigGetString(configGetOptions)
+	_, err := goops.GetConfigString("fruit")
 	if err == nil {
 		t.Fatalf("Expected error, got nil")
 	}
@@ -100,15 +85,10 @@ func TestConfigGetInt_Success(t *testing.T) {
 		Output: []byte(`123`),
 		Err:    nil,
 	}
-	command := commands.Command{
-		Runner: fakeRunner,
-	}
 
-	configGetOptions := &commands.ConfigGetOptions{
-		Key: "fruit",
-	}
+	goops.SetRunner(fakeRunner)
 
-	result, err := command.ConfigGetInt(configGetOptions)
+	result, err := goops.GetConfigInt("fruit")
 	if err != nil {
 		t.Fatalf("ConfigGetInt returned an error: %v", err)
 	}
@@ -123,15 +103,10 @@ func TestConfigGetInt_BadType(t *testing.T) {
 		Output: []byte(`"banana"`),
 		Err:    nil,
 	}
-	command := commands.Command{
-		Runner: fakeRunner,
-	}
 
-	configGetOptions := &commands.ConfigGetOptions{
-		Key: "fruit",
-	}
+	goops.SetRunner(fakeRunner)
 
-	_, err := command.ConfigGetInt(configGetOptions)
+	_, err := goops.GetConfigInt("fruit")
 	if err == nil {
 		t.Fatalf("Expected error, got nil")
 	}
@@ -146,15 +121,10 @@ func TestConfigGetBool_Success(t *testing.T) {
 		Output: []byte(`true`),
 		Err:    nil,
 	}
-	command := commands.Command{
-		Runner: fakeRunner,
-	}
 
-	configGetOptions := &commands.ConfigGetOptions{
-		Key: "fruit",
-	}
+	goops.SetRunner(fakeRunner)
 
-	result, err := command.ConfigGetBool(configGetOptions)
+	result, err := goops.GetConfigBool("fruit")
 	if err != nil {
 		t.Fatalf("ConfigGetBool returned an error: %v", err)
 	}
@@ -169,15 +139,10 @@ func TestConfigGetBool_BadType(t *testing.T) {
 		Output: []byte(`123`),
 		Err:    nil,
 	}
-	command := commands.Command{
-		Runner: fakeRunner,
-	}
 
-	configGetOptions := &commands.ConfigGetOptions{
-		Key: "fruit",
-	}
+	goops.SetRunner(fakeRunner)
 
-	_, err := command.ConfigGetBool(configGetOptions)
+	_, err := goops.GetConfigBool("fruit")
 	if err == nil {
 		t.Fatalf("Expected error, got nil")
 	}

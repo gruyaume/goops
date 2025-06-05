@@ -1,4 +1,4 @@
-package commands
+package goops
 
 import (
 	"encoding/json"
@@ -16,10 +16,6 @@ type Port struct {
 	Protocol string // allowed values: tcp, udp
 }
 
-type SetPortsOptions struct {
-	Ports []*Port
-}
-
 type OpenPortOptions struct {
 	Port     int
 	Protocol string // allowed values: tcp, udp
@@ -30,15 +26,15 @@ type ClosePortOptions struct {
 	Protocol string // allowed values: tcp, udp
 }
 
-func (command Command) SetPorts(opts *SetPortsOptions) error {
-	openedPorts, err := command.OpenedPorts()
+func SetPorts(ports []*Port) error {
+	openedPorts, err := OpenedPorts()
 	if err != nil {
 		return fmt.Errorf("failed to get opened ports: %w", err)
 	}
 
 	desiredMap := make(map[string]*Port)
 
-	for _, port := range opts.Ports {
+	for _, port := range ports {
 		key := fmt.Sprintf("%d/%s", port.Port, port.Protocol)
 		desiredMap[key] = port
 	}
@@ -57,7 +53,7 @@ func (command Command) SetPorts(opts *SetPortsOptions) error {
 				Port:     port.Port,
 				Protocol: port.Protocol,
 			}
-			if err := command.OpenPort(openPortOpts); err != nil {
+			if err := OpenPort(openPortOpts); err != nil {
 				return fmt.Errorf("failed to open port %s: %w", key, err)
 			}
 		}
@@ -70,7 +66,7 @@ func (command Command) SetPorts(opts *SetPortsOptions) error {
 				Port:     port.Port,
 				Protocol: port.Protocol,
 			}
-			if err := command.ClosePort(closePortOpts); err != nil {
+			if err := ClosePort(closePortOpts); err != nil {
 				return fmt.Errorf("failed to close port %s: %w", key, err)
 			}
 		}
@@ -79,7 +75,9 @@ func (command Command) SetPorts(opts *SetPortsOptions) error {
 	return nil
 }
 
-func (command Command) OpenPort(opts *OpenPortOptions) error {
+func OpenPort(opts *OpenPortOptions) error {
+	commandRunner := GetRunner()
+
 	if opts.Port < 0 || opts.Port > 65535 {
 		return fmt.Errorf("port %d is out of range", opts.Port)
 	}
@@ -90,7 +88,7 @@ func (command Command) OpenPort(opts *OpenPortOptions) error {
 
 	args := []string{fmt.Sprintf("%d/%s", opts.Port, opts.Protocol)}
 
-	_, err := command.Runner.Run(openPortCommand, args...)
+	_, err := commandRunner.Run(openPortCommand, args...)
 	if err != nil {
 		return fmt.Errorf("failed to open port %d/%s: %w", opts.Port, opts.Protocol, err)
 	}
@@ -98,7 +96,9 @@ func (command Command) OpenPort(opts *OpenPortOptions) error {
 	return nil
 }
 
-func (command Command) ClosePort(opts *ClosePortOptions) error {
+func ClosePort(opts *ClosePortOptions) error {
+	commandRunner := GetRunner()
+
 	if opts.Port < 0 || opts.Port > 65535 {
 		return fmt.Errorf("port %d is out of range", opts.Port)
 	}
@@ -109,7 +109,7 @@ func (command Command) ClosePort(opts *ClosePortOptions) error {
 
 	args := []string{fmt.Sprintf("%d/%s", opts.Port, opts.Protocol)}
 
-	_, err := command.Runner.Run(closePortCommand, args...)
+	_, err := commandRunner.Run(closePortCommand, args...)
 	if err != nil {
 		return fmt.Errorf("failed to open port %d/%s: %w", opts.Port, opts.Protocol, err)
 	}
@@ -117,10 +117,12 @@ func (command Command) ClosePort(opts *ClosePortOptions) error {
 	return nil
 }
 
-func (command Command) OpenedPorts() ([]*Port, error) {
+func OpenedPorts() ([]*Port, error) {
+	commandRunner := GetRunner()
+
 	args := []string{"--format=json"}
 
-	output, err := command.Runner.Run(openedPortsCommand, args...)
+	output, err := commandRunner.Run(openedPortsCommand, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get opened ports: %w", err)
 	}

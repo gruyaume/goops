@@ -14,12 +14,8 @@ const (
 	TLSCertificatesIntegration = "certificates"
 )
 
-func isConfigValid(hookContext *goops.HookContext) (bool, error) {
-	configGetOptions := &commands.ConfigGetOptions{
-		Key: "ca-common-name",
-	}
-
-	caCommonNameConfig, err := hookContext.Commands.ConfigGet(configGetOptions)
+func isConfigValid() (bool, error) {
+	caCommonNameConfig, err := goops.GetConfig("ca-common-name")
 	if err != nil {
 		return false, fmt.Errorf("could not get config: %w", err)
 	}
@@ -32,11 +28,7 @@ func isConfigValid(hookContext *goops.HookContext) (bool, error) {
 }
 
 func generateAndStoreRootCertificate(hookContext *goops.HookContext) error {
-	configGetOptions := &commands.ConfigGetOptions{
-		Key: "ca-common-name",
-	}
-
-	caCommonName, err := hookContext.Commands.ConfigGetString(configGetOptions)
+	caCommonName, err := goops.GetConfigString("ca-common-name")
 	if err != nil {
 		return fmt.Errorf("could not get config: %w", err)
 	}
@@ -154,17 +146,13 @@ func processOutstandingCertificateRequests(hookContext *goops.HookContext) error
 	return nil
 }
 
-func setPorts(hookContext *goops.HookContext) error {
-	ports := &commands.SetPortsOptions{
-		Ports: []*commands.Port{
-			{
-				Port:     443,
-				Protocol: "tcp",
-			},
+func setPorts() error {
+	err := goops.SetPorts([]*goops.Port{
+		{
+			Port:     443,
+			Protocol: "tcp",
 		},
-	}
-
-	err := hookContext.Commands.SetPorts(ports)
+	})
 	if err != nil {
 		return fmt.Errorf("could not set ports: %w", err)
 	}
@@ -277,7 +265,7 @@ func HandleDefaultHook(hookContext *goops.HookContext) error {
 
 	goops.LogInfof("Charm Name: %s", meta.Name)
 
-	err = setPorts(hookContext)
+	err = setPorts()
 	if err != nil {
 		return fmt.Errorf("could not set ports: %w", err)
 	}
@@ -295,7 +283,7 @@ func HandleDefaultHook(hookContext *goops.HookContext) error {
 
 	goops.LogInfof("Set unit ports")
 
-	valid, err := isConfigValid(hookContext)
+	valid, err := isConfigValid()
 	if err != nil {
 		return fmt.Errorf("could not check config: %w", err)
 	}

@@ -1,4 +1,4 @@
-package commands
+package goops
 
 import (
 	"encoding/json"
@@ -12,14 +12,12 @@ const (
 
 var ErrConfigNotSet = errors.New("config option not set")
 
-type ConfigGetOptions struct {
-	Key string
-}
+func GetConfig(key string) (any, error) {
+	commandRunner := GetRunner()
 
-func (command Command) ConfigGet(opts *ConfigGetOptions) (any, error) {
-	args := []string{opts.Key, "--format=json"}
+	args := []string{key, "--format=json"}
 
-	output, err := command.Runner.Run(configGetCommand, args...)
+	output, err := commandRunner.Run(configGetCommand, args...)
 	if err != nil {
 		return "", fmt.Errorf("failed to get config: %w", err)
 	}
@@ -34,8 +32,8 @@ func (command Command) ConfigGet(opts *ConfigGetOptions) (any, error) {
 	return configValue, nil
 }
 
-func (command Command) ConfigGetString(opts *ConfigGetOptions) (string, error) {
-	value, err := command.ConfigGet(opts)
+func GetConfigString(key string) (string, error) {
+	value, err := GetConfig(key)
 	if err != nil {
 		return "", err
 	}
@@ -52,8 +50,8 @@ func (command Command) ConfigGetString(opts *ConfigGetOptions) (string, error) {
 	return strValue, nil
 }
 
-func (command Command) ConfigGetInt(opts *ConfigGetOptions) (int, error) {
-	value, err := command.ConfigGet(opts)
+func GetConfigInt(key string) (int, error) {
+	value, err := GetConfig(key)
 	if err != nil {
 		return 0, err
 	}
@@ -70,8 +68,8 @@ func (command Command) ConfigGetInt(opts *ConfigGetOptions) (int, error) {
 	return int(floatValue), nil
 }
 
-func (command Command) ConfigGetBool(opts *ConfigGetOptions) (bool, error) {
-	value, err := command.ConfigGet(opts)
+func GetConfigBool(key string) (bool, error) {
+	value, err := GetConfig(key)
 	if err != nil {
 		return false, err
 	}
