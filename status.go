@@ -1,21 +1,30 @@
 package goops
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+)
 
-type Status string
+type StatusCode string
 
 const (
-	StatusActive      Status = "active"
-	StatusBlocked     Status = "blocked"
-	StatusWaiting     Status = "waiting"
-	StatusMaintenance Status = "maintenance"
+	StatusActive      StatusCode = "active"
+	StatusBlocked     StatusCode = "blocked"
+	StatusWaiting     StatusCode = "waiting"
+	StatusMaintenance StatusCode = "maintenance"
 )
 
 const (
+	statusGetCommand = "status-get"
 	statusSetCommand = "status-set"
 )
 
-func SetUnitStatus(status Status, message ...string) error {
+type Status struct {
+	Code    StatusCode `json:"status"`
+	Message string     `json:"message"`
+}
+
+func SetUnitStatus(status StatusCode, message ...string) error {
 	commandRunner := GetRunner()
 
 	var args []string
@@ -32,4 +41,24 @@ func SetUnitStatus(status Status, message ...string) error {
 	}
 
 	return nil
+}
+
+func GetStatus() (*Status, error) {
+	commandRunner := GetRunner()
+
+	args := []string{"--include-data", "--format=json"}
+
+	output, err := commandRunner.Run(statusGetCommand, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get status: %w", err)
+	}
+
+	var status Status
+
+	err = json.Unmarshal(output, &status)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse status: %w", err)
+	}
+
+	return &status, nil
 }

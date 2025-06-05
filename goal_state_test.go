@@ -1,9 +1,9 @@
-package commands_test
+package goops_test
 
 import (
 	"testing"
 
-	"github.com/gruyaume/goops/commands"
+	"github.com/gruyaume/goops"
 )
 
 func TestGoalState_Success(t *testing.T) {
@@ -11,18 +11,17 @@ func TestGoalState_Success(t *testing.T) {
 		Output: []byte(`{"units":{"example/0":{"status":"active","since":"2025-04-03 20:05:33Z"}},"relations":{"certificates":{"tls-certificates-requirer":{"status":"joined","since":"2025-04-03 20:12:11Z"},"tls-certificates-requirer/0":{"status":"active","since":"2025-04-03 20:12:23Z"}}}}`),
 		Err:    nil,
 	}
-	command := commands.Command{
-		Runner: fakeRunner,
-	}
 
-	expectedGoalState := commands.GoalState{
-		Units: map[string]*commands.UnitStatus{
+	goops.SetRunner(fakeRunner)
+
+	expectedGoalState := goops.GoalState{
+		Units: map[string]*goops.UnitStatus{
 			"example/0": {
 				Status: "active",
 				Since:  "2025-04-03 20:05:33Z",
 			},
 		},
-		Relations: map[string]map[string]*commands.RelationStatus{
+		Relations: map[string]map[string]*goops.RelationStatus{
 			"certificates": {
 				"tls-certificates-requirer": {
 					Status: "joined",
@@ -36,7 +35,7 @@ func TestGoalState_Success(t *testing.T) {
 		},
 	}
 
-	goalState, err := command.GoalState()
+	goalState, err := goops.GetGoalState()
 	if err != nil {
 		t.Fatalf("GoalState returned an error: %v", err)
 	}

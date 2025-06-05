@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/gruyaume/goops"
-	"github.com/gruyaume/goops/commands"
 )
 
 func TestStatusSet_Success(t *testing.T) {
@@ -28,8 +27,8 @@ func TestStatusSet_Success(t *testing.T) {
 		t.Fatalf("Expected 1 argument, got %d", len(fakeRunner.Args))
 	}
 
-	if fakeRunner.Args[0] != string(commands.StatusActive) {
-		t.Errorf("Expected argument %q, got %q", string(commands.StatusActive), fakeRunner.Args[0])
+	if fakeRunner.Args[0] != string(goops.StatusActive) {
+		t.Errorf("Expected argument %q, got %q", string(goops.StatusActive), fakeRunner.Args[0])
 	}
 
 	if fakeRunner.Output != nil {

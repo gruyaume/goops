@@ -1,4 +1,4 @@
-package commands
+package goops
 
 import "encoding/json"
 
@@ -6,10 +6,12 @@ const (
 	credentialGetCommand = "credential-get" // #nosec G101
 )
 
-func (command Command) CredentialGet() (map[string]string, error) {
+func GetCredential() (map[string]string, error) {
+	commandRunner := GetRunner()
+
 	args := []string{"--format=json"}
 
-	output, err := command.Runner.Run(credentialGetCommand, args...)
+	output, err := commandRunner.Run(credentialGetCommand, args...)
 	if err != nil {
 		return nil, err
 	}

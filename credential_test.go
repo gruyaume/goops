@@ -1,9 +1,9 @@
-package commands_test
+package goops_test
 
 import (
 	"testing"
 
-	"github.com/gruyaume/goops/commands"
+	"github.com/gruyaume/goops"
 )
 
 func TestCredentialGet_Success(t *testing.T) {
@@ -11,11 +11,10 @@ func TestCredentialGet_Success(t *testing.T) {
 		Output: []byte(`{"key": "value"}`),
 		Err:    nil,
 	}
-	command := commands.Command{
-		Runner: fakeRunner,
-	}
 
-	result, err := command.CredentialGet()
+	goops.SetRunner(fakeRunner)
+
+	result, err := goops.GetCredential()
 	if err != nil {
 		t.Fatalf("CredentialGet returned an error: %v", err)
 	}

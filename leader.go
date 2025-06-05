@@ -1,4 +1,4 @@
-package commands
+package goops
 
 import (
 	"encoding/json"
@@ -9,10 +9,12 @@ const (
 	isLeaderCommand = "is-leader"
 )
 
-func (command Command) IsLeader() (bool, error) {
+func IsLeader() (bool, error) {
+	commandRunner := GetRunner()
+
 	args := []string{"--format=json"}
 
-	output, err := command.Runner.Run(isLeaderCommand, args...)
+	output, err := commandRunner.Run(isLeaderCommand, args...)
 	if err != nil {
 		return false, fmt.Errorf("failed to verify if unit is leader: %w", err)
 	}

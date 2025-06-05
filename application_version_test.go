@@ -1,9 +1,9 @@
-package commands_test
+package goops_test
 
 import (
 	"testing"
 
-	"github.com/gruyaume/goops/commands"
+	"github.com/gruyaume/goops"
 )
 
 func TestApplicationVersionSet_Success(t *testing.T) {
@@ -11,15 +11,12 @@ func TestApplicationVersionSet_Success(t *testing.T) {
 		Output: []byte(``),
 		Err:    nil,
 	}
-	command := commands.Command{
-		Runner: fakeRunner,
-	}
-	version := "1.2.3"
-	applicationVersionSetOptions := &commands.ApplicationVersionSetOptions{
-		Version: version,
-	}
 
-	err := command.ApplicationVersionSet(applicationVersionSetOptions)
+	goops.SetRunner(fakeRunner)
+
+	version := "1.2.3"
+
+	err := goops.SetApplicationVersion(version)
 	if err != nil {
 		t.Fatalf("ApplicationVersionSet returned an error: %v", err)
 	}

@@ -1,4 +1,4 @@
-package commands
+package goops
 
 import "encoding/json"
 
@@ -21,10 +21,12 @@ type GoalState struct {
 	Relations map[string]map[string]*RelationStatus `json:"relations"`
 }
 
-func (command Command) GoalState() (*GoalState, error) {
+func GetGoalState() (*GoalState, error) {
+	commandRunner := GetRunner()
+
 	args := []string{"--format=json"}
 
-	output, err := command.Runner.Run(goalStateCommand, args...)
+	output, err := commandRunner.Run(goalStateCommand, args...)
 	if err != nil {
 		return nil, err
 	}

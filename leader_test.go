@@ -1,9 +1,9 @@
-package commands_test
+package goops_test
 
 import (
 	"testing"
 
-	"github.com/gruyaume/goops/commands"
+	"github.com/gruyaume/goops"
 )
 
 func TestIsLeader_Success(t *testing.T) {
@@ -11,11 +11,10 @@ func TestIsLeader_Success(t *testing.T) {
 		Output: []byte(`true`),
 		Err:    nil,
 	}
-	command := commands.Command{
-		Runner: fakeRunner,
-	}
 
-	result, err := command.IsLeader()
+	goops.SetRunner(fakeRunner)
+
+	result, err := goops.IsLeader()
 	if err != nil {
 		t.Fatalf("IsLeader returned an error: %v", err)
 	}

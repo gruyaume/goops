@@ -266,7 +266,7 @@ func HandleDefaultHook(hookContext *goops.HookContext) error {
 		return fmt.Errorf("could not read metadata: %w", err)
 	}
 
-	isLeader, err := hookContext.Commands.IsLeader()
+	isLeader, err := goops.IsLeader()
 	if err != nil {
 		return fmt.Errorf("could not check if unit is leader: %w", err)
 	}
@@ -282,11 +282,7 @@ func HandleDefaultHook(hookContext *goops.HookContext) error {
 		return fmt.Errorf("could not set ports: %w", err)
 	}
 
-	unitGetOpts := &commands.UnitGetOptions{
-		PrivateAddress: true,
-	}
-
-	privateAddress, err := hookContext.Commands.UnitGet(unitGetOpts)
+	privateAddress, err := goops.GetUnitPrivateAddress()
 	if err != nil {
 		return fmt.Errorf("could not get unit private address: %w", err)
 	}
@@ -318,7 +314,7 @@ func HandleDefaultHook(hookContext *goops.HookContext) error {
 		return fmt.Errorf("could not process outstanding certificate requests: %w", err)
 	}
 
-	goalState, err := hookContext.Commands.GoalState()
+	goalState, err := goops.GetGoalState()
 	if err != nil {
 		return fmt.Errorf("could not get goal state: %w", err)
 	}
@@ -335,7 +331,7 @@ func HandleDefaultHook(hookContext *goops.HookContext) error {
 		return fmt.Errorf("goal state unit is nil")
 	}
 
-	_, err = hookContext.Commands.CredentialGet()
+	_, err = goops.GetCredential()
 	if err == nil {
 		return fmt.Errorf("expected not to get container on caas model: %w", err)
 	}
@@ -378,21 +374,17 @@ func HandleDefaultHook(hookContext *goops.HookContext) error {
 		return fmt.Errorf("could not validate state: %w", err)
 	}
 
-	applicationVersionSetOptions := &commands.ApplicationVersionSetOptions{
-		Version: "1.0.0",
-	}
-
-	err = hookContext.Commands.ApplicationVersionSet(applicationVersionSetOptions)
+	err = goops.SetApplicationVersion("1.0.0")
 	if err != nil {
-		return fmt.Errorf("could not set application version: %w", err)
+		return fmt.Errorf("could not set application version using goops: %w", err)
 	}
 
-	existingStatus, err := hookContext.Commands.StatusGet()
+	existingStatus, err := goops.GetStatus()
 	if err != nil {
 		return fmt.Errorf("could not get status: %w", err)
 	}
 
-	goops.LogInfof("Current status: %s %s", existingStatus.Name, existingStatus.Message)
+	goops.LogInfof("Current status: %s %s", existingStatus.Code, existingStatus.Message)
 
 	err = goops.SetUnitStatus(goops.StatusActive, "A happy charm")
 	if err != nil {
