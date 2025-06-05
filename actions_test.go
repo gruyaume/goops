@@ -1,9 +1,9 @@
-package commands_test
+package goops_test
 
 import (
 	"testing"
 
-	"github.com/gruyaume/goops/commands"
+	"github.com/gruyaume/goops"
 )
 
 func TestActionFail_Success(t *testing.T) {
@@ -11,15 +11,10 @@ func TestActionFail_Success(t *testing.T) {
 		Output: []byte(``),
 		Err:    nil,
 	}
-	command := commands.Command{
-		Runner: fakeRunner,
-	}
 
-	actionFailOptions := &commands.ActionFailOptions{
-		Message: "my failure message",
-	}
+	goops.SetRunner(fakeRunner)
 
-	err := command.ActionFail(actionFailOptions)
+	err := goops.FailActionf("my failure message")
 	if err != nil {
 		t.Fatalf("ActionFail returned an error: %v", err)
 	}
@@ -42,15 +37,10 @@ func TestActionGet_Success(t *testing.T) {
 		Output: []byte(`"banana"`),
 		Err:    nil,
 	}
-	command := commands.Command{
-		Runner: fakeRunner,
-	}
 
-	actionGetOptions := &commands.ActionGetOptions{
-		Key: "fruit",
-	}
+	goops.SetRunner(fakeRunner)
 
-	result, err := command.ActionGet(actionGetOptions)
+	result, err := goops.GetActionParameter("fruit")
 	if err != nil {
 		t.Fatalf("ActionGet returned an error: %v", err)
 	}
@@ -81,15 +71,10 @@ func TestActionLog_Success(t *testing.T) {
 		Output: []byte(``),
 		Err:    nil,
 	}
-	command := commands.Command{
-		Runner: fakeRunner,
-	}
 
-	actionLogOptions := &commands.ActionLogOptions{
-		Message: "my log message",
-	}
+	goops.SetRunner(fakeRunner)
 
-	err := command.ActionLog(actionLogOptions)
+	err := goops.LogActionf("my log message")
 	if err != nil {
 		t.Fatalf("ActionLog returned an error: %v", err)
 	}
@@ -112,19 +97,15 @@ func TestActionSet_Success(t *testing.T) {
 		Output: []byte(``),
 		Err:    nil,
 	}
-	command := commands.Command{
-		Runner: fakeRunner,
-	}
+
+	goops.SetRunner(fakeRunner)
+
 	actionSetValues := map[string]string{
 		"fruit": "banana",
 		"color": "yellow",
 	}
 
-	actionSetOptions := &commands.ActionSetOptions{
-		Content: actionSetValues,
-	}
-
-	err := command.ActionSet(actionSetOptions)
+	err := goops.SetActionResults(actionSetValues)
 	if err != nil {
 		t.Fatalf("ActionSet returned an error: %v", err)
 	}

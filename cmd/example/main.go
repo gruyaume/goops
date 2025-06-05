@@ -9,8 +9,6 @@ import (
 
 // Example charm using `goops`
 func main() {
-	hookContext := goops.NewHookContext()
-
 	env := goops.ReadEnv()
 
 	if env.ActionName != "" {
@@ -18,7 +16,7 @@ func main() {
 
 		switch env.ActionName {
 		case "get-ca-certificate":
-			err := charm.HandleGetCACertificateAction(hookContext)
+			err := charm.HandleGetCACertificateAction()
 			if err != nil {
 				goops.LogErrorf("Error handling get-ca-certificate action: %s", err.Error())
 				os.Exit(0)
@@ -35,7 +33,7 @@ func main() {
 	if env.HookName != "" {
 		goops.LogInfof("Hook name: %s", env.HookName)
 
-		err := charm.HandleDefaultHook(hookContext)
+		err := charm.HandleDefaultHook()
 		if err != nil {
 			goops.LogErrorf("Error handling default hook: %s", err.Error())
 			os.Exit(0)

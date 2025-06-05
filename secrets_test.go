@@ -1,10 +1,10 @@
-package commands_test
+package goops_test
 
 import (
 	"testing"
 	"time"
 
-	"github.com/gruyaume/goops/commands"
+	"github.com/gruyaume/goops"
 )
 
 func TestSecretIDs_Success(t *testing.T) {
@@ -12,11 +12,10 @@ func TestSecretIDs_Success(t *testing.T) {
 		Output: []byte(`["123", "456"]`),
 		Err:    nil,
 	}
-	command := commands.Command{
-		Runner: fakeRunner,
-	}
 
-	result, err := command.SecretIDs()
+	goops.SetRunner(fakeRunner)
+
+	result, err := goops.GetSecretIDs()
 	if err != nil {
 		t.Fatalf("SecretIDs returned an error: %v", err)
 	}
@@ -53,17 +52,10 @@ func TestSecretGet_Success(t *testing.T) {
 		Output: []byte(`{"username":"user1","password":"pass1"}`),
 		Err:    nil,
 	}
-	command := commands.Command{
-		Runner: fakeRunner,
-	}
 
-	secretGetOptions := &commands.SecretGetOptions{
-		ID:      "123",
-		Label:   "my-label",
-		Refresh: true,
-	}
+	goops.SetRunner(fakeRunner)
 
-	result, err := command.SecretGet(secretGetOptions)
+	result, err := goops.GetSecretByLabel("my-label", false, true)
 	if err != nil {
 		t.Fatalf("SecretGet returned an error: %v", err)
 	}
@@ -86,24 +78,20 @@ func TestSecretGet_Success(t *testing.T) {
 		t.Errorf("Expected command %q, got %q", "secret-get", fakeRunner.Command)
 	}
 
-	if len(fakeRunner.Args) != 4 {
-		t.Fatalf("Expected 4 arguments, got %d", len(fakeRunner.Args))
+	if len(fakeRunner.Args) != 3 {
+		t.Fatalf("Expected 3 arguments, got %d", len(fakeRunner.Args))
 	}
 
-	if fakeRunner.Args[0] != "123" {
-		t.Errorf("Expected ID arg %q, got %q", "123", fakeRunner.Args[0])
+	if fakeRunner.Args[0] != "--label=my-label" {
+		t.Errorf("Expected label arg %q, got %q", "--label=my-label", fakeRunner.Args[0])
 	}
 
-	if fakeRunner.Args[1] != "--label=my-label" {
-		t.Errorf("Expected label arg %q, got %q", "--label=my-label", fakeRunner.Args[1])
+	if fakeRunner.Args[1] != "--refresh" {
+		t.Errorf("Expected refresh arg %q, got %q", "--refresh", fakeRunner.Args[1])
 	}
 
-	if fakeRunner.Args[2] != "--refresh" {
-		t.Errorf("Expected refresh arg %q, got %q", "--refresh", fakeRunner.Args[2])
-	}
-
-	if fakeRunner.Args[3] != "--format=json" {
-		t.Errorf("Expected format arg %q, got %q", "--format=json", fakeRunner.Args[3])
+	if fakeRunner.Args[2] != "--format=json" {
+		t.Errorf("Expected format arg %q, got %q", "--format=json", fakeRunner.Args[2])
 	}
 }
 
@@ -119,20 +107,19 @@ func TestSecretAdd_Success(t *testing.T) {
 		Output: []byte(`{"result":"success"}`),
 		Err:    nil,
 	}
-	command := commands.Command{
-		Runner: fakeRunner,
-	}
+
+	goops.SetRunner(fakeRunner)
 
 	expiry := time.Now().Add(24 * time.Hour)
 
-	secretAddOptions := &commands.SecretAddOptions{
+	secretAddOptions := &goops.AddSecretOptions{
 		Content:     content,
 		Description: description,
 		Expire:      time.Now().Add(24 * time.Hour),
 		Label:       label,
 	}
 
-	result, err := command.SecretAdd(secretAddOptions)
+	result, err := goops.AddSecret(secretAddOptions)
 	if err != nil {
 		t.Fatalf("SecretAdd returned an error: %v", err)
 	}
@@ -177,17 +164,16 @@ func TestSecretAdd_EmptyContent(t *testing.T) {
 		Output: []byte(""),
 		Err:    nil,
 	}
-	command := commands.Command{
-		Runner: fakeRunner,
-	}
 
-	secretAddOptions := &commands.SecretAddOptions{
+	goops.SetRunner(fakeRunner)
+
+	secretAddOptions := &goops.AddSecretOptions{
 		Description: "my secret",
 		Expire:      time.Now().Add(24 * time.Hour),
 		Label:       "my-label",
 	}
 
-	_, err := command.SecretAdd(secretAddOptions)
+	_, err := goops.AddSecret(secretAddOptions)
 	if err == nil {
 		t.Error("Expected error when content is empty, but got nil")
 	}
@@ -198,16 +184,10 @@ func TestSecretGrant_Success(t *testing.T) {
 		Output: []byte(`{"result":"success"}`),
 		Err:    nil,
 	}
-	command := commands.Command{
-		Runner: fakeRunner,
-	}
 
-	secretGrantOptions := &commands.SecretGrantOptions{
-		ID:       "123",
-		Relation: "certificates:0",
-	}
+	goops.SetRunner(fakeRunner)
 
-	err := command.SecretGrant(secretGrantOptions)
+	err := goops.GrantSecretToRelation("123", "certificates:0")
 	if err != nil {
 		t.Fatalf("SecretGrant returned an error: %v", err)
 	}
@@ -234,20 +214,15 @@ func TestSecretInfoGet_Success(t *testing.T) {
 		Output: []byte(`{"cvng45vmp25c78cpk4u0":{"revision":1,"label":"active-ca-certificates","owner":"application","rotation":"never"}}`),
 		Err:    nil,
 	}
-	command := commands.Command{
-		Runner: fakeRunner,
-	}
 
-	secretInfoGetOpts := &commands.SecretInfoGetOptions{
-		Label: "my-secret-label",
-	}
+	goops.SetRunner(fakeRunner)
 
-	secretInfo, err := command.SecretInfoGet(secretInfoGetOpts)
+	secretInfo, err := goops.GetSecretInfoByLabel("my-secret-label")
 	if err != nil {
 		t.Fatalf("SecretInfoGet returned an error: %v", err)
 	}
 
-	expectedOutput := map[string]commands.SecretInfo{
+	expectedOutput := map[string]goops.SecretInfo{
 		"cvng45vmp25c78cpk4u0": {
 			Revision: 1,
 			Label:    "active-ca-certificates",
@@ -297,15 +272,10 @@ func TestSecretRemove_Success(t *testing.T) {
 		Output: []byte(`{"result":"success"}`),
 		Err:    nil,
 	}
-	command := commands.Command{
-		Runner: fakeRunner,
-	}
 
-	secretRemoveOptions := &commands.SecretRemoveOptions{
-		ID: "123",
-	}
+	goops.SetRunner(fakeRunner)
 
-	err := command.SecretRemove(secretRemoveOptions)
+	err := goops.RemoveSecret("123")
 	if err != nil {
 		t.Fatalf("SecretRemove returned an error: %v", err)
 	}
@@ -324,15 +294,10 @@ func TestSecretRevoke_Success(t *testing.T) {
 		Output: []byte(`{"result":"success"}`),
 		Err:    nil,
 	}
-	command := commands.Command{
-		Runner: fakeRunner,
-	}
 
-	secretRevokeOpts := &commands.SecretRevokeOptions{
-		ID: "123",
-	}
+	goops.SetRunner(fakeRunner)
 
-	err := command.SecretRevoke(secretRevokeOpts)
+	err := goops.RevokeSecret("123")
 	if err != nil {
 		t.Fatalf("SecretRevoke returned an error: %v", err)
 	}
@@ -351,23 +316,23 @@ func TestSecretSet_Success(t *testing.T) {
 		Output: []byte(`{"result":"success"}`),
 		Err:    nil,
 	}
-	command := commands.Command{
-		Runner: fakeRunner,
-	}
+
+	goops.SetRunner(fakeRunner)
+
 	secretContent := map[string]string{
 		"username": "user1",
 		"password": "pass1",
 	}
 	expiry := time.Now().Add(24 * time.Hour)
 
-	secretSetOpts := &commands.SecretSetOptions{
+	secretSetOpts := &goops.SetSecretOptions{
 		ID:      "123",
 		Content: secretContent,
 		Expire:  expiry,
 		Label:   "my-label",
 	}
 
-	err := command.SecretSet(secretSetOpts)
+	err := goops.SecretSet(secretSetOpts)
 	if err != nil {
 		t.Fatalf("SecretSet returned an error: %v", err)
 	}

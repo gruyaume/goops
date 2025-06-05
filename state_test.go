@@ -1,9 +1,9 @@
-package commands_test
+package goops_test
 
 import (
 	"testing"
 
-	"github.com/gruyaume/goops/commands"
+	"github.com/gruyaume/goops"
 )
 
 func TestStateDelete_Success(t *testing.T) {
@@ -11,15 +11,10 @@ func TestStateDelete_Success(t *testing.T) {
 		Output: []byte(``),
 		Err:    nil,
 	}
-	command := commands.Command{
-		Runner: fakeRunner,
-	}
 
-	stateDeleteOpts := &commands.StateDeleteOptions{
-		Key: "key",
-	}
+	goops.SetRunner(fakeRunner)
 
-	err := command.StateDelete(stateDeleteOpts)
+	err := goops.DeleteState("key")
 	if err != nil {
 		t.Fatalf("StateDelete returned an error: %v", err)
 	}
@@ -42,15 +37,10 @@ func TestStateGet_Success(t *testing.T) {
 		Output: []byte(`"value"`),
 		Err:    nil,
 	}
-	command := commands.Command{
-		Runner: fakeRunner,
-	}
 
-	stateGetOpts := &commands.StateGetOptions{
-		Key: "key",
-	}
+	goops.SetRunner(fakeRunner)
 
-	state, err := command.StateGet(stateGetOpts)
+	state, err := goops.GetState("key")
 	if err != nil {
 		t.Fatalf("StateGet returned an error: %v", err)
 	}

@@ -1,9 +1,9 @@
-package commands_test
+package goops_test
 
 import (
 	"testing"
 
-	"github.com/gruyaume/goops/commands"
+	"github.com/gruyaume/goops"
 )
 
 func TestStorageAdd_Success(t *testing.T) {
@@ -11,15 +11,10 @@ func TestStorageAdd_Success(t *testing.T) {
 		Output: []byte(``),
 		Err:    nil,
 	}
-	command := commands.Command{
-		Runner: fakeRunner,
-	}
 
-	storageAddOpts := &commands.StorageAddOptions{
-		Name: "database-storage",
-	}
+	goops.SetRunner(fakeRunner)
 
-	err := command.StorageAdd(storageAddOpts)
+	err := goops.AddStorage("database-storage", 1)
 	if err != nil {
 		t.Fatalf("StorageAdd returned an error: %v", err)
 	}
@@ -32,8 +27,8 @@ func TestStorageAdd_Success(t *testing.T) {
 		t.Fatalf("Expected 1 argument, got %d", len(fakeRunner.Args))
 	}
 
-	if fakeRunner.Args[0] != "database-storage" {
-		t.Errorf("Expected argument %q, got %q", "database-storage", fakeRunner.Args[0])
+	if fakeRunner.Args[0] != "database-storage=1" {
+		t.Errorf("Expected argument %q, got %q", "database-storage=1", fakeRunner.Args[0])
 	}
 }
 
@@ -42,16 +37,10 @@ func TestStorageAddWithCount_Success(t *testing.T) {
 		Output: []byte(``),
 		Err:    nil,
 	}
-	command := commands.Command{
-		Runner: fakeRunner,
-	}
 
-	storageAddOpts := &commands.StorageAddOptions{
-		Name:  "database-storage",
-		Count: 2,
-	}
+	goops.SetRunner(fakeRunner)
 
-	err := command.StorageAdd(storageAddOpts)
+	err := goops.AddStorage("database-storage", 2)
 	if err != nil {
 		t.Fatalf("StorageAdd returned an error: %v", err)
 	}
@@ -74,15 +63,10 @@ func TestStorageGetByName_Success(t *testing.T) {
 		Output: []byte(`"database-storage"`),
 		Err:    nil,
 	}
-	command := commands.Command{
-		Runner: fakeRunner,
-	}
 
-	storageGetOpts := &commands.StorageGetOptions{
-		Name: "database-storage",
-	}
+	goops.SetRunner(fakeRunner)
 
-	storage, err := command.StorageGet(storageGetOpts)
+	storage, err := goops.GetStorageByName("database-storage")
 	if err != nil {
 		t.Fatalf("StorageGet returned an error: %v", err)
 	}
@@ -117,15 +101,10 @@ func TestStorageGetByID_Success(t *testing.T) {
 		Output: []byte(`"database-storage"`),
 		Err:    nil,
 	}
-	command := commands.Command{
-		Runner: fakeRunner,
-	}
 
-	storageGetOpts := &commands.StorageGetOptions{
-		ID: "21127934-8986-11e5-af63-feff819cdc9f",
-	}
+	goops.SetRunner(fakeRunner)
 
-	storage, err := command.StorageGet(storageGetOpts)
+	storage, err := goops.GetStorageByID("21127934-8986-11e5-af63-feff819cdc9f")
 	if err != nil {
 		t.Fatalf("StorageGet returned an error: %v", err)
 	}
@@ -156,15 +135,10 @@ func TestStorageList_Success(t *testing.T) {
 		Output: []byte(`["database-storage/0","database-storage/1"]`),
 		Err:    nil,
 	}
-	command := commands.Command{
-		Runner: fakeRunner,
-	}
 
-	storageListOpts := &commands.StorageListOptions{
-		Name: "database-storage",
-	}
+	goops.SetRunner(fakeRunner)
 
-	storage, err := command.StorageList(storageListOpts)
+	storage, err := goops.ListStorage("database-storage")
 	if err != nil {
 		t.Fatalf("StorageList returned an error: %v", err)
 	}

@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/gruyaume/goops"
-	"github.com/gruyaume/goops/commands"
 	"github.com/gruyaume/goops/internal/integrations/tls_certificates"
 )
 
@@ -27,18 +26,13 @@ func isConfigValid() (bool, error) {
 	return true, nil
 }
 
-func generateAndStoreRootCertificate(hookContext *goops.HookContext) error {
+func generateAndStoreRootCertificate() error {
 	caCommonName, err := goops.GetConfigString("ca-common-name")
 	if err != nil {
 		return fmt.Errorf("could not get config: %w", err)
 	}
 
-	secretGetOptions := &commands.SecretGetOptions{
-		Label:   CaCertificateSecretLabel,
-		Refresh: true,
-	}
-
-	_, err = hookContext.Commands.SecretGet(secretGetOptions)
+	_, err = goops.GetSecretByLabel(CaCertificateSecretLabel, false, true)
 	if err != nil {
 		goops.LogInfof("could not get secret: %s", err.Error())
 
@@ -56,14 +50,12 @@ func generateAndStoreRootCertificate(hookContext *goops.HookContext) error {
 
 		expiry := time.Now().AddDate(1, 0, 0)
 
-		secretAddOptions := &commands.SecretAddOptions{
+		output, err := goops.AddSecret(&goops.AddSecretOptions{
 			Content:     secretContent,
 			Description: "ca certificate and private key for the certificates charm",
 			Expire:      expiry,
 			Label:       CaCertificateSecretLabel,
-		}
-
-		output, err := hookContext.Commands.SecretAdd(secretAddOptions)
+		})
 		if err != nil {
 			return fmt.Errorf("could not add secret: %w", err)
 		}
@@ -73,11 +65,7 @@ func generateAndStoreRootCertificate(hookContext *goops.HookContext) error {
 		return nil
 	}
 
-	secretInfoGetOpts := &commands.SecretInfoGetOptions{
-		Label: CaCertificateSecretLabel,
-	}
-
-	secretInfo, err := hookContext.Commands.SecretInfoGet(secretInfoGetOpts)
+	secretInfo, err := goops.GetSecretInfoByLabel(CaCertificateSecretLabel)
 	if err != nil {
 		return fmt.Errorf("could not get secret info: %w", err)
 	}
@@ -89,8 +77,8 @@ func generateAndStoreRootCertificate(hookContext *goops.HookContext) error {
 	return nil
 }
 
-func processOutstandingCertificateRequests(hookContext *goops.HookContext) error {
-	outstandingCertificateRequests, err := tls_certificates.GetOutstandingCertificateRequests(hookContext, TLSCertificatesIntegration)
+func processOutstandingCertificateRequests() error {
+	outstandingCertificateRequests, err := tls_certificates.GetOutstandingCertificateRequests(TLSCertificatesIntegration)
 	if err != nil {
 		return fmt.Errorf("could not get outstanding certificate requests: %w", err)
 	}
@@ -98,12 +86,7 @@ func processOutstandingCertificateRequests(hookContext *goops.HookContext) error
 	for _, request := range outstandingCertificateRequests {
 		goops.LogInfof("Received a certificate signing request from: %s with common name: %s", request.RelationID, request.CertificateSigningRequest.CommonName)
 
-		secretGetOptions := &commands.SecretGetOptions{
-			Label:   CaCertificateSecretLabel,
-			Refresh: true,
-		}
-
-		caCertificateSecret, err := hookContext.Commands.SecretGet(secretGetOptions)
+		caCertificateSecret, err := goops.GetSecretByLabel(CaCertificateSecretLabel, false, true)
 		if err != nil {
 			return fmt.Errorf("could not get CA certificate secret: %w", err)
 		}
@@ -134,7 +117,7 @@ func processOutstandingCertificateRequests(hookContext *goops.HookContext) error
 			Revoked: false,
 		}
 
-		err = tls_certificates.SetRelationCertificate(hookContext, request.RelationID, providerCertificatte)
+		err = tls_certificates.SetRelationCertificate(request.RelationID, providerCertificatte)
 		if err != nil {
 			goops.LogWarningf("Could not set relation certificate: %s", err.Error())
 			continue
@@ -207,24 +190,15 @@ func validateNetworkGet() error {
 	return nil
 }
 
-func validateState(hookContext *goops.HookContext) error {
+func validateState() error {
 	stateKey := "my-key"
 	stateValue := "my-value"
 
-	stateGetOptions := &commands.StateGetOptions{
-		Key: stateKey,
-	}
-
-	_, err := hookContext.Commands.StateGet(stateGetOptions)
+	_, err := goops.GetState(stateKey)
 	if err != nil {
 		goops.LogInfof("could not get state: %s", err.Error())
 
-		stateSetOptions := &commands.StateSetOptions{
-			Key:   stateKey,
-			Value: stateValue,
-		}
-
-		err := hookContext.Commands.StateSet(stateSetOptions)
+		err := goops.SetState(stateKey, stateValue)
 		if err != nil {
 			return fmt.Errorf("could not set state: %w", err)
 		}
@@ -235,11 +209,7 @@ func validateState(hookContext *goops.HookContext) error {
 	} else {
 		goops.LogInfof("state already set: %s = %s", stateKey, stateValue)
 
-		stateDeleteOptions := &commands.StateDeleteOptions{
-			Key: stateKey,
-		}
-
-		err := hookContext.Commands.StateDelete(stateDeleteOptions)
+		err := goops.DeleteState(stateKey)
 		if err != nil {
 			return fmt.Errorf("could not delete state: %w", err)
 		}
@@ -250,7 +220,7 @@ func validateState(hookContext *goops.HookContext) error {
 	return nil
 }
 
-func HandleDefaultHook(hookContext *goops.HookContext) error {
+func HandleDefaultHook() error {
 	meta, err := goops.ReadMetadata()
 	if err != nil {
 		return fmt.Errorf("could not read metadata: %w", err)
@@ -294,12 +264,12 @@ func HandleDefaultHook(hookContext *goops.HookContext) error {
 		return fmt.Errorf("config is not valid")
 	}
 
-	err = generateAndStoreRootCertificate(hookContext)
+	err = generateAndStoreRootCertificate()
 	if err != nil {
 		return fmt.Errorf("could not generate CA certificate: %w", err)
 	}
 
-	err = processOutstandingCertificateRequests(hookContext)
+	err = processOutstandingCertificateRequests()
 	if err != nil {
 		return fmt.Errorf("could not process outstanding certificate requests: %w", err)
 	}
@@ -331,35 +301,23 @@ func HandleDefaultHook(hookContext *goops.HookContext) error {
 		return fmt.Errorf("could not validate network get: %w", err)
 	}
 
-	relationIDsOptions := &commands.RelationIDsOptions{
-		Name: TLSCertificatesIntegration,
-	}
-
-	certificatesRelationID, err := hookContext.Commands.RelationIDs(relationIDsOptions)
+	certificatesRelationID, err := goops.GetRelationIDs(TLSCertificatesIntegration)
 	if err != nil {
 		return fmt.Errorf("could not get relation ID: %w", err)
 	}
 
 	if len(certificatesRelationID) > 0 {
-		relationModelGetOptions := &commands.RelationModelGetOptions{
-			ID: certificatesRelationID[0],
-		}
-
-		relationModel, err := hookContext.Commands.RelationModelGet(relationModelGetOptions)
+		uuid, err := goops.GetRelationModel(certificatesRelationID[0])
 		if err != nil {
 			return fmt.Errorf("could not get relation model: %w", err)
 		}
 
-		if relationModel == nil {
-			return fmt.Errorf("relation model is nil")
-		}
-
-		if relationModel.UUID == "" {
+		if uuid == "" {
 			return fmt.Errorf("relation model UUID is empty")
 		}
 	}
 
-	err = validateState(hookContext)
+	err = validateState()
 	if err != nil {
 		return fmt.Errorf("could not validate state: %w", err)
 	}

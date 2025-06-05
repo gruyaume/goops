@@ -1,9 +1,9 @@
-package commands_test
+package goops_test
 
 import (
 	"testing"
 
-	"github.com/gruyaume/goops/commands"
+	"github.com/gruyaume/goops"
 )
 
 func TestResourceGet_Success(t *testing.T) {
@@ -11,15 +11,10 @@ func TestResourceGet_Success(t *testing.T) {
 		Output: []byte(`/var/lib/juju/agents/unit-resources-example-0/resources/software/software.zip`),
 		Err:    nil,
 	}
-	command := commands.Command{
-		Runner: fakeRunner,
-	}
 
-	resourceGetOptions := &commands.ResourceGetOptions{
-		Name: "software",
-	}
+	goops.SetRunner(fakeRunner)
 
-	result, err := command.ResourceGet(resourceGetOptions)
+	result, err := goops.GetResource("software")
 	if err != nil {
 		t.Fatalf("ResourceGet returned an error: %v", err)
 	}

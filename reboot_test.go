@@ -1,9 +1,9 @@
-package commands_test
+package goops_test
 
 import (
 	"testing"
 
-	"github.com/gruyaume/goops/commands"
+	"github.com/gruyaume/goops"
 )
 
 func TestJujuReboot_Success(t *testing.T) {
@@ -11,17 +11,12 @@ func TestJujuReboot_Success(t *testing.T) {
 		Output: []byte(``),
 		Err:    nil,
 	}
-	command := commands.Command{
-		Runner: fakeRunner,
-	}
 
-	jujuRebootOptions := &commands.JujuRebootOptions{
-		Now: true,
-	}
+	goops.SetRunner(fakeRunner)
 
-	err := command.JujuReboot(jujuRebootOptions)
+	err := goops.Reboot(true)
 	if err != nil {
-		t.Fatalf("JujuReboot returned an error: %v", err)
+		t.Fatalf("Reboot returned an error: %v", err)
 	}
 
 	if fakeRunner.Command != "juju-reboot" {

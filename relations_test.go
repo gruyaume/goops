@@ -1,9 +1,9 @@
-package commands_test
+package goops_test
 
 import (
 	"testing"
 
-	"github.com/gruyaume/goops/commands"
+	"github.com/gruyaume/goops"
 )
 
 func TestRelationIDs_Success(t *testing.T) {
@@ -11,15 +11,10 @@ func TestRelationIDs_Success(t *testing.T) {
 		Output: []byte(`["123", "456"]`),
 		Err:    nil,
 	}
-	command := commands.Command{
-		Runner: fakeRunner,
-	}
 
-	relationIDsOptions := &commands.RelationIDsOptions{
-		Name: "tls-certificates",
-	}
+	goops.SetRunner(fakeRunner)
 
-	result, err := command.RelationIDs(relationIDsOptions)
+	result, err := goops.GetRelationIDs("tls-certificates")
 	if err != nil {
 		t.Fatalf("RelationIDs returned an error: %v", err)
 	}
@@ -60,16 +55,10 @@ func TestRelationGet_Success(t *testing.T) {
 		Output: []byte(`{"username":"user1","password":"pass1"}`),
 		Err:    nil,
 	}
-	command := commands.Command{
-		Runner: fakeRunner,
-	}
 
-	relationGetOptions := &commands.RelationGetOptions{
-		ID:     "certificates:0",
-		UnitID: "tls-certificates-requirer/0",
-	}
+	goops.SetRunner(fakeRunner)
 
-	result, err := command.RelationGet(relationGetOptions)
+	result, err := goops.GetUnitRelationData("certificates:0", "tls-certificates-requirer/0")
 	if err != nil {
 		t.Fatalf("RelationGet returned an error: %v", err)
 	}
@@ -118,15 +107,10 @@ func TestRelationList_Success(t *testing.T) {
 		Output: []byte(`["tls-certificates-requirer/0", "tls-certificates-requirer/1"]`),
 		Err:    nil,
 	}
-	command := commands.Command{
-		Runner: fakeRunner,
-	}
 
-	relationListOptions := &commands.RelationListOptions{
-		ID: "certificates:0",
-	}
+	goops.SetRunner(fakeRunner)
 
-	result, err := command.RelationList(relationListOptions)
+	result, err := goops.ListRelations("certificates:0")
 	if err != nil {
 		t.Fatalf("RelationList returned an error: %v", err)
 	}
@@ -163,20 +147,13 @@ func TestRelationSet_Success(t *testing.T) {
 		Output: nil,
 		Err:    nil,
 	}
-	command := commands.Command{
-		Runner: fakeRunner,
-	}
 
-	relationSetOptions := &commands.RelationSetOptions{
-		ID:  "certificates:0",
-		App: true,
-		Data: map[string]string{
-			"username": "user1",
-			"password": "pass1",
-		},
-	}
+	goops.SetRunner(fakeRunner)
 
-	err := command.RelationSet(relationSetOptions)
+	err := goops.SetAppRelationData("certificates:0", map[string]string{
+		"username": "user1",
+		"password": "pass1",
+	})
 	if err != nil {
 		t.Fatalf("RelationSet returned an error: %v", err)
 	}
@@ -211,25 +188,16 @@ func TestRelationModelGet_Success(t *testing.T) {
 		Output: []byte(`{"uuid":"e7ba04d1-b5f2-4769-8ae2-22e9119bca60"}`),
 		Err:    nil,
 	}
-	command := commands.Command{
-		Runner: fakeRunner,
-	}
 
-	relationModelGetOptions := &commands.RelationModelGetOptions{
-		ID: "certificates:0",
-	}
+	goops.SetRunner(fakeRunner)
 
-	result, err := command.RelationModelGet(relationModelGetOptions)
+	uuid, err := goops.GetRelationModel("certificates:0")
 	if err != nil {
 		t.Fatalf("RelationModelGet returned an error: %v", err)
 	}
 
-	expectedOutput := commands.RelationModel{
-		UUID: "e7ba04d1-b5f2-4769-8ae2-22e9119bca60",
-	}
-
-	if result.UUID != expectedOutput.UUID {
-		t.Fatalf("Expected UUID %q, got %q", expectedOutput.UUID, result.UUID)
+	if uuid != "e7ba04d1-b5f2-4769-8ae2-22e9119bca60" {
+		t.Fatalf("Expected UUID %q, got %q", "e7ba04d1-b5f2-4769-8ae2-22e9119bca60", uuid)
 	}
 
 	if fakeRunner.Command != "relation-model-get" {
