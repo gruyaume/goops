@@ -88,6 +88,10 @@ func TestCharmLeader(t *testing.T) {
 				t.Fatalf("Run returned an error: %v", err)
 			}
 
+			if stateOut.UnitStatus != tc.want {
+				t.Errorf("got Status=%v, want %v", stateOut.UnitStatus, tc.want)
+			}
+
 			if stateOut.Leader != tc.leader {
 				t.Errorf("got Leader=%v, want %v", stateOut.Leader, tc.leader)
 			}
