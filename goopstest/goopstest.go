@@ -16,6 +16,7 @@ type FakeRunner struct {
 	Output  []byte
 	Err     error
 	Status  string
+	Leader  bool
 }
 
 func (f *FakeRunner) Run(name string, args ...string) ([]byte, error) {
@@ -24,6 +25,14 @@ func (f *FakeRunner) Run(name string, args ...string) ([]byte, error) {
 
 	if name == "status-set" {
 		f.Status = args[0]
+	}
+
+	if name == "is-leader" {
+		if f.Leader {
+			f.Output = []byte(`true`)
+		} else {
+			f.Output = []byte(`false`)
+		}
 	}
 
 	return f.Output, f.Err
@@ -41,10 +50,11 @@ func (f *FakeGetter) Get(key string) string {
 	return ""
 }
 
-func (c *Context) Run(hookName string, state State) (*State, error) {
+func (c *Context) Run(hookName string, state *State) (*State, error) {
 	fakeRunner := &FakeRunner{
 		Output: []byte(``),
 		Err:    nil,
+		Leader: state.Leader,
 	}
 
 	fakeGetter := &FakeGetter{
@@ -59,11 +69,12 @@ func (c *Context) Run(hookName string, state State) (*State, error) {
 		return nil, fmt.Errorf("failed to run charm: %w", err)
 	}
 
-	return &State{
-		UnitStatus: fakeRunner.Status,
-	}, nil
+	state.UnitStatus = fakeRunner.Status
+
+	return state, nil
 }
 
 type State struct {
+	Leader     bool
 	UnitStatus string
 }
