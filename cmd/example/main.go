@@ -33,7 +33,7 @@ func main() {
 	if env.HookName != "" {
 		goops.LogInfof("Hook name: %s", env.HookName)
 
-		err := charm.HandleDefaultHook()
+		err := charm.Configure()
 		if err != nil {
 			goops.LogErrorf("Error handling default hook: %s", err.Error())
 			os.Exit(0)
