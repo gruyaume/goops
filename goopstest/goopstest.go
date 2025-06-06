@@ -29,13 +29,30 @@ func (f *FakeRunner) Run(name string, args ...string) ([]byte, error) {
 	return f.Output, f.Err
 }
 
+type FakeGetter struct {
+	HookName string
+}
+
+func (f *FakeGetter) Get(key string) string {
+	if key == "JUJU_HOOK_NAME" {
+		return f.HookName
+	}
+
+	return ""
+}
+
 func (c *Context) Run(event string, state State) (*State, error) {
 	fakeRunner := &FakeRunner{
 		Output: []byte(``),
 		Err:    nil,
 	}
 
+	fakeGetter := &FakeGetter{
+		HookName: event,
+	}
+
 	goops.SetRunner(fakeRunner)
+	goops.SetEnvironment(fakeGetter)
 
 	err := c.Charm()
 	if err != nil {

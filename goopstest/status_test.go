@@ -27,7 +27,18 @@ func ConfigureMaintenance() error {
 	return nil
 }
 
-func TestCharm(t *testing.T) {
+func ConfigureMaintenanceOnInstall() error {
+	env := goops.ReadEnv()
+	if env.HookName == "start" {
+		_ = goops.SetUnitStatus(goops.StatusMaintenance, "Performing maintenance")
+	} else {
+		_ = goops.SetUnitStatus(goops.StatusActive, "Charm is active")
+	}
+
+	return nil
+}
+
+func TestCharmStatus(t *testing.T) {
 	tests := []struct {
 		name      string
 		configure func() error
@@ -42,6 +53,21 @@ func TestCharm(t *testing.T) {
 			name:      "BlockedStatus",
 			configure: ConfigureBlocked,
 			want:      string(goops.StatusBlocked),
+		},
+		{
+			name:      "WaitingStatus",
+			configure: ConfigureWaiting,
+			want:      string(goops.StatusWaiting),
+		},
+		{
+			name:      "MaintenanceStatus",
+			configure: ConfigureMaintenance,
+			want:      string(goops.StatusMaintenance),
+		},
+		{
+			name:      "MaintenanceStatusOnInstall",
+			configure: ConfigureMaintenanceOnInstall,
+			want:      string(goops.StatusMaintenance),
 		},
 	}
 
