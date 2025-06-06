@@ -37,15 +37,15 @@ import (
 func main() {
 	env := goops.ReadEnv()
 
-    goops.LogInfof("Hook name: %s", env.HookName)
+	goops.LogInfof("Hook name: %s", env.HookName)
 
-	err = goops.SetUnitStatus(goops.StatusActive, "A happy charm")
+	err := goops.SetUnitStatus(goops.StatusActive, "A happy charm")
 	if err != nil {
 		goops.LogErrorf("Could not set status: %v", err)
 		os.Exit(0)
 	}
 
-	goops.LogInfo("Status set to active")
+	goops.LogInfof("Status set to active")
 	os.Exit(0)
 }
 ```
