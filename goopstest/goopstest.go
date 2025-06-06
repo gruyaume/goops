@@ -23,11 +23,10 @@ func (f *fakeRunner) Run(name string, args ...string) ([]byte, error) {
 	f.Command = name
 	f.Args = args
 
-	if name == "status-set" {
+	switch name {
+	case "status-set":
 		f.Status = args[0]
-	}
-
-	if name == "is-leader" {
+	case "is-leader":
 		if f.Leader {
 			f.Output = []byte(`true`)
 		} else {
@@ -43,7 +42,8 @@ type fakeGetter struct {
 }
 
 func (f *fakeGetter) Get(key string) string {
-	if key == "JUJU_HOOK_NAME" {
+	switch key {
+	case "JUJU_HOOK_NAME":
 		return f.HookName
 	}
 
