@@ -4,22 +4,12 @@ import (
 	"fmt"
 
 	"github.com/gruyaume/goops"
-	"github.com/gruyaume/goops/commands"
 )
 
-func HandleGetCACertificateAction(hookContext *goops.HookContext) error {
-	secretGetOptions := &commands.SecretGetOptions{
-		Label:   CaCertificateSecretLabel,
-		Refresh: true,
-	}
-
-	caCertificateSecret, err := hookContext.Commands.SecretGet(secretGetOptions)
+func HandleGetCACertificateAction() error {
+	caCertificateSecret, err := goops.GetSecretByLabel(CaCertificateSecretLabel, false, true)
 	if err != nil {
-		actionFailOptions := &commands.ActionFailOptions{
-			Message: "could not get CA certificate secret",
-		}
-
-		err := hookContext.Commands.ActionFail(actionFailOptions)
+		err := goops.FailActionf("could not get CA certificate secret")
 		if err != nil {
 			return fmt.Errorf("could not fail action: %w and could not get CA certificate secret: %w", err, err)
 		}
@@ -29,11 +19,7 @@ func HandleGetCACertificateAction(hookContext *goops.HookContext) error {
 
 	caCertPEM, ok := caCertificateSecret["ca-certificate"]
 	if !ok {
-		actionFailOptions := &commands.ActionFailOptions{
-			Message: "could not find CA certificate in secret",
-		}
-
-		err := hookContext.Commands.ActionFail(actionFailOptions)
+		err := goops.FailActionf("could not find CA certificate in secret")
 		if err != nil {
 			return fmt.Errorf("could not fail action: %w and could not find CA certificate in secret: %w", err, err)
 		}
@@ -41,19 +27,11 @@ func HandleGetCACertificateAction(hookContext *goops.HookContext) error {
 		return fmt.Errorf("could not find CA certificate in secret")
 	}
 
-	actionSetOptions := &commands.ActionSetOptions{
-		Content: map[string]string{
-			"ca-certificate": caCertPEM,
-		},
-	}
-
-	err = hookContext.Commands.ActionSet(actionSetOptions)
+	err = goops.SetActionResults(map[string]string{
+		"ca-certificate": caCertPEM,
+	})
 	if err != nil {
-		actionFailOptions := &commands.ActionFailOptions{
-			Message: "could not set action result",
-		}
-
-		err := hookContext.Commands.ActionFail(actionFailOptions)
+		err := goops.FailActionf("could not set action result")
 		if err != nil {
 			return fmt.Errorf("could not fail action: %w and could not set action result: %w", err, err)
 		}

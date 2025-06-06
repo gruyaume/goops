@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/gruyaume/goops"
-	"github.com/gruyaume/goops/commands"
 	"github.com/gruyaume/goops/internal/integrations/tls_certificates"
 )
 
@@ -14,12 +13,8 @@ const (
 	TLSCertificatesIntegration = "certificates"
 )
 
-func isConfigValid(hookContext *goops.HookContext) (bool, error) {
-	configGetOptions := &commands.ConfigGetOptions{
-		Key: "ca-common-name",
-	}
-
-	caCommonNameConfig, err := hookContext.Commands.ConfigGet(configGetOptions)
+func isConfigValid() (bool, error) {
+	caCommonNameConfig, err := goops.GetConfig("ca-common-name")
 	if err != nil {
 		return false, fmt.Errorf("could not get config: %w", err)
 	}
@@ -31,31 +26,22 @@ func isConfigValid(hookContext *goops.HookContext) (bool, error) {
 	return true, nil
 }
 
-func generateAndStoreRootCertificate(hookContext *goops.HookContext) error {
-	configGetOptions := &commands.ConfigGetOptions{
-		Key: "ca-common-name",
-	}
-
-	caCommonName, err := hookContext.Commands.ConfigGetString(configGetOptions)
+func generateAndStoreRootCertificate() error {
+	caCommonName, err := goops.GetConfigString("ca-common-name")
 	if err != nil {
 		return fmt.Errorf("could not get config: %w", err)
 	}
 
-	secretGetOptions := &commands.SecretGetOptions{
-		Label:   CaCertificateSecretLabel,
-		Refresh: true,
-	}
-
-	_, err = hookContext.Commands.SecretGet(secretGetOptions)
+	_, err = goops.GetSecretByLabel(CaCertificateSecretLabel, false, true)
 	if err != nil {
-		hookContext.Commands.JujuLog(commands.Info, "could not get secret:", err.Error())
+		goops.LogInfof("could not get secret: %s", err.Error())
 
 		caCertPEM, caKeyPEM, err := GenerateRootCertificate(caCommonName)
 		if err != nil {
 			return fmt.Errorf("could not generate root certificate: %w", err)
 		}
 
-		hookContext.Commands.JujuLog(commands.Info, "Generated new root certificate")
+		goops.LogInfof("Generated new root certificate with common name: %s", caCommonName)
 
 		secretContent := map[string]string{
 			"private-key":    caKeyPEM,
@@ -64,29 +50,22 @@ func generateAndStoreRootCertificate(hookContext *goops.HookContext) error {
 
 		expiry := time.Now().AddDate(1, 0, 0)
 
-		secretAddOptions := &commands.SecretAddOptions{
+		output, err := goops.AddSecret(&goops.AddSecretOptions{
 			Content:     secretContent,
 			Description: "ca certificate and private key for the certificates charm",
 			Expire:      expiry,
 			Label:       CaCertificateSecretLabel,
-		}
-
-		output, err := hookContext.Commands.SecretAdd(secretAddOptions)
+		})
 		if err != nil {
 			return fmt.Errorf("could not add secret: %w", err)
 		}
 
-		hookContext.Commands.JujuLog(commands.Info, "Created new secret")
-		hookContext.Commands.JujuLog(commands.Info, "Secret ID:", output)
+		goops.LogInfof("Created new secret with ID: %s", output)
 
 		return nil
 	}
 
-	secretInfoGetOpts := &commands.SecretInfoGetOptions{
-		Label: CaCertificateSecretLabel,
-	}
-
-	secretInfo, err := hookContext.Commands.SecretInfoGet(secretInfoGetOpts)
+	secretInfo, err := goops.GetSecretInfoByLabel(CaCertificateSecretLabel)
 	if err != nil {
 		return fmt.Errorf("could not get secret info: %w", err)
 	}
@@ -98,21 +77,16 @@ func generateAndStoreRootCertificate(hookContext *goops.HookContext) error {
 	return nil
 }
 
-func processOutstandingCertificateRequests(hookContext *goops.HookContext) error {
-	outstandingCertificateRequests, err := tls_certificates.GetOutstandingCertificateRequests(hookContext, TLSCertificatesIntegration)
+func processOutstandingCertificateRequests() error {
+	outstandingCertificateRequests, err := tls_certificates.GetOutstandingCertificateRequests(TLSCertificatesIntegration)
 	if err != nil {
 		return fmt.Errorf("could not get outstanding certificate requests: %w", err)
 	}
 
 	for _, request := range outstandingCertificateRequests {
-		hookContext.Commands.JujuLog(commands.Info, "Received a certificate signing request from:", request.RelationID, "with common name:", request.CertificateSigningRequest.CommonName)
+		goops.LogInfof("Received a certificate signing request from: %s with common name: %s", request.RelationID, request.CertificateSigningRequest.CommonName)
 
-		secretGetOptions := &commands.SecretGetOptions{
-			Label:   CaCertificateSecretLabel,
-			Refresh: true,
-		}
-
-		caCertificateSecret, err := hookContext.Commands.SecretGet(secretGetOptions)
+		caCertificateSecret, err := goops.GetSecretByLabel(CaCertificateSecretLabel, false, true)
 		if err != nil {
 			return fmt.Errorf("could not get CA certificate secret: %w", err)
 		}
@@ -143,29 +117,25 @@ func processOutstandingCertificateRequests(hookContext *goops.HookContext) error
 			Revoked: false,
 		}
 
-		err = tls_certificates.SetRelationCertificate(hookContext, request.RelationID, providerCertificatte)
+		err = tls_certificates.SetRelationCertificate(request.RelationID, providerCertificatte)
 		if err != nil {
-			hookContext.Commands.JujuLog(commands.Warning, "Could not set relation certificate:", err.Error())
+			goops.LogWarningf("Could not set relation certificate: %s", err.Error())
 			continue
 		}
 
-		hookContext.Commands.JujuLog(commands.Info, "Provided certificate to:", request.RelationID)
+		goops.LogInfof("Provided certificate to: %s", request.RelationID)
 	}
 
 	return nil
 }
 
-func setPorts(hookContext *goops.HookContext) error {
-	ports := &commands.SetPortsOptions{
-		Ports: []*commands.Port{
-			{
-				Port:     443,
-				Protocol: "tcp",
-			},
+func setPorts() error {
+	err := goops.SetPorts([]*goops.Port{
+		{
+			Port:     443,
+			Protocol: "tcp",
 		},
-	}
-
-	err := hookContext.Commands.SetPorts(ports)
+	})
 	if err != nil {
 		return fmt.Errorf("could not set ports: %w", err)
 	}
@@ -173,96 +143,82 @@ func setPorts(hookContext *goops.HookContext) error {
 	return nil
 }
 
-func validateNetworkGet(hookContext *goops.HookContext) error {
-	networkGetOpts := &commands.NetworkGetOptions{
-		BindingName: "certificates",
-	}
-
-	networkConfig, err := hookContext.Commands.NetworkGet(networkGetOpts)
+func validateNetworkGet() error {
+	bindAddress, err := goops.GetNetworkBindAddress("certificates")
 	if err != nil {
 		return fmt.Errorf("could not get network config: %w", err)
 	}
 
-	if networkConfig == nil {
-		return fmt.Errorf("network config is nil")
-	}
-
-	if len(networkConfig.BindAddresses) == 0 {
+	if bindAddress == "" {
 		return fmt.Errorf("network config bind addresses is empty")
 	}
 
-	if len(networkConfig.BindAddresses[0].Addresses) == 0 {
-		return fmt.Errorf("network config bind address addresses is empty")
+	goops.LogInfof("Bind address: %s", bindAddress)
+
+	ingressAddress, err := goops.GetNetworkIngressAddress("certificates")
+	if err != nil {
+		return fmt.Errorf("could not get network ingress addresses: %w", err)
 	}
 
-	if networkConfig.BindAddresses[0].Addresses[0].Value == "" {
-		return fmt.Errorf("network config bind address address value is empty- This can happen in the first stage of the deployment")
-	}
-
-	if len(networkConfig.IngressAddresses) == 0 {
-		return fmt.Errorf("network config ingress addresses is empty")
-	}
-
-	if networkConfig.IngressAddresses[0] == "" {
+	if ingressAddress == "" {
 		return fmt.Errorf("network config ingress address is empty")
 	}
 
-	if len(networkConfig.EgressSubnets) == 0 {
+	goops.LogInfof("Ingress address: %s", ingressAddress)
+
+	egressSubnets, err := goops.GetNetworkEgressSubnets("certificates")
+	if err != nil {
+		return fmt.Errorf("could not get network egress subnets: %w", err)
+	}
+
+	if len(egressSubnets) == 0 {
 		return fmt.Errorf("network config egress subnets is empty")
 	}
 
-	if networkConfig.EgressSubnets[0] == "" {
+	if egressSubnets[0] == "" {
 		return fmt.Errorf("network config egress subnet is empty")
 	}
 
 	return nil
 }
 
-func validateState(hookContext *goops.HookContext) error {
+func validateState() error {
 	stateKey := "my-key"
 	stateValue := "my-value"
 
-	stateGetOptions := &commands.StateGetOptions{
-		Key: stateKey,
-	}
-
-	_, err := hookContext.Commands.StateGet(stateGetOptions)
+	_, err := goops.GetState(stateKey)
 	if err != nil {
-		hookContext.Commands.JujuLog(commands.Info, "could not get state:", err.Error())
+		goops.LogInfof("could not get state: %s", err.Error())
 
-		stateSetOptions := &commands.StateSetOptions{
-			Key:   stateKey,
-			Value: stateValue,
-		}
-
-		err := hookContext.Commands.StateSet(stateSetOptions)
+		err := goops.SetState(stateKey, stateValue)
 		if err != nil {
 			return fmt.Errorf("could not set state: %w", err)
 		}
 
-		hookContext.Commands.JujuLog(commands.Info, "set state:", stateKey, "=", stateValue)
+		goops.LogInfof("set state: %s = %s", stateKey, stateValue)
 
 		return nil
 	} else {
-		hookContext.Commands.JujuLog(commands.Info, "state already set:", stateKey, "=", stateValue)
+		goops.LogInfof("state already set: %s = %s", stateKey, stateValue)
 
-		stateDeleteOptions := &commands.StateDeleteOptions{
-			Key: stateKey,
-		}
-
-		err := hookContext.Commands.StateDelete(stateDeleteOptions)
+		err := goops.DeleteState(stateKey)
 		if err != nil {
 			return fmt.Errorf("could not delete state: %w", err)
 		}
 
-		hookContext.Commands.JujuLog(commands.Info, "deleted state:", stateKey)
+		goops.LogInfof("deleted state: %s", stateKey)
 	}
 
 	return nil
 }
 
-func HandleDefaultHook(hookContext *goops.HookContext) error {
-	isLeader, err := hookContext.Commands.IsLeader()
+func HandleDefaultHook() error {
+	meta, err := goops.ReadMetadata()
+	if err != nil {
+		return fmt.Errorf("could not read metadata: %w", err)
+	}
+
+	isLeader, err := goops.IsLeader()
 	if err != nil {
 		return fmt.Errorf("could not check if unit is leader: %w", err)
 	}
@@ -271,18 +227,14 @@ func HandleDefaultHook(hookContext *goops.HookContext) error {
 		return fmt.Errorf("unit is not leader")
 	}
 
-	hookContext.Commands.JujuLog(commands.Info, "Charm Name:", hookContext.Metadata.Name)
+	goops.LogInfof("Charm Name: %s", meta.Name)
 
-	err = setPorts(hookContext)
+	err = setPorts()
 	if err != nil {
 		return fmt.Errorf("could not set ports: %w", err)
 	}
 
-	unitGetOpts := &commands.UnitGetOptions{
-		PrivateAddress: true,
-	}
-
-	privateAddress, err := hookContext.Commands.UnitGet(unitGetOpts)
+	privateAddress, err := goops.GetUnitPrivateAddress()
 	if err != nil {
 		return fmt.Errorf("could not get unit private address: %w", err)
 	}
@@ -291,11 +243,11 @@ func HandleDefaultHook(hookContext *goops.HookContext) error {
 		return fmt.Errorf("unit private address is empty")
 	}
 
-	hookContext.Commands.JujuLog(commands.Info, "Unit private address:", privateAddress)
+	goops.LogInfof("Unit private address: %s", privateAddress)
 
-	hookContext.Commands.JujuLog(commands.Info, "Set unit ports")
+	goops.LogInfof("Set unit ports")
 
-	valid, err := isConfigValid(hookContext)
+	valid, err := isConfigValid()
 	if err != nil {
 		return fmt.Errorf("could not check config: %w", err)
 	}
@@ -304,17 +256,17 @@ func HandleDefaultHook(hookContext *goops.HookContext) error {
 		return fmt.Errorf("config is not valid")
 	}
 
-	err = generateAndStoreRootCertificate(hookContext)
+	err = generateAndStoreRootCertificate()
 	if err != nil {
 		return fmt.Errorf("could not generate CA certificate: %w", err)
 	}
 
-	err = processOutstandingCertificateRequests(hookContext)
+	err = processOutstandingCertificateRequests()
 	if err != nil {
 		return fmt.Errorf("could not process outstanding certificate requests: %w", err)
 	}
 
-	goalState, err := hookContext.Commands.GoalState()
+	goalState, err := goops.GetGoalState()
 	if err != nil {
 		return fmt.Errorf("could not get goal state: %w", err)
 	}
@@ -331,76 +283,55 @@ func HandleDefaultHook(hookContext *goops.HookContext) error {
 		return fmt.Errorf("goal state unit is nil")
 	}
 
-	_, err = hookContext.Commands.CredentialGet()
+	_, err = goops.GetCredential()
 	if err == nil {
 		return fmt.Errorf("expected not to get container on caas model: %w", err)
 	}
 
-	err = validateNetworkGet(hookContext)
+	err = validateNetworkGet()
 	if err != nil {
 		return fmt.Errorf("could not validate network get: %w", err)
 	}
 
-	relationIDsOptions := &commands.RelationIDsOptions{
-		Name: TLSCertificatesIntegration,
-	}
-
-	certificatesRelationID, err := hookContext.Commands.RelationIDs(relationIDsOptions)
+	certificatesRelationID, err := goops.GetRelationIDs(TLSCertificatesIntegration)
 	if err != nil {
 		return fmt.Errorf("could not get relation ID: %w", err)
 	}
 
 	if len(certificatesRelationID) > 0 {
-		relationModelGetOptions := &commands.RelationModelGetOptions{
-			ID: certificatesRelationID[0],
-		}
-
-		relationModel, err := hookContext.Commands.RelationModelGet(relationModelGetOptions)
+		uuid, err := goops.GetRelationModel(certificatesRelationID[0])
 		if err != nil {
 			return fmt.Errorf("could not get relation model: %w", err)
 		}
 
-		if relationModel == nil {
-			return fmt.Errorf("relation model is nil")
-		}
-
-		if relationModel.UUID == "" {
+		if uuid == "" {
 			return fmt.Errorf("relation model UUID is empty")
 		}
 	}
 
-	err = validateState(hookContext)
+	err = validateState()
 	if err != nil {
 		return fmt.Errorf("could not validate state: %w", err)
 	}
 
-	applicationVersionSetOptions := &commands.ApplicationVersionSetOptions{
-		Version: "1.0.0",
-	}
-
-	err = hookContext.Commands.ApplicationVersionSet(applicationVersionSetOptions)
+	err = goops.SetApplicationVersion("1.0.0")
 	if err != nil {
-		return fmt.Errorf("could not set application version: %w", err)
+		return fmt.Errorf("could not set application version using goops: %w", err)
 	}
 
-	existingStatus, err := hookContext.Commands.StatusGet()
+	existingStatus, err := goops.GetStatus()
 	if err != nil {
 		return fmt.Errorf("could not get status: %w", err)
 	}
 
-	hookContext.Commands.JujuLog(commands.Info, "Current status:", string(existingStatus.Name), existingStatus.Message)
+	goops.LogInfof("Current status: %s %s", existingStatus.Code, existingStatus.Message)
 
-	statusOpts := &commands.StatusSetOptions{
-		Name:    commands.StatusActive,
-		Message: "A happy charm",
-	}
-
-	err = hookContext.Commands.StatusSet(statusOpts)
+	err = goops.SetUnitStatus(goops.StatusActive, "A happy charm")
 	if err != nil {
-		return fmt.Errorf("could not set status: %w", err)
+		return fmt.Errorf("could not set unit status: %w", err)
 	}
 
-	hookContext.Commands.JujuLog(commands.Info, "Status set to active")
+	goops.LogInfof("Status set to active")
 
 	return nil
 }
