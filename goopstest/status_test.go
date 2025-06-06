@@ -40,34 +40,40 @@ func ConfigureMaintenanceOnInstall() error {
 
 func TestCharmStatus(t *testing.T) {
 	tests := []struct {
-		name      string
-		configure func() error
-		want      string
+		name     string
+		handler  func() error
+		hookName string
+		want     string
 	}{
 		{
-			name:      "ActiveStatus",
-			configure: ConfigureActive,
-			want:      string(goops.StatusActive),
+			name:     "ActiveStatus",
+			handler:  ConfigureActive,
+			hookName: "start",
+			want:     string(goops.StatusActive),
 		},
 		{
-			name:      "BlockedStatus",
-			configure: ConfigureBlocked,
-			want:      string(goops.StatusBlocked),
+			name:     "BlockedStatus",
+			handler:  ConfigureBlocked,
+			hookName: "start",
+			want:     string(goops.StatusBlocked),
 		},
 		{
-			name:      "WaitingStatus",
-			configure: ConfigureWaiting,
-			want:      string(goops.StatusWaiting),
+			name:     "WaitingStatus",
+			handler:  ConfigureWaiting,
+			hookName: "start",
+			want:     string(goops.StatusWaiting),
 		},
 		{
-			name:      "MaintenanceStatus",
-			configure: ConfigureMaintenance,
-			want:      string(goops.StatusMaintenance),
+			name:     "MaintenanceStatus",
+			handler:  ConfigureMaintenance,
+			hookName: "start",
+			want:     string(goops.StatusMaintenance),
 		},
 		{
-			name:      "MaintenanceStatusOnInstall",
-			configure: ConfigureMaintenanceOnInstall,
-			want:      string(goops.StatusMaintenance),
+			name:     "MaintenanceStatusOnInstall",
+			handler:  ConfigureMaintenanceOnInstall,
+			hookName: "start",
+			want:     string(goops.StatusMaintenance),
 		},
 	}
 
@@ -75,12 +81,12 @@ func TestCharmStatus(t *testing.T) {
 		tc := tc // capture range variable
 		t.Run(tc.name, func(t *testing.T) {
 			ctx := goopstest.Context{
-				Charm: tc.configure,
+				Charm: tc.handler,
 			}
 
 			stateIn := goopstest.State{}
 
-			stateOut, err := ctx.Run("start", stateIn)
+			stateOut, err := ctx.Run(tc.hookName, stateIn)
 			if err != nil {
 				t.Fatalf("Run returned an error: %v", err)
 			}

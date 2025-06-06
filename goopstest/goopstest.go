@@ -41,14 +41,14 @@ func (f *FakeGetter) Get(key string) string {
 	return ""
 }
 
-func (c *Context) Run(event string, state State) (*State, error) {
+func (c *Context) Run(hookName string, state State) (*State, error) {
 	fakeRunner := &FakeRunner{
 		Output: []byte(``),
 		Err:    nil,
 	}
 
 	fakeGetter := &FakeGetter{
-		HookName: event,
+		HookName: hookName,
 	}
 
 	goops.SetRunner(fakeRunner)
