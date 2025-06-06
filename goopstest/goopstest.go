@@ -10,7 +10,7 @@ type Context struct {
 	Charm func() error
 }
 
-type FakeRunner struct {
+type fakeRunner struct {
 	Command string
 	Args    []string
 	Output  []byte
@@ -19,7 +19,7 @@ type FakeRunner struct {
 	Leader  bool
 }
 
-func (f *FakeRunner) Run(name string, args ...string) ([]byte, error) {
+func (f *fakeRunner) Run(name string, args ...string) ([]byte, error) {
 	f.Command = name
 	f.Args = args
 
@@ -38,11 +38,11 @@ func (f *FakeRunner) Run(name string, args ...string) ([]byte, error) {
 	return f.Output, f.Err
 }
 
-type FakeGetter struct {
+type fakeGetter struct {
 	HookName string
 }
 
-func (f *FakeGetter) Get(key string) string {
+func (f *fakeGetter) Get(key string) string {
 	if key == "JUJU_HOOK_NAME" {
 		return f.HookName
 	}
@@ -51,13 +51,13 @@ func (f *FakeGetter) Get(key string) string {
 }
 
 func (c *Context) Run(hookName string, state *State) (*State, error) {
-	fakeRunner := &FakeRunner{
+	fakeRunner := &fakeRunner{
 		Output: []byte(``),
 		Err:    nil,
 		Leader: state.Leader,
 	}
 
-	fakeGetter := &FakeGetter{
+	fakeGetter := &fakeGetter{
 		HookName: hookName,
 	}
 
