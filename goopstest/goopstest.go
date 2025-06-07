@@ -1,7 +1,9 @@
 package goopstest
 
 import (
+	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/gruyaume/goops"
 )
@@ -18,6 +20,7 @@ type fakeRunner struct {
 	Status  string
 	Leader  bool
 	Config  map[string]string
+	Secrets []Secret
 }
 
 func (f *fakeRunner) Run(name string, args ...string) ([]byte, error) {
@@ -40,6 +43,20 @@ func (f *fakeRunner) Run(name string, args ...string) ([]byte, error) {
 			f.Output = []byte(`""`)
 			f.Err = fmt.Errorf("config key %s not found", args[0])
 		}
+	case "secret-get":
+		for _, secret := range f.Secrets {
+			if strings.Contains(args[0], "--label") && strings.Contains(args[0], "--label"+"="+secret.Label) {
+				output, err := json.Marshal(secret.Content)
+				if err != nil {
+					f.Err = err
+					break
+				}
+
+				f.Output = output
+
+				break
+			}
+		}
 	}
 
 	return f.Output, f.Err
@@ -60,10 +77,11 @@ func (f *fakeGetter) Get(key string) string {
 
 func (c *Context) Run(hookName string, state *State) (*State, error) {
 	fakeRunner := &fakeRunner{
-		Output: []byte(``),
-		Err:    nil,
-		Leader: state.Leader,
-		Config: state.Config,
+		Output:  []byte(``),
+		Err:     nil,
+		Leader:  state.Leader,
+		Config:  state.Config,
+		Secrets: state.Secrets,
 	}
 
 	fakeGetter := &fakeGetter{
@@ -83,8 +101,14 @@ func (c *Context) Run(hookName string, state *State) (*State, error) {
 	return state, nil
 }
 
+type Secret struct {
+	Label   string
+	Content map[string]string
+}
+
 type State struct {
 	Leader     bool
 	UnitStatus string
 	Config     map[string]string
+	Secrets    []Secret
 }
