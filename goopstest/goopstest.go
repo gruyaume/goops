@@ -57,6 +57,26 @@ func (f *fakeRunner) Run(name string, args ...string) ([]byte, error) {
 				break
 			}
 		}
+	case "secret-add":
+		content := make(map[string]string)
+
+		var label string
+
+		for _, arg := range args {
+			if strings.HasPrefix(arg, "--label=") {
+				label = strings.TrimPrefix(arg, "--label=")
+			} else if strings.Contains(arg, "=") {
+				parts := strings.SplitN(arg, "=", 2)
+				if len(parts) == 2 {
+					content[parts[0]] = parts[1]
+				}
+			}
+		}
+
+		f.Secrets = append(f.Secrets, Secret{
+			Label:   label,
+			Content: content,
+		})
 	}
 
 	return f.Output, f.Err
@@ -97,6 +117,7 @@ func (c *Context) Run(hookName string, state *State) (*State, error) {
 	}
 
 	state.UnitStatus = fakeRunner.Status
+	state.Secrets = fakeRunner.Secrets
 
 	return state, nil
 }

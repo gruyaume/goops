@@ -1,6 +1,7 @@
 package goopstest_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/gruyaume/goops"
@@ -31,7 +32,7 @@ func ConfigureGetSecret() error {
 	return nil
 }
 
-func TestCharmSecret(t *testing.T) {
+func TestCharmGetSecret(t *testing.T) {
 	tests := []struct {
 		name     string
 		handler  func() error
@@ -85,11 +86,19 @@ func TestCharmSecret(t *testing.T) {
 			if stateOut.UnitStatus != tc.want {
 				t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, tc.want)
 			}
+
+			for _, secret := range stateOut.Secrets {
+				if secret.Label == mySecret.Label {
+					if secret.Content[tc.key] != tc.value {
+						t.Errorf("got Secret[%s]=%s, want %s", tc.key, secret.Content[tc.key], tc.value)
+					}
+				}
+			}
 		})
 	}
 }
 
-func TestCharmUnexistingSecret(t *testing.T) {
+func TestCharmGetUnexistingSecret(t *testing.T) {
 	ctx := goopstest.Context{
 		Charm: ConfigureGetSecret,
 	}
@@ -103,5 +112,61 @@ func TestCharmUnexistingSecret(t *testing.T) {
 
 	if stateOut.UnitStatus != string(goops.StatusMaintenance) {
 		t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, string(goops.StatusMaintenance))
+	}
+
+	if len(stateOut.Secrets) != 0 {
+		t.Errorf("got %d secrets, want 0", len(stateOut.Secrets))
+	}
+}
+
+func ConfigureAddSecret() error {
+	secretLabel := "whatever-label"
+
+	caKeyPEM := `keycontent`
+	caCertPEM := `certcontent`
+
+	secretContent := map[string]string{
+		"private-key":    caKeyPEM,
+		"ca-certificate": caCertPEM,
+	}
+
+	_, err := goops.AddSecret(&goops.AddSecretOptions{
+		Label:   secretLabel,
+		Content: secretContent,
+	})
+	if err != nil {
+		return fmt.Errorf("could not add secret: %w", err)
+	}
+
+	return nil
+}
+
+func TestCharmAddSecret(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: ConfigureAddSecret,
+	}
+
+	stateIn := &goopstest.State{}
+
+	stateOut, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if len(stateOut.Secrets) != 1 {
+		t.Errorf("got %d secrets, want 1", len(stateOut.Secrets))
+	}
+
+	mySecret := stateOut.Secrets[0]
+	if mySecret.Label != "whatever-label" {
+		t.Errorf("got Secret.Label=%s, want %s", mySecret.Label, "whatever-label")
+	}
+
+	if mySecret.Content["private-key"] != "keycontent" {
+		t.Errorf("got Secret[private-key]=%s, want %s", mySecret.Content["private-key"], "keycontent")
+	}
+
+	if mySecret.Content["ca-certificate"] != "certcontent" {
+		t.Errorf("got Secret[ca-certificate]=%s, want %s", mySecret.Content["ca-certificate"], "certcontent")
 	}
 }
