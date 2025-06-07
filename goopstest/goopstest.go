@@ -17,6 +17,7 @@ type fakeRunner struct {
 	Err     error
 	Status  string
 	Leader  bool
+	Config  map[string]string
 }
 
 func (f *fakeRunner) Run(name string, args ...string) ([]byte, error) {
@@ -31,6 +32,13 @@ func (f *fakeRunner) Run(name string, args ...string) ([]byte, error) {
 			f.Output = []byte(`true`)
 		} else {
 			f.Output = []byte(`false`)
+		}
+	case "config-get":
+		if value, ok := f.Config[args[0]]; ok {
+			f.Output = []byte(fmt.Sprintf(`"%s"`, value))
+		} else {
+			f.Output = []byte(`""`)
+			f.Err = fmt.Errorf("config key %s not found", args[0])
 		}
 	}
 
@@ -55,6 +63,7 @@ func (c *Context) Run(hookName string, state *State) (*State, error) {
 		Output: []byte(``),
 		Err:    nil,
 		Leader: state.Leader,
+		Config: state.Config,
 	}
 
 	fakeGetter := &fakeGetter{
@@ -77,4 +86,5 @@ func (c *Context) Run(hookName string, state *State) (*State, error) {
 type State struct {
 	Leader     bool
 	UnitStatus string
+	Config     map[string]string
 }
