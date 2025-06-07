@@ -8,7 +8,7 @@ import (
 	"github.com/gruyaume/goops/goopstest"
 )
 
-func ConfigureGetSecret() error {
+func GetSecret() error {
 	secretLabel := "whatever-label"
 
 	secret, err := goops.GetSecretByLabel(secretLabel, false, true)
@@ -42,16 +42,16 @@ func TestCharmGetSecret(t *testing.T) {
 		want     string
 	}{
 		{
-			name:     "ConfigureGetSecret",
-			handler:  ConfigureGetSecret,
+			name:     "GetSecret",
+			handler:  GetSecret,
 			hookName: "start",
 			key:      "secret-key",
 			value:    "expected-value",
 			want:     string(goops.StatusActive),
 		},
 		{
-			name:     "ConfigureGetSecretUnexpectedValue",
-			handler:  ConfigureGetSecret,
+			name:     "GetSecretUnexpectedValue",
+			handler:  GetSecret,
 			hookName: "start",
 			key:      "secret-key",
 			value:    "unexpected-value",
@@ -100,7 +100,7 @@ func TestCharmGetSecret(t *testing.T) {
 
 func TestCharmGetUnexistingSecret(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: ConfigureGetSecret,
+		Charm: GetSecret,
 	}
 
 	stateIn := &goopstest.State{}
@@ -119,7 +119,7 @@ func TestCharmGetUnexistingSecret(t *testing.T) {
 	}
 }
 
-func ConfigureAddSecret() error {
+func AddSecret() error {
 	secretLabel := "whatever-label"
 
 	caKeyPEM := `keycontent`
@@ -143,7 +143,7 @@ func ConfigureAddSecret() error {
 
 func TestCharmAddSecret(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: ConfigureAddSecret,
+		Charm: AddSecret,
 	}
 
 	stateIn := &goopstest.State{}
@@ -168,5 +168,72 @@ func TestCharmAddSecret(t *testing.T) {
 
 	if mySecret.Content["ca-certificate"] != "certcontent" {
 		t.Errorf("got Secret[ca-certificate]=%s, want %s", mySecret.Content["ca-certificate"], "certcontent")
+	}
+}
+
+func RemoveSecret() error {
+	err := goops.RemoveSecret("123")
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func TestCharmRemoveSecret(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: RemoveSecret,
+	}
+
+	stateIn := &goopstest.State{
+		Secrets: []goopstest.Secret{
+			{
+				ID: "123",
+				Content: map[string]string{
+					"private-key":    "keycontent",
+					"ca-certificate": "certcontent",
+				},
+			},
+		},
+	}
+
+	stateOut, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if len(stateOut.Secrets) != 0 {
+		t.Errorf("got %d secrets, want 0", len(stateOut.Secrets))
+	}
+}
+
+func TestCharmRemoveUnexistingSecret(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: RemoveSecret,
+	}
+
+	stateIn := &goopstest.State{
+		Secrets: []goopstest.Secret{
+			{
+				ID: "12345",
+				Content: map[string]string{
+					"private-key":    "keycontent",
+					"ca-certificate": "certcontent",
+				},
+			},
+		},
+	}
+
+	stateOut, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if len(stateOut.Secrets) != 1 {
+		t.Errorf("got %d secrets, want 1", len(stateOut.Secrets))
+	}
+
+	if stateOut.Secrets[0].ID != "12345" {
+		t.Errorf("got Secret.ID=%s, want %s", stateOut.Secrets[0].ID, "12345")
 	}
 }

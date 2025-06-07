@@ -7,7 +7,7 @@ import (
 	"github.com/gruyaume/goops/goopstest"
 )
 
-func ConfigureActiveIfExpected() error {
+func ActiveIfExpectedConfig() error {
 	value, err := goops.GetConfigString("blabla")
 	if err != nil {
 		return err
@@ -22,7 +22,7 @@ func ConfigureActiveIfExpected() error {
 	return nil
 }
 
-func ConfigureActiveInexistant() error {
+func ActiveInexistantConfig() error {
 	_, err := goops.GetConfigString("doesntexist")
 	if err != nil {
 		_ = goops.SetUnitStatus(goops.StatusBlocked, "Config key does not exist")
@@ -41,24 +41,24 @@ func TestCharmConfig(t *testing.T) {
 		want     string
 	}{
 		{
-			name:     "ConfigureActiveIfExpected",
-			handler:  ConfigureActiveIfExpected,
+			name:     "ActiveIfExpectedConfig",
+			handler:  ActiveIfExpectedConfig,
 			hookName: "start",
 			key:      "blabla",
 			value:    "expected",
 			want:     string(goops.StatusActive),
 		},
 		{
-			name:     "ConfigureBlockedIfNotExpected",
-			handler:  ConfigureActiveIfExpected,
+			name:     "BlockedIfNotExpectedConfig",
+			handler:  ActiveIfExpectedConfig,
 			hookName: "start",
 			key:      "blabla",
 			value:    "not-expected",
 			want:     string(goops.StatusBlocked),
 		},
 		{
-			name:     "ConfigureActiveInexistant",
-			handler:  ConfigureActiveInexistant,
+			name:     "ActiveInexistantConfig",
+			handler:  ActiveInexistantConfig,
 			hookName: "start",
 			key:      "blabla",
 			value:    "whatever",

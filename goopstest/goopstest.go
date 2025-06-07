@@ -29,67 +29,101 @@ func (f *fakeRunner) Run(name string, args ...string) ([]byte, error) {
 
 	switch name {
 	case "status-set":
-		f.Status = args[0]
+		f.handleStatusSet(args)
 	case "is-leader":
-		if f.Leader {
-			f.Output = []byte(`true`)
-		} else {
-			f.Output = []byte(`false`)
-		}
+		f.handleIsLeader()
 	case "config-get":
-		if value, ok := f.Config[args[0]]; ok {
-			f.Output = []byte(fmt.Sprintf(`"%s"`, value))
-		} else {
-			f.Output = []byte(`""`)
-			f.Err = fmt.Errorf("config key %s not found", args[0])
-		}
+		f.handleConfigGet(args)
 	case "secret-get":
-		for _, secret := range f.Secrets {
-			if strings.Contains(args[0], "--label") && strings.Contains(args[0], "--label"+"="+secret.Label) {
-				output, err := json.Marshal(secret.Content)
-				if err != nil {
-					f.Err = err
-					break
-				}
-
-				f.Output = output
-
-				break
-			}
-		}
+		f.handleSecretGet(args)
 	case "secret-add":
-		content := make(map[string]string)
-
-		var label string
-
-		for _, arg := range args {
-			if strings.HasPrefix(arg, "--label=") {
-				label = strings.TrimPrefix(arg, "--label=")
-			} else if strings.Contains(arg, "=") {
-				parts := strings.SplitN(arg, "=", 2)
-				if len(parts) == 2 {
-					content[parts[0]] = parts[1]
-				}
-			}
-		}
-
-		f.Secrets = append(f.Secrets, Secret{
-			Label:   label,
-			Content: content,
-		})
+		f.handleSecretAdd(args)
+	case "secret-remove":
+		f.handleSecretRemove(args)
 	}
 
 	return f.Output, f.Err
 }
 
+func (f *fakeRunner) handleStatusSet(args []string) {
+	f.Status = args[0]
+}
+
+func (f *fakeRunner) handleIsLeader() {
+	if f.Leader {
+		f.Output = []byte(`true`)
+	} else {
+		f.Output = []byte(`false`)
+	}
+}
+
+func (f *fakeRunner) handleConfigGet(args []string) {
+	if value, ok := f.Config[args[0]]; ok {
+		f.Output = []byte(fmt.Sprintf(`"%s"`, value))
+	} else {
+		f.Output = []byte(`""`)
+		f.Err = fmt.Errorf("config key %s not found", args[0])
+	}
+}
+
+func (f *fakeRunner) handleSecretAdd(args []string) {
+	content := make(map[string]string)
+
+	var label string
+
+	for _, arg := range args {
+		if strings.HasPrefix(arg, "--label=") {
+			label = strings.TrimPrefix(arg, "--label=")
+		} else if strings.Contains(arg, "=") {
+			parts := strings.SplitN(arg, "=", 2)
+			if len(parts) == 2 {
+				content[parts[0]] = parts[1]
+			}
+		}
+	}
+
+	f.Secrets = append(f.Secrets, Secret{
+		Label:   label,
+		Content: content,
+	})
+}
+
+func (f *fakeRunner) handleSecretGet(args []string) {
+	for _, secret := range f.Secrets {
+		if strings.Contains(args[0], "--label") && strings.Contains(args[0], "--label"+"="+secret.Label) {
+			output, err := json.Marshal(secret.Content)
+			if err != nil {
+				f.Err = err
+				break
+			}
+
+			f.Output = output
+
+			break
+		}
+	}
+}
+
+func (f *fakeRunner) handleSecretRemove(args []string) {
+	for i, secret := range f.Secrets {
+		if strings.Contains(args[0], secret.ID) || strings.Contains(args[0], "--label="+secret.Label) {
+			f.Secrets = append(f.Secrets[:i], f.Secrets[i+1:]...)
+			break
+		}
+	}
+}
+
 type fakeGetter struct {
-	HookName string
+	HookName   string
+	ActionName string
 }
 
 func (f *fakeGetter) Get(key string) string {
 	switch key {
 	case "JUJU_HOOK_NAME":
 		return f.HookName
+	case "JUJU_ACTION_NAME":
+		return f.ActionName
 	}
 
 	return ""
@@ -122,7 +156,35 @@ func (c *Context) Run(hookName string, state *State) (*State, error) {
 	return state, nil
 }
 
+func (c *Context) RunAction(actionName string, state *State) (*State, error) {
+	fakeRunner := &fakeRunner{
+		Output:  []byte(``),
+		Err:     nil,
+		Leader:  state.Leader,
+		Config:  state.Config,
+		Secrets: state.Secrets,
+	}
+
+	fakeGetter := &fakeGetter{
+		ActionName: actionName,
+	}
+
+	goops.SetRunner(fakeRunner)
+	goops.SetEnvironment(fakeGetter)
+
+	err := c.Charm()
+	if err != nil {
+		return nil, fmt.Errorf("failed to run charm: %w", err)
+	}
+
+	state.UnitStatus = fakeRunner.Status
+	state.Secrets = fakeRunner.Secrets
+
+	return state, nil
+}
+
 type Secret struct {
+	ID      string
 	Label   string
 	Content map[string]string
 }

@@ -7,7 +7,7 @@ import (
 	"github.com/gruyaume/goops/goopstest"
 )
 
-func ConfigureMaintenanceOnStart() error {
+func MaintenanceStatusOnStart() error {
 	env := goops.ReadEnv()
 	if env.HookName == "start" {
 		err := goops.SetUnitStatus(goops.StatusMaintenance, "Performing maintenance")
@@ -24,7 +24,7 @@ func ConfigureMaintenanceOnStart() error {
 	return nil
 }
 
-func ConfigureActiveOnInstall() error {
+func ActiveStatusOnInstall() error {
 	env := goops.ReadEnv()
 	if env.HookName == "install" {
 		err := goops.SetUnitStatus(goops.StatusActive, "Charm is active")
@@ -50,13 +50,13 @@ func TestCharmHookName(t *testing.T) {
 	}{
 		{
 			name:     "MaintenanceStatusOnStart",
-			handler:  ConfigureMaintenanceOnStart,
+			handler:  MaintenanceStatusOnStart,
 			hookName: "start",
 			want:     string(goops.StatusMaintenance),
 		},
 		{
 			name:     "ActiveStatusOnInstall",
-			handler:  ConfigureActiveOnInstall,
+			handler:  ActiveStatusOnInstall,
 			hookName: "install",
 			want:     string(goops.StatusActive),
 		},

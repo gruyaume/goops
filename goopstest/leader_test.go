@@ -7,7 +7,7 @@ import (
 	"github.com/gruyaume/goops/goopstest"
 )
 
-func ConfigureMaintenanceIfLeader() error {
+func MaintenanceStatusIfLeader() error {
 	isLeader, err := goops.IsLeader()
 	if err != nil {
 		return err
@@ -28,7 +28,7 @@ func ConfigureMaintenanceIfLeader() error {
 	return nil
 }
 
-func ConfigureMaintenanceIfNotLeader() error {
+func MaintenanceStatusIfNotLeader() error {
 	isLeader, err := goops.IsLeader()
 	if err != nil {
 		return err
@@ -59,14 +59,14 @@ func TestCharmLeader(t *testing.T) {
 	}{
 		{
 			name:     "MaintenanceStatusIfLeader",
-			handler:  ConfigureMaintenanceIfLeader,
+			handler:  MaintenanceStatusIfLeader,
 			hookName: "start",
 			leader:   true,
 			want:     string(goops.StatusMaintenance),
 		},
 		{
 			name:     "MaintenanceStatusIfNotLeader",
-			handler:  ConfigureMaintenanceIfNotLeader,
+			handler:  MaintenanceStatusIfNotLeader,
 			hookName: "start",
 			leader:   false,
 			want:     string(goops.StatusMaintenance),
