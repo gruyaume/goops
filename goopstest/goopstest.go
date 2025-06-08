@@ -33,6 +33,8 @@ type fakeRunner struct {
 }
 
 func (f *fakeRunner) Run(name string, args ...string) ([]byte, error) {
+	f.Output = []byte(``)
+	f.Err = nil
 	f.Command = name
 	f.Args = args
 
