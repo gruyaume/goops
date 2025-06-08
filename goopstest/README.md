@@ -1,6 +1,11 @@
 # goopstest
 
-The unit testing framework for Goops charms.
+**The unit testing framework for Goops charms.**
+
+`goopstest` follows the same design principles as [ops-testing](https://ops.readthedocs.io/en/latest/reference/ops-testing.html#ops-testing), allowing users to write unit tests in a "state-transition" style. Each test consists of:
+- A Context and an initial state (Arrange)
+- An event (Act)
+- An output state (Assert)
 
 ```go
 package charm_test

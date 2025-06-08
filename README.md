@@ -61,6 +61,10 @@ The following charms use `goops` and can be used as examples:
 - **Reliability**: Our top priority is building predictable and robust charms.
 - **Simplicity**: `goops` serves as a minimal, one-to-one mapping between Juju concepts and Go constructs. It is not a framework; it does not impose charm design patterns.
 
+### Unit Testing
+
+[`goopstest`](goopstest/README.md) is a unit testing framework for `goops` charms. It allows you to simulate Juju environments and test your charm logic without needing a live Juju controller.
+
 ### Juju compatibility
 
 `goops` is compatible with Juju 3.6 and later.
