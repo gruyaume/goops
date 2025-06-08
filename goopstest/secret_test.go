@@ -65,7 +65,7 @@ func TestCharmGetSecret(t *testing.T) {
 				Charm: tc.handler,
 			}
 
-			mySecret := goopstest.Secret{
+			mySecret := &goopstest.Secret{
 				Label: "whatever-label",
 				Content: map[string]string{
 					tc.key: tc.value,
@@ -73,7 +73,7 @@ func TestCharmGetSecret(t *testing.T) {
 			}
 
 			stateIn := &goopstest.State{
-				Secrets: []goopstest.Secret{
+				Secrets: []*goopstest.Secret{
 					mySecret,
 				},
 			}
@@ -186,7 +186,7 @@ func TestCharmRemoveSecret(t *testing.T) {
 	}
 
 	stateIn := &goopstest.State{
-		Secrets: []goopstest.Secret{
+		Secrets: []*goopstest.Secret{
 			{
 				ID: "123",
 				Content: map[string]string{
@@ -213,7 +213,7 @@ func TestCharmRemoveUnexistingSecret(t *testing.T) {
 	}
 
 	stateIn := &goopstest.State{
-		Secrets: []goopstest.Secret{
+		Secrets: []*goopstest.Secret{
 			{
 				ID: "12345",
 				Content: map[string]string{

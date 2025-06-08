@@ -22,11 +22,12 @@ type fakeRunner struct {
 	Status             string
 	Leader             bool
 	Config             map[string]string
-	Secrets            []Secret
+	Secrets            []*Secret
 	ActionResults      map[string]string
 	ActionParameters   map[string]string
 	ActionError        error
 	ApplicationVersion string
+	Relations          []*Relation
 }
 
 func (f *fakeRunner) Run(name string, args ...string) ([]byte, error) {
@@ -65,7 +66,7 @@ func (f *fakeRunner) Run(name string, args ...string) ([]byte, error) {
 	case "juju-reboot":
 		// Not yet implemented
 	case "relation-ids":
-		// Not yet implemented
+		f.handleRelationIDs(args)
 	case "relation-get":
 		// Not yet implemented
 	case "relation-list":
@@ -138,6 +139,19 @@ func (f *fakeRunner) handleConfigGet(args []string) {
 	}
 }
 
+func (f *fakeRunner) handleRelationIDs(args []string) {
+	for _, relation := range f.Relations {
+		if len(args) > 0 && args[0] == relation.Endpoint {
+			// If the endpoint matches, return the relation ID
+			if relation.ID != "" {
+				f.Output = []byte(fmt.Sprintf(`["%s"]`, relation.ID))
+			} else {
+				f.Output = []byte(`[]`)
+			}
+		}
+	}
+}
+
 func (f *fakeRunner) handleSecretAdd(args []string) {
 	content := make(map[string]string)
 
@@ -154,7 +168,7 @@ func (f *fakeRunner) handleSecretAdd(args []string) {
 		}
 	}
 
-	f.Secrets = append(f.Secrets, Secret{
+	f.Secrets = append(f.Secrets, &Secret{
 		Label:   label,
 		Content: content,
 	})
@@ -239,13 +253,24 @@ func (f *fakeGetter) Get(key string) string {
 	return ""
 }
 
+// For each relation, we set the ID to: <name>:<number>
+func setRelationIDs(relations []*Relation) {
+	for i, relation := range relations {
+		if relation.ID == "" {
+			relation.ID = fmt.Sprintf("%s:%d", relation.Endpoint, i)
+		}
+	}
+}
+
 func (c *Context) Run(hookName string, state *State) (*State, error) {
+	setRelationIDs(state.Relations)
 	fakeRunner := &fakeRunner{
-		Output:  []byte(``),
-		Err:     nil,
-		Leader:  state.Leader,
-		Config:  state.Config,
-		Secrets: state.Secrets,
+		Output:    []byte(``),
+		Err:       nil,
+		Leader:    state.Leader,
+		Config:    state.Config,
+		Secrets:   state.Secrets,
+		Relations: state.Relations,
 	}
 
 	fakeGetter := &fakeGetter{
@@ -303,10 +328,19 @@ type Secret struct {
 	Content map[string]string
 }
 
+type Relation struct {
+	Endpoint      string
+	Interface     string
+	ID            string
+	LocalAppData  map[string]string
+	LocalUnitData map[string]string
+}
+
 type State struct {
 	Leader             bool
 	UnitStatus         string
 	Config             map[string]string
-	Secrets            []Secret
+	Secrets            []*Secret
 	ApplicationVersion string
+	Relations          []*Relation
 }
