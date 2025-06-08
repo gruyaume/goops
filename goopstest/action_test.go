@@ -54,7 +54,7 @@ func TestCharmActionName(t *testing.T) {
 
 			stateIn := &goopstest.State{}
 
-			stateOut, err := ctx.RunAction(tc.actionName, stateIn)
+			stateOut, err := ctx.RunAction(tc.actionName, stateIn, nil)
 			if err != nil {
 				t.Fatalf("Run returned an error: %v", err)
 			}
@@ -86,7 +86,7 @@ func TestCharmActionResults1(t *testing.T) {
 
 	stateIn := &goopstest.State{}
 
-	_, err := ctx.RunAction("run-action", stateIn)
+	_, err := ctx.RunAction("run-action", stateIn, nil)
 	if err != nil {
 		t.Fatalf("Run returned an error: %v", err)
 	}
@@ -118,7 +118,7 @@ func TestCharmActionResults3(t *testing.T) {
 
 	stateIn := &goopstest.State{}
 
-	_, err := ctx.RunAction("run-action", stateIn)
+	_, err := ctx.RunAction("run-action", stateIn, nil)
 	if err != nil {
 		t.Fatalf("Run returned an error: %v", err)
 	}
@@ -152,12 +152,74 @@ func TestCharmActionFailed(t *testing.T) {
 
 	stateIn := &goopstest.State{}
 
-	_, err := ctx.RunAction("run-action", stateIn)
+	_, err := ctx.RunAction("run-action", stateIn, nil)
 	if err != nil {
 		t.Fatalf("Run returned an error: %v", err)
 	}
 
 	if ctx.ActionError.Error() != "Action failed with error: some error" {
 		t.Errorf("got ActionError=%q, want %q", ctx.ActionError.Error(), "Action failed with error: some error")
+	}
+}
+
+func ActionParameters() error {
+	params, err := goops.GetActionParameter("key")
+	if err != nil {
+		_ = goops.FailActionf("Action parameter 'key' not set")
+		return nil
+	}
+
+	if params != "expected-value" {
+		_ = goops.FailActionf("got ActionParameter[key]=%s, want expected-value", params)
+		return nil
+	}
+
+	err = goops.SetActionResults(map[string]string{
+		"success": "true",
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func TestCharmActionParameters(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: ActionParameters,
+	}
+
+	stateIn := &goopstest.State{}
+
+	_, err := ctx.RunAction("run-action", stateIn, map[string]string{
+		"key": "expected-value",
+	})
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.ActionResults["success"] != "true" {
+		t.Errorf("got ActionResults[success]=%s, want true", ctx.ActionResults["success"])
+	}
+}
+
+func TestCharmActionParameterNotSet(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: ActionParameters,
+	}
+
+	stateIn := &goopstest.State{}
+
+	_, err := ctx.RunAction("run-action", stateIn, nil)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.ActionError == nil || ctx.ActionError.Error() != "Action parameter 'key' not set" {
+		t.Errorf("got ActionError=%q, want 'Action parameter 'key' not set'", ctx.ActionError.Error())
+	}
+
+	if ctx.ActionResults != nil {
+		t.Errorf("got ActionResults=%v, want nil", ctx.ActionResults)
 	}
 }

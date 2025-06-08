@@ -15,16 +15,18 @@ type Context struct {
 }
 
 type fakeRunner struct {
-	Command       string
-	Args          []string
-	Output        []byte
-	Err           error
-	Status        string
-	Leader        bool
-	Config        map[string]string
-	Secrets       []Secret
-	ActionResults map[string]string
-	ActionError   error
+	Command            string
+	Args               []string
+	Output             []byte
+	Err                error
+	Status             string
+	Leader             bool
+	Config             map[string]string
+	Secrets            []Secret
+	ActionResults      map[string]string
+	ActionParameters   map[string]string
+	ActionError        error
+	ApplicationVersion string
 }
 
 func (f *fakeRunner) Run(name string, args ...string) ([]byte, error) {
@@ -32,22 +34,84 @@ func (f *fakeRunner) Run(name string, args ...string) ([]byte, error) {
 	f.Args = args
 
 	switch name {
-	case "status-set":
-		f.handleStatusSet(args)
-	case "is-leader":
-		f.handleIsLeader()
-	case "config-get":
-		f.handleConfigGet(args)
-	case "secret-get":
-		f.handleSecretGet(args)
-	case "secret-add":
-		f.handleSecretAdd(args)
-	case "secret-remove":
-		f.handleSecretRemove(args)
-	case "action-set":
-		f.handleActionSet(args)
 	case "action-fail":
 		f.handleActionFail(args)
+	case "action-get":
+		f.handleActionGet(args)
+	case "action-log":
+		// Not yet implemented
+	case "action-set":
+		f.handleActionSet(args)
+	case "application-version-set":
+		f.handleApplicationVersionSet(args)
+	case "config-get":
+		f.handleConfigGet(args)
+	case "credential-get":
+		// Not yet implemented
+	case "goal-state":
+		// Not yet implemented
+	case "is-leader":
+		f.handleIsLeader()
+	case "juju-log":
+		// Not yet implemented
+	case "network-get":
+		// Not yet implemented
+	case "open-port":
+		// Not yet implemented
+	case "close-port":
+		// Not yet implemented
+	case "opened-ports":
+		// Not yet implemented
+	case "juju-reboot":
+		// Not yet implemented
+	case "relation-ids":
+		// Not yet implemented
+	case "relation-get":
+		// Not yet implemented
+	case "relation-list":
+		// Not yet implemented
+	case "relation-set":
+		// Not yet implemented
+	case "relation-model-get":
+		// Not yet implemented
+	case "resource-get":
+		// Not yet implemented
+	case "secret-add":
+		f.handleSecretAdd(args)
+	case "secret-get":
+		f.handleSecretGet(args)
+	case "secret-grant":
+		// Not yet implemented
+	case "secret-ids":
+		// Not yet implemented
+	case "secret-info-get":
+		// Not yet implemented
+	case "secret-remove":
+		f.handleSecretRemove(args)
+	case "secret-revoke":
+		// Not yet implemented
+	case "secret-set":
+		// Not yet implemented
+	case "state-delete":
+		// Not yet implemented
+	case "state-get":
+		// Not yet implemented
+	case "state-set":
+		// Not yet implemented
+	case "status-get":
+		// Not yet implemented
+	case "status-set":
+		f.handleStatusSet(args)
+	case "storage-add":
+		// Not yet implemented
+	case "storage-get":
+		// Not yet implemented
+	case "storage-list":
+		// Not yet implemented
+	case "unit-get":
+		// Not yet implemented
+	default:
+		return nil, fmt.Errorf("unknown command: %s", name)
 	}
 
 	return f.Output, f.Err
@@ -138,6 +202,27 @@ func (f *fakeRunner) handleActionFail(args []string) {
 	f.ActionError = fmt.Errorf("%s", strings.Join(args, " "))
 }
 
+func (f *fakeRunner) handleActionGet(args []string) {
+	key := args[0]
+
+	if value, ok := f.ActionParameters[key]; ok {
+		output, err := json.Marshal(value)
+		if err != nil {
+			f.Err = fmt.Errorf("failed to marshal action parameter: %w", err)
+			return
+		}
+
+		f.Output = output
+	} else {
+		f.Err = fmt.Errorf("action parameter %s not found", key)
+		f.Output = []byte(`""`)
+	}
+}
+
+func (f *fakeRunner) handleApplicationVersionSet(args []string) {
+	f.ApplicationVersion = args[0]
+}
+
 type fakeGetter struct {
 	HookName   string
 	ActionName string
@@ -177,17 +262,19 @@ func (c *Context) Run(hookName string, state *State) (*State, error) {
 
 	state.UnitStatus = fakeRunner.Status
 	state.Secrets = fakeRunner.Secrets
+	state.ApplicationVersion = fakeRunner.ApplicationVersion
 
 	return state, nil
 }
 
-func (c *Context) RunAction(actionName string, state *State) (*State, error) {
+func (c *Context) RunAction(actionName string, state *State, params map[string]string) (*State, error) {
 	fakeRunner := &fakeRunner{
-		Output:  []byte(``),
-		Err:     nil,
-		Leader:  state.Leader,
-		Config:  state.Config,
-		Secrets: state.Secrets,
+		Output:           []byte(``),
+		Err:              nil,
+		Leader:           state.Leader,
+		Config:           state.Config,
+		Secrets:          state.Secrets,
+		ActionParameters: params,
 	}
 
 	fakeGetter := &fakeGetter{
@@ -217,8 +304,9 @@ type Secret struct {
 }
 
 type State struct {
-	Leader     bool
-	UnitStatus string
-	Config     map[string]string
-	Secrets    []Secret
+	Leader             bool
+	UnitStatus         string
+	Config             map[string]string
+	Secrets            []Secret
+	ApplicationVersion string
 }
