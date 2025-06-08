@@ -45,6 +45,7 @@ func (f *fakeRunner) Run(name string, args ...string) ([]byte, error) {
 		"is-leader":               f.handleIsLeader,
 		"opened-ports":            f.handleOpenedPorts,
 		"open-port":               f.handleOpenPort,
+		"close-port":              f.handleClosePort,
 		"relation-ids":            f.handleRelationIDs,
 		"relation-get":            f.handleRelationGet,
 		"relation-list":           f.handleRelationList,
@@ -76,12 +77,9 @@ func (f *fakeRunner) handleIsLeader(_ []string) {
 }
 
 func (f *fakeRunner) handleOpenedPorts(_ []string) {
-	portList := make([]map[string]any, len(f.Ports))
+	portList := make([]string, len(f.Ports))
 	for i, port := range f.Ports {
-		portList[i] = map[string]any{
-			"port":     port.Port,
-			"protocol": port.Protocol,
-		}
+		portList[i] = fmt.Sprintf("%d/%s", port.Port, port.Protocol)
 	}
 
 	output, err := json.Marshal(portList)
@@ -123,6 +121,42 @@ func (f *fakeRunner) handleOpenPort(args []string) {
 		Port:     port,
 		Protocol: protocol,
 	})
+}
+
+func (f *fakeRunner) handleClosePort(args []string) {
+	if len(args) != 1 {
+		f.Err = fmt.Errorf("close-port command requires exactly one argument")
+		return
+	}
+
+	portInfo := strings.Split(args[0], "/")
+
+	if len(portInfo) != 2 {
+		f.Err = fmt.Errorf("invalid port format, expected <port>/<protocol>")
+		return
+	}
+
+	port, err := strconv.Atoi(portInfo[0])
+	if err != nil || port < 0 || port > 65535 {
+		f.Err = fmt.Errorf("invalid port number: %s", portInfo[0])
+		return
+	}
+
+	protocol := portInfo[1]
+
+	if protocol != "tcp" && protocol != "udp" {
+		f.Err = fmt.Errorf("invalid protocol: %s, must be 'tcp' or 'udp'", protocol)
+		return
+	}
+
+	for i, p := range f.Ports {
+		if p.Port == port && p.Protocol == protocol {
+			f.Ports = append(f.Ports[:i], f.Ports[i+1:]...)
+			return
+		}
+	}
+
+	f.Err = fmt.Errorf("port %d/%s not found", port, protocol)
 }
 
 func (f *fakeRunner) handleConfigGet(args []string) {
@@ -458,6 +492,7 @@ func (c *Context) Run(hookName string, state *State) (*State, error) {
 		Config:    state.Config,
 		Secrets:   state.Secrets,
 		Relations: state.Relations,
+		Ports:     state.Ports,
 	}
 
 	fakeGetter := &fakeGetter{
