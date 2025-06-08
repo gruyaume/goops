@@ -212,7 +212,7 @@ func validateState() error {
 	return nil
 }
 
-func HandleDefaultHook() error {
+func Configure() error {
 	meta, err := goops.ReadMetadata()
 	if err != nil {
 		return fmt.Errorf("could not read metadata: %w", err)
