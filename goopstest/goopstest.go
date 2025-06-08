@@ -68,9 +68,9 @@ func (f *fakeRunner) Run(name string, args ...string) ([]byte, error) {
 	case "relation-ids":
 		f.handleRelationIDs(args)
 	case "relation-get":
-		// Not yet implemented
+		f.handleRelationGet(args)
 	case "relation-list":
-		// Not yet implemented
+		f.handleRelationList(args)
 	case "relation-set":
 		// Not yet implemented
 	case "relation-model-get":
@@ -148,6 +148,74 @@ func (f *fakeRunner) handleRelationIDs(args []string) {
 			} else {
 				f.Output = []byte(`[]`)
 			}
+		}
+	}
+}
+
+// handleRelationGet retrieves the relation data for a specific relation ID and unit ID
+func (f *fakeRunner) handleRelationGet(args []string) {
+	fmt.Println("Handling relation get with args:", args)
+
+	var relationID string
+
+	var unitID string
+
+	for i := 0; i < len(args); i++ {
+		switch {
+		case strings.HasPrefix(args[i], "-r="):
+			relationID = strings.TrimPrefix(args[i], "-r=")
+		case args[i] == "-" && i+1 < len(args):
+			unitID = args[i+1]
+		}
+	}
+
+	if relationID == "" || unitID == "" {
+		f.Err = fmt.Errorf("relation ID or unit ID not provided")
+		return
+	}
+	// Find the relation by ID
+	for _, relation := range f.Relations {
+		if relation.ID == relationID {
+			// If the relation is found, get the data for the specified unit ID
+			if data, ok := relation.RemoteUnitsData[UnitID(unitID)]; ok {
+				output, err := json.Marshal(data)
+				if err != nil {
+					f.Err = fmt.Errorf("failed to marshal relation data: %w", err)
+					return
+				}
+
+				f.Output = output
+
+				return
+			} else {
+				f.Err = fmt.Errorf("unit ID %s not found in relation %s", unitID, relationID)
+				return
+			}
+		}
+	}
+
+	fmt.Println("Relation ID:", relationID, "Unit ID:", unitID)
+}
+
+func (f *fakeRunner) handleRelationList(args []string) {
+	relationID := strings.TrimPrefix(args[0], "-r=")
+
+	for _, relation := range f.Relations {
+		if relation.ID == relationID {
+			unitIDs := make([]string, 0, len(relation.RemoteUnitsData))
+			for unitID := range relation.RemoteUnitsData {
+				unitIDs = append(unitIDs, string(unitID))
+			}
+
+			output, err := json.Marshal(unitIDs)
+			if err != nil {
+				f.Err = fmt.Errorf("failed to marshal relation units: %w", err)
+				return
+			}
+
+			f.Output = output
+
+			return
 		}
 	}
 }
@@ -262,8 +330,22 @@ func setRelationIDs(relations []*Relation) {
 	}
 }
 
+// For each relation, we set the remoteUnitsData so that it contains at leader 1 unit
+func setUnitIDs(relations []*Relation) {
+	for _, relation := range relations {
+		if relation.RemoteUnitsData == nil {
+			relation.RemoteUnitsData = make(map[UnitID]RawDataBagContents)
+		}
+
+		if len(relation.RemoteUnitsData) == 0 {
+			relation.RemoteUnitsData[UnitID(relation.RemoteAppName+"/0")] = RawDataBagContents{}
+		}
+	}
+}
+
 func (c *Context) Run(hookName string, state *State) (*State, error) {
 	setRelationIDs(state.Relations)
+	setUnitIDs(state.Relations)
 	fakeRunner := &fakeRunner{
 		Output:    []byte(``),
 		Err:       nil,
@@ -328,12 +410,19 @@ type Secret struct {
 	Content map[string]string
 }
 
+type UnitID string
+
+type RawDataBagContents map[string]string
+
 type Relation struct {
-	Endpoint      string
-	Interface     string
-	ID            string
-	LocalAppData  map[string]string
-	LocalUnitData map[string]string
+	Endpoint        string
+	Interface       string
+	ID              string
+	RemoteAppName   string
+	LocalAppData    RawDataBagContents
+	LocalUnitData   RawDataBagContents
+	RemoteAppData   RawDataBagContents
+	RemoteUnitsData map[UnitID]RawDataBagContents
 }
 
 type State struct {
