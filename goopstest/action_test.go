@@ -65,3 +65,99 @@ func TestCharmActionName(t *testing.T) {
 		})
 	}
 }
+
+func ActionResults1() error {
+	results := map[string]string{
+		"key": "value",
+	}
+
+	err := goops.SetActionResults(results)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func TestCharmActionResults1(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: ActionResults1,
+	}
+
+	stateIn := &goopstest.State{}
+
+	_, err := ctx.RunAction("run-action", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.ActionResults["key"] != "value" {
+		t.Errorf("got ActionResults[key]=%s, want value", ctx.ActionResults["key"])
+	}
+}
+
+func ActionResults3() error {
+	results := map[string]string{
+		"key0": "value0",
+		"key1": "value1",
+		"key2": "value2",
+	}
+
+	err := goops.SetActionResults(results)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func TestCharmActionResults3(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: ActionResults3,
+	}
+
+	stateIn := &goopstest.State{}
+
+	_, err := ctx.RunAction("run-action", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.ActionResults["key0"] != "value0" {
+		t.Errorf("got ActionResults[key0]=%s, want value0", ctx.ActionResults["key0"])
+	}
+
+	if ctx.ActionResults["key1"] != "value1" {
+		t.Errorf("got ActionResults[key1]=%s, want value1", ctx.ActionResults["key1"])
+	}
+
+	if ctx.ActionResults["key2"] != "value2" {
+		t.Errorf("got ActionResults[key2]=%s, want value2", ctx.ActionResults["key2"])
+	}
+}
+
+func ActionFailed() error {
+	err := goops.FailActionf("Action failed with error: %s", "some error")
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func TestCharmActionFailed(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: ActionFailed,
+	}
+
+	stateIn := &goopstest.State{}
+
+	_, err := ctx.RunAction("run-action", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.ActionError.Error() != "Action failed with error: some error" {
+		t.Errorf("got ActionError=%q, want %q", ctx.ActionError.Error(), "Action failed with error: some error")
+	}
+}

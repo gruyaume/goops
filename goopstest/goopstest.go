@@ -9,18 +9,22 @@ import (
 )
 
 type Context struct {
-	Charm func() error
+	Charm         func() error
+	ActionResults map[string]string
+	ActionError   error
 }
 
 type fakeRunner struct {
-	Command string
-	Args    []string
-	Output  []byte
-	Err     error
-	Status  string
-	Leader  bool
-	Config  map[string]string
-	Secrets []Secret
+	Command       string
+	Args          []string
+	Output        []byte
+	Err           error
+	Status        string
+	Leader        bool
+	Config        map[string]string
+	Secrets       []Secret
+	ActionResults map[string]string
+	ActionError   error
 }
 
 func (f *fakeRunner) Run(name string, args ...string) ([]byte, error) {
@@ -40,6 +44,10 @@ func (f *fakeRunner) Run(name string, args ...string) ([]byte, error) {
 		f.handleSecretAdd(args)
 	case "secret-remove":
 		f.handleSecretRemove(args)
+	case "action-set":
+		f.handleActionSet(args)
+	case "action-fail":
+		f.handleActionFail(args)
 	}
 
 	return f.Output, f.Err
@@ -113,6 +121,23 @@ func (f *fakeRunner) handleSecretRemove(args []string) {
 	}
 }
 
+func (f *fakeRunner) handleActionSet(args []string) {
+	f.ActionResults = make(map[string]string)
+
+	for _, arg := range args {
+		if strings.Contains(arg, "=") {
+			parts := strings.SplitN(arg, "=", 2)
+			if len(parts) == 2 {
+				f.ActionResults[parts[0]] = parts[1]
+			}
+		}
+	}
+}
+
+func (f *fakeRunner) handleActionFail(args []string) {
+	f.ActionError = fmt.Errorf("%s", strings.Join(args, " "))
+}
+
 type fakeGetter struct {
 	HookName   string
 	ActionName string
@@ -174,11 +199,13 @@ func (c *Context) RunAction(actionName string, state *State) (*State, error) {
 
 	err := c.Charm()
 	if err != nil {
-		return nil, fmt.Errorf("failed to run charm: %w", err)
+		return nil, err
 	}
 
 	state.UnitStatus = fakeRunner.Status
 	state.Secrets = fakeRunner.Secrets
+	c.ActionResults = fakeRunner.ActionResults
+	c.ActionError = fakeRunner.ActionError
 
 	return state, nil
 }
