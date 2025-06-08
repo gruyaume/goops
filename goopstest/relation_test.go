@@ -1,6 +1,7 @@
 package goopstest_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 
@@ -342,6 +343,116 @@ func TestCharmSetAppRelationData(t *testing.T) {
 
 	if appData["certificate_signing_requests"] != "csr-data" {
 		t.Fatalf("expected 'csr-data', got '%s'", appData["certificate_signing_requests"])
+	}
+}
+
+type TLSConfig struct {
+	InsecureSkipVerify bool `json:"insecure_skip_verify"`
+}
+
+type StaticConfig struct {
+	Targets []string `json:"targets"`
+}
+
+type Job struct {
+	Scheme        string         `json:"scheme"`
+	TLSConfig     TLSConfig      `json:"tls_config"`
+	MetricsPath   string         `json:"metrics_path"`
+	StaticConfigs []StaticConfig `json:"static_configs"`
+}
+
+type ScrapeMetadata struct {
+	Model       string `json:"model"`
+	ModelUUID   string `json:"model_uuid"`
+	Application string `json:"application"`
+	Unit        string `json:"unit"`
+	CharmName   string `json:"charm_name"`
+}
+
+func SetAppRelationData2() error {
+	relationIDs, err := goops.GetRelationIDs("metrics")
+	if err != nil {
+		return fmt.Errorf("could not get relation IDs: %w", err)
+	}
+
+	jobs := []*Job{
+		{
+			Scheme:      "https",
+			TLSConfig:   TLSConfig{InsecureSkipVerify: true},
+			MetricsPath: "/metrics",
+			StaticConfigs: []StaticConfig{
+				{
+					Targets: []string{"localhost:8080"},
+				},
+			},
+		},
+	}
+
+	scrapeJobs, err := json.Marshal(jobs)
+	if err != nil {
+		return fmt.Errorf("could not marshal scrape jobs to JSON: %w", err)
+	}
+
+	scrapeMetadata := &ScrapeMetadata{
+		Model:       "test-model",
+		ModelUUID:   "12345678-1234-5678-1234-567812345678",
+		Application: "test-application",
+		Unit:        "test-unit/0",
+		CharmName:   "test-charm",
+	}
+
+	scrapeMetadataBytes, err := json.Marshal(scrapeMetadata)
+	if err != nil {
+		return fmt.Errorf("could not marshal scrape metadata to JSON: %w", err)
+	}
+
+	relationData := map[string]string{
+		"scrape_jobs":     string(scrapeJobs),
+		"scrape_metadata": string(scrapeMetadataBytes),
+	}
+
+	err = goops.SetAppRelationData(relationIDs[0], relationData)
+	if err != nil {
+		return fmt.Errorf("could not set relation data: %w", err)
+	}
+
+	return nil
+}
+
+func TestCharmSetAppRelationData2(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: SetAppRelationData2,
+	}
+
+	certRelation := &goopstest.Relation{
+		Endpoint: "metrics",
+	}
+	stateIn := &goopstest.State{
+		Relations: []*goopstest.Relation{
+			certRelation,
+		},
+	}
+
+	stateOut, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if len(stateOut.Relations) != 1 {
+		t.Fatalf("expected 1 relation, got %d", len(stateOut.Relations))
+	}
+
+	appData := stateOut.Relations[0].LocalAppData
+	if len(appData) != 2 {
+		t.Fatalf("expected 2 app data, got %d", len(appData))
+	}
+
+	if _, ok := appData["scrape_jobs"]; !ok {
+		t.Fatal("expected 'scrape_jobs' key in app data")
+	}
+
+	if _, ok := appData["scrape_metadata"]; !ok {
+		t.Fatal("expected 'scrape_metadata' key in app data")
 	}
 }
 
