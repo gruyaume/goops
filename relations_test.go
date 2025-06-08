@@ -102,7 +102,7 @@ func TestRelationGet_Success(t *testing.T) {
 	}
 }
 
-func TestRelationList_Success(t *testing.T) {
+func TestListRelationUnits_Success(t *testing.T) {
 	fakeRunner := &FakeRunner{
 		Output: []byte(`["tls-certificates-requirer/0", "tls-certificates-requirer/1"]`),
 		Err:    nil,
@@ -110,9 +110,9 @@ func TestRelationList_Success(t *testing.T) {
 
 	goops.SetRunner(fakeRunner)
 
-	result, err := goops.ListRelations("certificates:0")
+	result, err := goops.ListRelationUnits("certificates:0")
 	if err != nil {
-		t.Fatalf("RelationList returned an error: %v", err)
+		t.Fatalf("ListRelationUnits returned an error: %v", err)
 	}
 
 	expectedOutput := []string{
@@ -139,6 +139,34 @@ func TestRelationList_Success(t *testing.T) {
 
 	if fakeRunner.Command != "relation-list" {
 		t.Errorf("Expected command %q, got %q", "relation-list", fakeRunner.Command)
+	}
+}
+
+func TestGetRelationApp_Success(t *testing.T) {
+	fakeRunner := &FakeRunner{
+		Output: []byte(`"provider"`),
+		Err:    nil,
+	}
+
+	goops.SetRunner(fakeRunner)
+
+	app, err := goops.GetRelationApp("certificates:0")
+	if err != nil {
+		t.Fatalf("GetRelationApp returned an error: %v", err)
+	}
+
+	expectedApp := "provider"
+
+	if app != expectedApp {
+		t.Fatalf("Expected app %q, got %q", expectedApp, app)
+	}
+
+	if fakeRunner.Command != "relation-list" {
+		t.Errorf("Expected command %q, got %q", "relation-list", fakeRunner.Command)
+	}
+
+	if len(fakeRunner.Args) != 3 {
+		t.Fatalf("Expected 3 arguments, got %d", len(fakeRunner.Args))
 	}
 }
 

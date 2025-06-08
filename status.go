@@ -43,6 +43,25 @@ func SetUnitStatus(status StatusCode, message ...string) error {
 	return nil
 }
 
+func SetAppStatus(status StatusCode, message ...string) error {
+	commandRunner := GetRunner()
+
+	var args []string
+
+	args = append(args, "--application", string(status))
+
+	if len(message) > 0 {
+		args = append(args, message...)
+	}
+
+	_, err := commandRunner.Run(statusSetCommand, args...)
+	if err != nil {
+		return fmt.Errorf("failed to set status: %w", err)
+	}
+
+	return nil
+}
+
 func GetStatus() (*Status, error) {
 	commandRunner := GetRunner()
 

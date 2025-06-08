@@ -45,8 +45,8 @@ func TestCharmGetRelationIDs(t *testing.T) {
 	}
 }
 
-func ListRelations1Result() error {
-	relationUnits, err := goops.ListRelations("certificates:0")
+func ListRelationUnits1Result() error {
+	relationUnits, err := goops.ListRelationUnits("certificates:0")
 	if err != nil {
 		return err
 	}
@@ -62,8 +62,8 @@ func ListRelations1Result() error {
 	return nil
 }
 
-func ListRelations3Result() error {
-	relationUnits, err := goops.ListRelations("certificates:0")
+func ListRelationUnits3Result() error {
+	relationUnits, err := goops.ListRelationUnits("certificates:0")
 	if err != nil {
 		return err
 	}
@@ -95,20 +95,20 @@ func ListRelations3Result() error {
 	return nil
 }
 
-func TestCharmListRelations(t *testing.T) {
+func TestCharmListRelationUnits(t *testing.T) {
 	tests := []struct {
 		name        string
 		handler     func() error
 		remoteUnits int
 	}{
 		{
-			name:        "ListRelations1Result",
-			handler:     ListRelations1Result,
+			name:        "ListRelationUnits1Result",
+			handler:     ListRelationUnits1Result,
 			remoteUnits: 1,
 		},
 		{
-			name:        "ListRelations3Result",
-			handler:     ListRelations3Result,
+			name:        "ListRelationUnits3Result",
+			handler:     ListRelationUnits3Result,
 			remoteUnits: 3,
 		},
 	}
@@ -356,9 +356,9 @@ func RelationEndToEnd() error {
 	requirerCertificateRequests := make([]string, 0)
 
 	for _, relationID := range relationIDs {
-		relationUnits, err := goops.ListRelations(relationID)
+		relationUnits, err := goops.ListRelationUnits(relationID)
 		if err != nil {
-			return fmt.Errorf("could not list relation data: %w", err)
+			return fmt.Errorf("could not list relation units: %w", err)
 		}
 
 		for _, unitID := range relationUnits {
