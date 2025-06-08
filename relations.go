@@ -77,7 +77,7 @@ func GetAppRelationData(id string, unitID string) (map[string]string, error) {
 	return relationContent, nil
 }
 
-func ListRelations(id string) ([]string, error) {
+func ListRelationUnits(id string) ([]string, error) {
 	commandRunner := GetRunner()
 
 	args := []string{"-r=" + id, "--format=json"}
@@ -95,6 +95,26 @@ func ListRelations(id string) ([]string, error) {
 	}
 
 	return relationList, nil
+}
+
+func GetRelationApp(id string) (string, error) {
+	commandRunner := GetRunner()
+
+	args := []string{"-r=" + id, "--app", "--format=json"}
+
+	output, err := commandRunner.Run(relationListCommand, args...)
+	if err != nil {
+		return "", fmt.Errorf("failed to list relation data: %w", err)
+	}
+
+	var relationApp string
+
+	err = json.Unmarshal(output, &relationApp)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse relation list: %w", err)
+	}
+
+	return relationApp, nil
 }
 
 func SetUnitRelationData(id string, data map[string]string) error {
