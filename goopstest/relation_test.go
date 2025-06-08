@@ -118,11 +118,11 @@ func TestCharmListRelations(t *testing.T) {
 			Charm: tc.handler,
 		}
 
-		remoteUnitsData := map[goopstest.UnitID]goopstest.RawDataBagContents{}
+		remoteUnitsData := map[goopstest.UnitID]goopstest.DataBag{}
 
 		for i := 0; i < tc.remoteUnits; i++ {
 			unitID := fmt.Sprintf("provider/%d", i)
-			remoteUnitsData[goopstest.UnitID(unitID)] = goopstest.RawDataBagContents{}
+			remoteUnitsData[goopstest.UnitID(unitID)] = goopstest.DataBag{}
 		}
 
 		certRelation := &goopstest.Relation{
@@ -174,7 +174,7 @@ func TestCharmGetUnitRelationData(t *testing.T) {
 		Charm: GetUnitRelationData,
 	}
 
-	remoteUnitsData := map[goopstest.UnitID]goopstest.RawDataBagContents{
+	remoteUnitsData := map[goopstest.UnitID]goopstest.DataBag{
 		goopstest.UnitID("provider/0"): {
 			"certificate_signing_requests": "csr-data",
 		},
@@ -198,6 +198,150 @@ func TestCharmGetUnitRelationData(t *testing.T) {
 
 	if len(stateOut.Relations) != 1 {
 		t.Fatalf("expected 1 relation, got %d", len(stateOut.Relations))
+	}
+}
+
+func GetAppRelationData() error {
+	relationData, err := goops.GetAppRelationData("certificates:0", "provider/0")
+	if err != nil {
+		return err
+	}
+
+	if len(relationData) == 0 {
+		return fmt.Errorf("expected relation data, got empty map")
+	}
+
+	csr, ok := relationData["certificate_signing_requests"]
+	if !ok {
+		return fmt.Errorf("expected 'certificate_signing_requests' key in relation data")
+	}
+
+	if csr != "csr-data" {
+		return fmt.Errorf("expected 'csr-data', got '%s'", csr)
+	}
+
+	return nil
+}
+
+func TestCharmGetAppRelationData(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: GetAppRelationData,
+	}
+
+	remoteAppData := goopstest.DataBag{
+		"certificate_signing_requests": "csr-data",
+	}
+
+	certRelation := &goopstest.Relation{
+		Endpoint:      "certificates",
+		RemoteAppName: "provider",
+		RemoteAppData: remoteAppData,
+	}
+	stateIn := &goopstest.State{
+		Relations: []*goopstest.Relation{
+			certRelation,
+		},
+	}
+
+	stateOut, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if len(stateOut.Relations) != 1 {
+		t.Fatalf("expected 1 relation, got %d", len(stateOut.Relations))
+	}
+}
+
+func SetUnitRelationData() error {
+	relationData := map[string]string{
+		"certificate_signing_requests": "csr-data",
+	}
+
+	err := goops.SetUnitRelationData("certificates:0", relationData)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func TestCharmSetUnitRelationData(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: SetUnitRelationData,
+	}
+
+	certRelation := &goopstest.Relation{
+		Endpoint: "certificates",
+	}
+	stateIn := &goopstest.State{
+		Relations: []*goopstest.Relation{
+			certRelation,
+		},
+	}
+
+	stateOut, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if len(stateOut.Relations) != 1 {
+		t.Fatalf("expected 1 relation, got %d", len(stateOut.Relations))
+	}
+
+	localUnitData := stateOut.Relations[0].LocalUnitData
+	if len(localUnitData) != 1 {
+		t.Fatalf("expected 1 local unit data, got %d", len(localUnitData))
+	}
+
+	if localUnitData["certificate_signing_requests"] != "csr-data" {
+		t.Fatalf("expected 'csr-data', got '%s'", localUnitData["certificate_signing_requests"])
+	}
+}
+
+func SetAppRelationData() error {
+	relationData := map[string]string{
+		"certificate_signing_requests": "csr-data",
+	}
+
+	err := goops.SetAppRelationData("certificates:0", relationData)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func TestCharmSetAppRelationData(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: SetAppRelationData,
+	}
+
+	certRelation := &goopstest.Relation{
+		Endpoint: "certificates",
+	}
+	stateIn := &goopstest.State{
+		Relations: []*goopstest.Relation{
+			certRelation,
+		},
+	}
+
+	stateOut, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if len(stateOut.Relations) != 1 {
+		t.Fatalf("expected 1 relation, got %d", len(stateOut.Relations))
+	}
+
+	appData := stateOut.Relations[0].LocalAppData
+	if len(appData) != 1 {
+		t.Fatalf("expected 1 app data, got %d", len(appData))
+	}
+
+	if appData["certificate_signing_requests"] != "csr-data" {
+		t.Fatalf("expected 'csr-data', got '%s'", appData["certificate_signing_requests"])
 	}
 }
 
@@ -244,7 +388,7 @@ func TestCharmRelationEndToEnd(t *testing.T) {
 		Charm: RelationEndToEnd,
 	}
 
-	remoteUnitsData := map[goopstest.UnitID]goopstest.RawDataBagContents{
+	remoteUnitsData := map[goopstest.UnitID]goopstest.DataBag{
 		goopstest.UnitID("provider/0"): {
 			"certificate_signing_requests": "csr-data-0",
 		},

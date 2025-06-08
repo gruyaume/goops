@@ -34,95 +34,36 @@ func (f *fakeRunner) Run(name string, args ...string) ([]byte, error) {
 	f.Command = name
 	f.Args = args
 
-	switch name {
-	case "action-fail":
-		f.handleActionFail(args)
-	case "action-get":
-		f.handleActionGet(args)
-	case "action-log":
-		// Not yet implemented
-	case "action-set":
-		f.handleActionSet(args)
-	case "application-version-set":
-		f.handleApplicationVersionSet(args)
-	case "config-get":
-		f.handleConfigGet(args)
-	case "credential-get":
-		// Not yet implemented
-	case "goal-state":
-		// Not yet implemented
-	case "is-leader":
-		f.handleIsLeader()
-	case "juju-log":
-		// Not yet implemented
-	case "network-get":
-		// Not yet implemented
-	case "open-port":
-		// Not yet implemented
-	case "close-port":
-		// Not yet implemented
-	case "opened-ports":
-		// Not yet implemented
-	case "juju-reboot":
-		// Not yet implemented
-	case "relation-ids":
-		f.handleRelationIDs(args)
-	case "relation-get":
-		f.handleRelationGet(args)
-	case "relation-list":
-		f.handleRelationList(args)
-	case "relation-set":
-		// Not yet implemented
-	case "relation-model-get":
-		// Not yet implemented
-	case "resource-get":
-		// Not yet implemented
-	case "secret-add":
-		f.handleSecretAdd(args)
-	case "secret-get":
-		f.handleSecretGet(args)
-	case "secret-grant":
-		// Not yet implemented
-	case "secret-ids":
-		// Not yet implemented
-	case "secret-info-get":
-		// Not yet implemented
-	case "secret-remove":
-		f.handleSecretRemove(args)
-	case "secret-revoke":
-		// Not yet implemented
-	case "secret-set":
-		// Not yet implemented
-	case "state-delete":
-		// Not yet implemented
-	case "state-get":
-		// Not yet implemented
-	case "state-set":
-		// Not yet implemented
-	case "status-get":
-		// Not yet implemented
-	case "status-set":
-		f.handleStatusSet(args)
-	case "storage-add":
-		// Not yet implemented
-	case "storage-get":
-		// Not yet implemented
-	case "storage-list":
-		// Not yet implemented
-	case "unit-get":
-		// Not yet implemented
-	default:
-		return nil, fmt.Errorf("unknown command: %s", name)
+	handlers := map[string]func([]string){
+		"action-fail":             f.handleActionFail,
+		"action-get":              f.handleActionGet,
+		"action-set":              f.handleActionSet,
+		"application-version-set": f.handleApplicationVersionSet,
+		"config-get":              f.handleConfigGet,
+		"is-leader":               f.handleIsLeader,
+		"relation-ids":            f.handleRelationIDs,
+		"relation-get":            f.handleRelationGet,
+		"relation-list":           f.handleRelationList,
+		"relation-set":            f.handleRelationSet,
+		"secret-add":              f.handleSecretAdd,
+		"secret-get":              f.handleSecretGet,
+		"secret-remove":           f.handleSecretRemove,
+		"status-set":              f.handleStatusSet,
 	}
 
-	return f.Output, f.Err
+	if handler, exists := handlers[name]; exists {
+		handler(args)
+		return f.Output, f.Err
+	}
+
+	return nil, fmt.Errorf("unknown command: %s", name)
 }
 
 func (f *fakeRunner) handleStatusSet(args []string) {
 	f.Status = args[0]
 }
 
-func (f *fakeRunner) handleIsLeader() {
+func (f *fakeRunner) handleIsLeader(_ []string) {
 	if f.Leader {
 		f.Output = []byte(`true`)
 	} else {
@@ -142,7 +83,6 @@ func (f *fakeRunner) handleConfigGet(args []string) {
 func (f *fakeRunner) handleRelationIDs(args []string) {
 	for _, relation := range f.Relations {
 		if len(args) > 0 && args[0] == relation.Endpoint {
-			// If the endpoint matches, return the relation ID
 			if relation.ID != "" {
 				f.Output = []byte(fmt.Sprintf(`["%s"]`, relation.ID))
 			} else {
@@ -152,16 +92,29 @@ func (f *fakeRunner) handleRelationIDs(args []string) {
 	}
 }
 
-// handleRelationGet retrieves the relation data for a specific relation ID and unit ID
-func (f *fakeRunner) handleRelationGet(args []string) {
-	fmt.Println("Handling relation get with args:", args)
+func safeCopy(data DataBag) DataBag {
+	if data == nil {
+		return make(DataBag)
+	}
 
-	var relationID string
+	return data
+}
 
-	var unitID string
+func (f *fakeRunner) findRelationByID(id string) *Relation {
+	for i := range f.Relations {
+		if f.Relations[i].ID == id {
+			return f.Relations[i]
+		}
+	}
 
+	return nil
+}
+
+func parseRelationGetArgs(args []string) (isApp bool, relationID string, unitID string, err error) {
 	for i := 0; i < len(args); i++ {
 		switch {
+		case args[i] == "--app":
+			isApp = true
 		case strings.HasPrefix(args[i], "-r="):
 			relationID = strings.TrimPrefix(args[i], "-r=")
 		case args[i] == "-" && i+1 < len(args):
@@ -170,31 +123,46 @@ func (f *fakeRunner) handleRelationGet(args []string) {
 	}
 
 	if relationID == "" || unitID == "" {
-		f.Err = fmt.Errorf("relation ID or unit ID not provided")
+		return false, "", "", fmt.Errorf("relation ID or unit ID not provided")
+	}
+
+	return isApp, relationID, unitID, nil
+}
+
+func (f *fakeRunner) handleRelationGet(args []string) {
+	isApp, relationID, unitID, err := parseRelationGetArgs(args)
+	if err != nil {
+		f.Err = err
 		return
 	}
-	// Find the relation by ID
-	for _, relation := range f.Relations {
-		if relation.ID == relationID {
-			// If the relation is found, get the data for the specified unit ID
-			if data, ok := relation.RemoteUnitsData[UnitID(unitID)]; ok {
-				output, err := json.Marshal(data)
-				if err != nil {
-					f.Err = fmt.Errorf("failed to marshal relation data: %w", err)
-					return
-				}
 
-				f.Output = output
-
-				return
-			} else {
-				f.Err = fmt.Errorf("unit ID %s not found in relation %s", unitID, relationID)
-				return
-			}
-		}
+	relation := f.findRelationByID(relationID)
+	if relation == nil {
+		f.Err = fmt.Errorf("relation %s not found", relationID)
+		return
 	}
 
-	fmt.Println("Relation ID:", relationID, "Unit ID:", unitID)
+	var data any
+
+	if isApp {
+		data = safeCopy(relation.RemoteAppData)
+	} else {
+		unitData, ok := relation.RemoteUnitsData[UnitID(unitID)]
+		if !ok {
+			f.Err = fmt.Errorf("unit ID %s not found in relation %s", unitID, relationID)
+			return
+		}
+
+		data = unitData
+	}
+
+	output, err := json.Marshal(data)
+	if err != nil {
+		f.Err = fmt.Errorf("failed to marshal relation data: %w", err)
+		return
+	}
+
+	f.Output = output
 }
 
 func (f *fakeRunner) handleRelationList(args []string) {
@@ -220,21 +188,73 @@ func (f *fakeRunner) handleRelationList(args []string) {
 	}
 }
 
-func (f *fakeRunner) handleSecretAdd(args []string) {
-	content := make(map[string]string)
-
-	var label string
+func parseRelationSetArgs(args []string) (isApp bool, relationID string, data map[string]string, err error) {
+	filteredArgs := make([]string, 0, len(args))
 
 	for _, arg := range args {
-		if strings.HasPrefix(arg, "--label=") {
-			label = strings.TrimPrefix(arg, "--label=")
-		} else if strings.Contains(arg, "=") {
-			parts := strings.SplitN(arg, "=", 2)
-			if len(parts) == 2 {
-				content[parts[0]] = parts[1]
-			}
+		switch {
+		case arg == "--app":
+			isApp = true
+		case strings.HasPrefix(arg, "-r="):
+			relationID = strings.TrimPrefix(arg, "-r=")
+		default:
+			filteredArgs = append(filteredArgs, arg)
 		}
 	}
+
+	if relationID == "" {
+		return false, "", nil, fmt.Errorf("relation ID not provided")
+	}
+
+	data = parseKeyValueArgs(filteredArgs)
+
+	return isApp, relationID, data, nil
+}
+
+func (f *fakeRunner) handleRelationSet(args []string) {
+	isApp, relationID, data, err := parseRelationSetArgs(args)
+	if err != nil {
+		f.Err = err
+		return
+	}
+
+	for _, relation := range f.Relations {
+		if relation.ID != relationID {
+			continue
+		}
+
+		target := &relation.LocalUnitData
+		if isApp {
+			target = &relation.LocalAppData
+		}
+
+		if *target == nil {
+			*target = make(DataBag)
+		}
+
+		for k, v := range data {
+			(*target)[k] = v
+		}
+	}
+}
+
+func filterOutLabelArgs(args []string) []string {
+	filtered := make([]string, 0, len(args))
+
+	for _, arg := range args {
+		if !strings.HasPrefix(arg, "--label=") {
+			filtered = append(filtered, arg)
+		}
+	}
+
+	return filtered
+}
+
+func (f *fakeRunner) handleSecretAdd(args []string) {
+	label := extractLabelFromArgs(args)
+	filtered := filterOutLabelArgs(args)
+
+	content := parseKeyValueArgs(filtered)
 
 	f.Secrets = append(f.Secrets, &Secret{
 		Label:   label,
@@ -243,19 +263,47 @@ func (f *fakeRunner) handleSecretAdd(args []string) {
 }
 
 func (f *fakeRunner) handleSecretGet(args []string) {
-	for _, secret := range f.Secrets {
-		if strings.Contains(args[0], "--label") && strings.Contains(args[0], "--label"+"="+secret.Label) {
-			output, err := json.Marshal(secret.Content)
-			if err != nil {
-				f.Err = err
-				break
-			}
+	label := extractLabelFromArgs(args)
+	if label == "" {
+		f.Err = fmt.Errorf("no --label specified")
+		return
+	}
 
-			f.Output = output
+	secret := findSecretByLabel(f.Secrets, label)
+	if secret == nil {
+		f.Err = fmt.Errorf("secret with label %q not found", label)
+		return
+	}
 
-			break
+	output, err := json.Marshal(secret.Content)
+	if err != nil {
+		f.Err = fmt.Errorf("failed to marshal secret content: %w", err)
+		return
+	}
+
+	f.Output = output
+}
+
+// extractLabelFromArgs returns the label from args if present.
+func extractLabelFromArgs(args []string) string {
+	for _, arg := range args {
+		if strings.HasPrefix(arg, "--label=") {
+			return strings.TrimPrefix(arg, "--label=")
 		}
 	}
+
+	return ""
+}
+
+// findSecretByLabel returns the pointer to the secret with the given label.
+func findSecretByLabel(secrets []*Secret, label string) *Secret {
+	for _, secret := range secrets {
+		if secret.Label == label {
+			return secret
+		}
+	}
+
+	return nil
 }
 
 func (f *fakeRunner) handleSecretRemove(args []string) {
@@ -267,17 +315,20 @@ func (f *fakeRunner) handleSecretRemove(args []string) {
 	}
 }
 
-func (f *fakeRunner) handleActionSet(args []string) {
-	f.ActionResults = make(map[string]string)
+func parseKeyValueArgs(args []string) map[string]string {
+	result := make(map[string]string)
 
 	for _, arg := range args {
-		if strings.Contains(arg, "=") {
-			parts := strings.SplitN(arg, "=", 2)
-			if len(parts) == 2 {
-				f.ActionResults[parts[0]] = parts[1]
-			}
+		if parts := strings.SplitN(arg, "=", 2); len(parts) == 2 {
+			result[parts[0]] = parts[1]
 		}
 	}
+
+	return result
+}
+
+func (f *fakeRunner) handleActionSet(args []string) {
+	f.ActionResults = parseKeyValueArgs(args)
 }
 
 func (f *fakeRunner) handleActionFail(args []string) {
@@ -334,11 +385,11 @@ func setRelationIDs(relations []*Relation) {
 func setUnitIDs(relations []*Relation) {
 	for _, relation := range relations {
 		if relation.RemoteUnitsData == nil {
-			relation.RemoteUnitsData = make(map[UnitID]RawDataBagContents)
+			relation.RemoteUnitsData = make(map[UnitID]DataBag)
 		}
 
 		if len(relation.RemoteUnitsData) == 0 {
-			relation.RemoteUnitsData[UnitID(relation.RemoteAppName+"/0")] = RawDataBagContents{}
+			relation.RemoteUnitsData[UnitID(relation.RemoteAppName+"/0")] = DataBag{}
 		}
 	}
 }
@@ -412,17 +463,17 @@ type Secret struct {
 
 type UnitID string
 
-type RawDataBagContents map[string]string
+type DataBag map[string]string
 
 type Relation struct {
 	Endpoint        string
 	Interface       string
 	ID              string
 	RemoteAppName   string
-	LocalAppData    RawDataBagContents
-	LocalUnitData   RawDataBagContents
-	RemoteAppData   RawDataBagContents
-	RemoteUnitsData map[UnitID]RawDataBagContents
+	LocalAppData    DataBag
+	LocalUnitData   DataBag
+	RemoteAppData   DataBag
+	RemoteUnitsData map[UnitID]DataBag
 }
 
 type State struct {
