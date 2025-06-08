@@ -3,6 +3,7 @@ package goopstest
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/gruyaume/goops"
@@ -28,6 +29,7 @@ type fakeRunner struct {
 	ActionError        error
 	ApplicationVersion string
 	Relations          []*Relation
+	Ports              []*Port
 }
 
 func (f *fakeRunner) Run(name string, args ...string) ([]byte, error) {
@@ -41,6 +43,8 @@ func (f *fakeRunner) Run(name string, args ...string) ([]byte, error) {
 		"application-version-set": f.handleApplicationVersionSet,
 		"config-get":              f.handleConfigGet,
 		"is-leader":               f.handleIsLeader,
+		"opened-ports":            f.handleOpenedPorts,
+		"open-port":               f.handleOpenPort,
 		"relation-ids":            f.handleRelationIDs,
 		"relation-get":            f.handleRelationGet,
 		"relation-list":           f.handleRelationList,
@@ -69,6 +73,56 @@ func (f *fakeRunner) handleIsLeader(_ []string) {
 	} else {
 		f.Output = []byte(`false`)
 	}
+}
+
+func (f *fakeRunner) handleOpenedPorts(_ []string) {
+	portList := make([]map[string]any, len(f.Ports))
+	for i, port := range f.Ports {
+		portList[i] = map[string]any{
+			"port":     port.Port,
+			"protocol": port.Protocol,
+		}
+	}
+
+	output, err := json.Marshal(portList)
+	if err != nil {
+		f.Err = fmt.Errorf("failed to marshal opened ports: %w", err)
+		return
+	}
+
+	f.Output = output
+}
+
+func (f *fakeRunner) handleOpenPort(args []string) {
+	if len(args) != 1 {
+		f.Err = fmt.Errorf("open-port command requires exactly one argument")
+		return
+	}
+
+	portInfo := strings.Split(args[0], "/")
+
+	if len(portInfo) != 2 {
+		f.Err = fmt.Errorf("invalid port format, expected <port>/<protocol>")
+		return
+	}
+
+	port, err := strconv.Atoi(portInfo[0])
+	if err != nil || port < 0 || port > 65535 {
+		f.Err = fmt.Errorf("invalid port number: %s", portInfo[0])
+		return
+	}
+
+	protocol := portInfo[1]
+
+	if protocol != "tcp" && protocol != "udp" {
+		f.Err = fmt.Errorf("invalid protocol: %s, must be 'tcp' or 'udp'", protocol)
+		return
+	}
+
+	f.Ports = append(f.Ports, &Port{
+		Port:     port,
+		Protocol: protocol,
+	})
 }
 
 func (f *fakeRunner) handleConfigGet(args []string) {
@@ -421,6 +475,7 @@ func (c *Context) Run(hookName string, state *State) (*State, error) {
 	state.UnitStatus = fakeRunner.Status
 	state.Secrets = fakeRunner.Secrets
 	state.ApplicationVersion = fakeRunner.ApplicationVersion
+	state.Ports = fakeRunner.Ports
 
 	return state, nil
 }
@@ -476,6 +531,11 @@ type Relation struct {
 	RemoteUnitsData map[UnitID]DataBag
 }
 
+type Port struct {
+	Port     int
+	Protocol string
+}
+
 type State struct {
 	Leader             bool
 	UnitStatus         string
@@ -483,4 +543,5 @@ type State struct {
 	Secrets            []*Secret
 	ApplicationVersion string
 	Relations          []*Relation
+	Ports              []*Port
 }
