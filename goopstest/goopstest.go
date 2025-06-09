@@ -34,6 +34,7 @@ type fakeRunner struct {
 	ApplicationVersion string
 	Relations          []*Relation
 	Ports              []*Port
+	StoredState        StoredState
 }
 
 func (f *fakeRunner) Run(name string, args ...string) ([]byte, error) {
@@ -59,6 +60,9 @@ func (f *fakeRunner) Run(name string, args ...string) ([]byte, error) {
 		"secret-add":              f.handleSecretAdd,
 		"secret-get":              f.handleSecretGet,
 		"secret-remove":           f.handleSecretRemove,
+		"state-get":               f.handleStateGet,
+		"state-set":               f.handleStateSet,
+		"state-delete":            f.handleStateDelete,
 		"status-set":              f.handleStatusSet,
 	}
 
@@ -423,6 +427,88 @@ func (f *fakeRunner) handleSecretRemove(args []string) {
 	}
 }
 
+func (f *fakeRunner) handleStateGet(args []string) {
+	if len(args) == 0 {
+		f.Err = fmt.Errorf("state-get command requires at least one argument")
+		return
+	}
+
+	key := args[0]
+
+	if f.StoredState == nil {
+		f.Output = []byte(`""`)
+		f.Err = fmt.Errorf("stored state is nil")
+
+		return
+	}
+
+	value, exists := f.StoredState[key]
+	if !exists {
+		f.Output = []byte(`""`)
+		f.Err = fmt.Errorf("state key %s not found", key)
+
+		return
+	}
+
+	output, err := json.Marshal(value)
+	if err != nil {
+		f.Err = fmt.Errorf("failed to marshal state value: %w", err)
+
+		return
+	}
+
+	f.Output = output
+}
+
+func (f *fakeRunner) handleStateSet(args []string) {
+	if len(args) == 0 {
+		f.Err = fmt.Errorf("state-set command requires at least one argument")
+		return
+	}
+
+	if f.StoredState == nil {
+		f.StoredState = make(StoredState)
+	}
+
+	for _, arg := range args {
+		if parts := strings.SplitN(arg, "=", 2); len(parts) == 2 {
+			key := parts[0]
+			value := parts[1]
+
+			if key == "" {
+				f.Err = fmt.Errorf("state key cannot be empty")
+				return
+			}
+
+			f.StoredState[key] = value
+		} else {
+			f.Err = fmt.Errorf("invalid state-set argument: %s", arg)
+			return
+		}
+	}
+}
+
+func (f *fakeRunner) handleStateDelete(args []string) {
+	if len(args) == 0 {
+		f.Err = fmt.Errorf("state-delete command requires at least one argument")
+		return
+	}
+
+	key := args[0]
+
+	if f.StoredState == nil {
+		f.Err = fmt.Errorf("stored state is nil")
+		return
+	}
+
+	if _, exists := f.StoredState[key]; !exists {
+		f.Err = fmt.Errorf("state key %s not found", key)
+		return
+	}
+
+	delete(f.StoredState, key)
+}
+
 func parseKeyValueArgs(args []string) map[string]string {
 	result := make(map[string]string)
 
@@ -526,13 +612,14 @@ func (c *Context) Run(hookName string, state *State) (*State, error) {
 	}
 
 	fakeRunner := &fakeRunner{
-		Output:    []byte(``),
-		Err:       nil,
-		Leader:    state.Leader,
-		Config:    state.Config,
-		Secrets:   state.Secrets,
-		Relations: state.Relations,
-		Ports:     state.Ports,
+		Output:      []byte(``),
+		Err:         nil,
+		Leader:      state.Leader,
+		Config:      state.Config,
+		Secrets:     state.Secrets,
+		Relations:   state.Relations,
+		Ports:       state.Ports,
+		StoredState: state.StoredState,
 	}
 
 	fakeGetter := &fakeGetter{
@@ -556,6 +643,7 @@ func (c *Context) Run(hookName string, state *State) (*State, error) {
 	state.Secrets = fakeRunner.Secrets
 	state.ApplicationVersion = fakeRunner.ApplicationVersion
 	state.Ports = fakeRunner.Ports
+	state.StoredState = fakeRunner.StoredState
 
 	return state, nil
 }
@@ -568,6 +656,7 @@ func (c *Context) RunAction(actionName string, state *State, params map[string]s
 		Config:           state.Config,
 		Secrets:          state.Secrets,
 		ActionParameters: params,
+		StoredState:      state.StoredState,
 	}
 
 	if state.Model == nil {
@@ -633,6 +722,8 @@ type Model struct {
 	UUID string
 }
 
+type StoredState map[string]string
+
 type State struct {
 	Leader             bool
 	UnitStatus         string
@@ -643,4 +734,5 @@ type State struct {
 	Relations          []*Relation
 	Ports              []*Port
 	Model              *Model
+	StoredState        StoredState
 }
