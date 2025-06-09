@@ -22,7 +22,17 @@ func GetModelInfo() error {
 	return nil
 }
 
-func TestModelName(t *testing.T) {
+func GetUnitName() error {
+	env := goops.ReadEnv()
+
+	if env.UnitName != "blou/0" {
+		return fmt.Errorf("expected unit name 'blou/0', got '%s'", env.UnitName)
+	}
+
+	return nil
+}
+
+func TestGetModelInfo(t *testing.T) {
 	ctx := goopstest.Context{
 		Charm: GetModelInfo,
 	}
@@ -47,5 +57,20 @@ func TestModelName(t *testing.T) {
 
 	if stateOut.Model.UUID != "12345678-1234-5678-1234-567812345678" {
 		t.Errorf("got Model.UUID=%q, want %q", stateOut.Model.UUID, "12345678-1234-5678-1234-567812345678")
+	}
+}
+
+func TestGetUnitName(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm:   GetUnitName,
+		AppName: "blou",
+		UnitID:  0,
+	}
+
+	stateIn := &goopstest.State{}
+
+	_, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
 	}
 }

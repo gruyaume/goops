@@ -11,6 +11,8 @@ import (
 
 type Context struct {
 	Charm         func() error
+	AppName       string
+	UnitID        int
 	ActionResults map[string]string
 	ActionError   error
 }
@@ -465,6 +467,8 @@ type fakeGetter struct {
 	HookName   string
 	ActionName string
 	Model      *Model
+	AppName    string
+	UnitID     int
 }
 
 func (f *fakeGetter) Get(key string) string {
@@ -477,6 +481,8 @@ func (f *fakeGetter) Get(key string) string {
 		return f.Model.Name
 	case "JUJU_MODEL_UUID":
 		return f.Model.UUID
+	case "JUJU_UNIT_NAME":
+		return fmt.Sprintf("%s/%d", f.AppName, f.UnitID)
 	}
 
 	return ""
@@ -528,6 +534,8 @@ func (c *Context) Run(hookName string, state *State) (*State, error) {
 	fakeGetter := &fakeGetter{
 		HookName: hookName,
 		Model:    state.Model,
+		AppName:  c.AppName,
+		UnitID:   c.UnitID,
 	}
 
 	goops.SetRunner(fakeRunner)
