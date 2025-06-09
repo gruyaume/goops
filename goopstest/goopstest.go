@@ -13,6 +13,7 @@ type Context struct {
 	Charm         func() error
 	AppName       string
 	UnitID        int
+	JujuVersion   string
 	ActionResults map[string]string
 	ActionError   error
 }
@@ -464,11 +465,12 @@ func (f *fakeRunner) handleApplicationVersionSet(args []string) {
 }
 
 type fakeGetter struct {
-	HookName   string
-	ActionName string
-	Model      *Model
-	AppName    string
-	UnitID     int
+	HookName    string
+	ActionName  string
+	Model       *Model
+	AppName     string
+	UnitID      int
+	JujuVersion string
 }
 
 func (f *fakeGetter) Get(key string) string {
@@ -483,6 +485,8 @@ func (f *fakeGetter) Get(key string) string {
 		return f.Model.UUID
 	case "JUJU_UNIT_NAME":
 		return fmt.Sprintf("%s/%d", f.AppName, f.UnitID)
+	case "JUJU_VERSION":
+		return f.JujuVersion
 	}
 
 	return ""
@@ -532,10 +536,11 @@ func (c *Context) Run(hookName string, state *State) (*State, error) {
 	}
 
 	fakeGetter := &fakeGetter{
-		HookName: hookName,
-		Model:    state.Model,
-		AppName:  c.AppName,
-		UnitID:   c.UnitID,
+		HookName:    hookName,
+		Model:       state.Model,
+		AppName:     c.AppName,
+		UnitID:      c.UnitID,
+		JujuVersion: c.JujuVersion,
 	}
 
 	goops.SetRunner(fakeRunner)
@@ -573,8 +578,11 @@ func (c *Context) RunAction(actionName string, state *State, params map[string]s
 	}
 
 	fakeGetter := &fakeGetter{
-		ActionName: actionName,
-		Model:      state.Model,
+		ActionName:  actionName,
+		Model:       state.Model,
+		AppName:     c.AppName,
+		UnitID:      c.UnitID,
+		JujuVersion: c.JujuVersion,
 	}
 
 	goops.SetRunner(fakeRunner)

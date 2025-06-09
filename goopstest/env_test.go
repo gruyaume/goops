@@ -32,6 +32,16 @@ func GetUnitName() error {
 	return nil
 }
 
+func GetJujuVersion() error {
+	env := goops.ReadEnv()
+
+	if env.Version != "1.2.3" {
+		return fmt.Errorf("expected Juju version '1.2.3', got '%s'", env.Version)
+	}
+
+	return nil
+}
+
 func TestGetModelInfo(t *testing.T) {
 	ctx := goopstest.Context{
 		Charm: GetModelInfo,
@@ -65,6 +75,20 @@ func TestGetUnitName(t *testing.T) {
 		Charm:   GetUnitName,
 		AppName: "blou",
 		UnitID:  0,
+	}
+
+	stateIn := &goopstest.State{}
+
+	_, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+}
+
+func TestGetJujuVersion(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm:       GetJujuVersion,
+		JujuVersion: "1.2.3",
 	}
 
 	stateIn := &goopstest.State{}
