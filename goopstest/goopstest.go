@@ -449,6 +449,7 @@ func (f *fakeRunner) handleApplicationVersionSet(args []string) {
 type fakeGetter struct {
 	HookName   string
 	ActionName string
+	Model      *Model
 }
 
 func (f *fakeGetter) Get(key string) string {
@@ -457,6 +458,10 @@ func (f *fakeGetter) Get(key string) string {
 		return f.HookName
 	case "JUJU_ACTION_NAME":
 		return f.ActionName
+	case "JUJU_MODEL_NAME":
+		return f.Model.Name
+	case "JUJU_MODEL_UUID":
+		return f.Model.UUID
 	}
 
 	return ""
@@ -487,6 +492,14 @@ func setUnitIDs(relations []*Relation) {
 func (c *Context) Run(hookName string, state *State) (*State, error) {
 	setRelationIDs(state.Relations)
 	setUnitIDs(state.Relations)
+
+	if state.Model == nil {
+		state.Model = &Model{
+			Name: "test-model",
+			UUID: "12345678-1234-5678-1234-567812345678",
+		}
+	}
+
 	fakeRunner := &fakeRunner{
 		Output:    []byte(``),
 		Err:       nil,
@@ -499,6 +512,7 @@ func (c *Context) Run(hookName string, state *State) (*State, error) {
 
 	fakeGetter := &fakeGetter{
 		HookName: hookName,
+		Model:    state.Model,
 	}
 
 	goops.SetRunner(fakeRunner)
@@ -527,8 +541,16 @@ func (c *Context) RunAction(actionName string, state *State, params map[string]s
 		ActionParameters: params,
 	}
 
+	if state.Model == nil {
+		state.Model = &Model{
+			Name: "test-model",
+			UUID: "12345678-1234-5678-1234-567812345678",
+		}
+	}
+
 	fakeGetter := &fakeGetter{
 		ActionName: actionName,
+		Model:      state.Model,
 	}
 
 	goops.SetRunner(fakeRunner)
@@ -573,6 +595,11 @@ type Port struct {
 	Protocol string
 }
 
+type Model struct {
+	Name string
+	UUID string
+}
+
 type State struct {
 	Leader             bool
 	UnitStatus         string
@@ -581,4 +608,5 @@ type State struct {
 	ApplicationVersion string
 	Relations          []*Relation
 	Ports              []*Port
+	Model              *Model
 }
