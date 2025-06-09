@@ -195,6 +195,11 @@ func (f *fakeRunner) handleConfigGet(args []string) {
 }
 
 func (f *fakeRunner) handleRelationIDs(args []string) {
+	if len(f.Relations) == 0 {
+		f.Output = []byte(`[]`)
+		return
+	}
+
 	for _, relation := range f.Relations {
 		if len(args) > 0 && args[0] == relation.Endpoint {
 			if relation.ID != "" {
