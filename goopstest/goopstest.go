@@ -20,7 +20,8 @@ type fakeRunner struct {
 	Args               []string
 	Output             []byte
 	Err                error
-	Status             string
+	UnitStatus         string
+	AppStatus          string
 	Leader             bool
 	Config             map[string]string
 	Secrets            []*Secret
@@ -67,7 +68,21 @@ func (f *fakeRunner) Run(name string, args ...string) ([]byte, error) {
 }
 
 func (f *fakeRunner) handleStatusSet(args []string) {
-	f.Status = args[0]
+	if len(args) == 0 {
+		f.Err = fmt.Errorf("status-set command requires at least one argument")
+		return
+	}
+
+	if args[0] == "--application" {
+		if len(args) < 2 {
+			f.Err = fmt.Errorf("status-set command requires an application status after --application")
+			return
+		}
+
+		f.AppStatus = args[1]
+	} else {
+		f.UnitStatus = args[0]
+	}
 }
 
 func (f *fakeRunner) handleIsLeader(_ []string) {
@@ -523,7 +538,8 @@ func (c *Context) Run(hookName string, state *State) (*State, error) {
 		return nil, fmt.Errorf("failed to run charm: %w", err)
 	}
 
-	state.UnitStatus = fakeRunner.Status
+	state.UnitStatus = fakeRunner.UnitStatus
+	state.AppStatus = fakeRunner.AppStatus
 	state.Secrets = fakeRunner.Secrets
 	state.ApplicationVersion = fakeRunner.ApplicationVersion
 	state.Ports = fakeRunner.Ports
@@ -561,7 +577,8 @@ func (c *Context) RunAction(actionName string, state *State, params map[string]s
 		return nil, err
 	}
 
-	state.UnitStatus = fakeRunner.Status
+	state.UnitStatus = fakeRunner.UnitStatus
+	state.AppStatus = fakeRunner.AppStatus
 	state.Secrets = fakeRunner.Secrets
 	c.ActionResults = fakeRunner.ActionResults
 	c.ActionError = fakeRunner.ActionError
@@ -603,6 +620,7 @@ type Model struct {
 type State struct {
 	Leader             bool
 	UnitStatus         string
+	AppStatus          string
 	Config             map[string]string
 	Secrets            []*Secret
 	ApplicationVersion string
