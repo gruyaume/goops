@@ -35,6 +35,8 @@ type fakeRunner struct {
 	Relations          []*Relation
 	Ports              []*Port
 	StoredState        StoredState
+	AppName            string
+	UnitID             int
 }
 
 func (f *fakeRunner) Run(name string, args ...string) ([]byte, error) {
@@ -254,27 +256,43 @@ func (f *fakeRunner) handleRelationGet(args []string) {
 		return
 	}
 
-	var data any
+	isLocal := unitID == f.AppName+"/"+strconv.Itoa(f.UnitID)
 
-	if isApp {
-		data = safeCopy(relation.RemoteAppData)
-	} else {
-		unitData, ok := relation.RemoteUnitsData[UnitID(unitID)]
-		if !ok {
-			f.Err = fmt.Errorf("unit ID %s not found in relation %s", unitID, relationID)
-			return
-		}
-
-		data = unitData
-	}
-
-	output, err := json.Marshal(data)
+	data, err := f.selectRelationData(relation, isApp, isLocal, unitID)
 	if err != nil {
-		f.Err = fmt.Errorf("failed to marshal relation data: %w", err)
+		f.Err = err
 		return
 	}
 
-	f.Output = output
+	f.Output, err = json.Marshal(data)
+	if err != nil {
+		f.Err = fmt.Errorf("failed to marshal relation data: %w", err)
+	}
+}
+
+func (f *fakeRunner) selectRelationData(rel *Relation, isApp, isLocal bool, unitID string) (any, error) {
+	if isApp {
+		if isLocal {
+			return safeCopy(rel.LocalAppData), nil
+		}
+
+		return safeCopy(rel.RemoteAppData), nil
+	}
+
+	if isLocal {
+		if rel.LocalUnitData == nil {
+			return nil, fmt.Errorf("local unit data not found for relation %s", rel.ID)
+		}
+
+		return safeCopy(rel.LocalUnitData), nil
+	}
+
+	unitData, ok := rel.RemoteUnitsData[UnitID(unitID)]
+	if !ok {
+		return nil, fmt.Errorf("unit ID %s not found in relation %s", unitID, rel.ID)
+	}
+
+	return unitData, nil
 }
 
 func (f *fakeRunner) handleRelationList(args []string) {
@@ -620,6 +638,8 @@ func (c *Context) Run(hookName string, state *State) (*State, error) {
 		Relations:   state.Relations,
 		Ports:       state.Ports,
 		StoredState: state.StoredState,
+		AppName:     c.AppName,
+		UnitID:      c.UnitID,
 	}
 
 	fakeGetter := &fakeGetter{

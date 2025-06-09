@@ -148,7 +148,7 @@ func TestCharmListRelationUnits(t *testing.T) {
 	}
 }
 
-func GetUnitRelationData() error {
+func GetRemoteUnitRelationData() error {
 	relationData, err := goops.GetUnitRelationData("certificates:0", "provider/0")
 	if err != nil {
 		return err
@@ -170,9 +170,9 @@ func GetUnitRelationData() error {
 	return nil
 }
 
-func TestCharmGetUnitRelationData(t *testing.T) {
+func TestCharmGetRemoteUnitRelationData(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: GetUnitRelationData,
+		Charm: GetRemoteUnitRelationData,
 	}
 
 	remoteUnitsData := map[goopstest.UnitID]goopstest.DataBag{
@@ -202,7 +202,58 @@ func TestCharmGetUnitRelationData(t *testing.T) {
 	}
 }
 
-func GetAppRelationData() error {
+func GetLocalUnitRelationData() error {
+	relationData, err := goops.GetUnitRelationData("certificates:0", "requirer/0")
+	if err != nil {
+		return err
+	}
+
+	if len(relationData) == 0 {
+		return fmt.Errorf("expected relation data, got empty map")
+	}
+
+	csr, ok := relationData["certificate_signing_requests"]
+	if !ok {
+		return fmt.Errorf("expected 'certificate_signing_requests' key in relation data")
+	}
+
+	if csr != "csr-data" {
+		return fmt.Errorf("expected 'csr-data', got '%s'", csr)
+	}
+
+	return nil
+}
+
+func TestCharmGetLocalUnitRelationData(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm:   GetLocalUnitRelationData,
+		AppName: "requirer",
+		UnitID:  0,
+	}
+
+	certRelation := &goopstest.Relation{
+		Endpoint: "certificates",
+		LocalUnitData: map[string]string{
+			"certificate_signing_requests": "csr-data",
+		},
+	}
+	stateIn := &goopstest.State{
+		Relations: []*goopstest.Relation{
+			certRelation,
+		},
+	}
+
+	stateOut, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if len(stateOut.Relations) != 1 {
+		t.Fatalf("expected 1 relation, got %d", len(stateOut.Relations))
+	}
+}
+
+func GetRemoteAppRelationData() error {
 	relationData, err := goops.GetAppRelationData("certificates:0", "provider/0")
 	if err != nil {
 		return err
@@ -224,9 +275,9 @@ func GetAppRelationData() error {
 	return nil
 }
 
-func TestCharmGetAppRelationData(t *testing.T) {
+func TestCharmGetRemoteAppRelationData(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: GetAppRelationData,
+		Charm: GetRemoteAppRelationData,
 	}
 
 	remoteAppData := goopstest.DataBag{
@@ -237,6 +288,57 @@ func TestCharmGetAppRelationData(t *testing.T) {
 		Endpoint:      "certificates",
 		RemoteAppName: "provider",
 		RemoteAppData: remoteAppData,
+	}
+	stateIn := &goopstest.State{
+		Relations: []*goopstest.Relation{
+			certRelation,
+		},
+	}
+
+	stateOut, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if len(stateOut.Relations) != 1 {
+		t.Fatalf("expected 1 relation, got %d", len(stateOut.Relations))
+	}
+}
+
+func GetLocalAppRelationData() error {
+	relationData, err := goops.GetAppRelationData("certificates:0", "requirer/0")
+	if err != nil {
+		return err
+	}
+
+	if len(relationData) == 0 {
+		return fmt.Errorf("expected relation data, got empty map")
+	}
+
+	csr, ok := relationData["certificate_signing_requests"]
+	if !ok {
+		return fmt.Errorf("expected 'certificate_signing_requests' key in relation data")
+	}
+
+	if csr != "csr-data" {
+		return fmt.Errorf("expected 'csr-data', got '%s'", csr)
+	}
+
+	return nil
+}
+
+func TestCharmGetLocalAppRelationData(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm:   GetLocalAppRelationData,
+		AppName: "requirer",
+		UnitID:  0,
+	}
+
+	certRelation := &goopstest.Relation{
+		Endpoint: "certificates",
+		LocalAppData: map[string]string{
+			"certificate_signing_requests": "csr-data",
+		},
 	}
 	stateIn := &goopstest.State{
 		Relations: []*goopstest.Relation{
