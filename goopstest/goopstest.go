@@ -11,6 +11,9 @@ import (
 
 type Context struct {
 	Charm         func() error
+	AppName       string
+	UnitID        int
+	JujuVersion   string
 	ActionResults map[string]string
 	ActionError   error
 }
@@ -20,7 +23,8 @@ type fakeRunner struct {
 	Args               []string
 	Output             []byte
 	Err                error
-	Status             string
+	UnitStatus         string
+	AppStatus          string
 	Leader             bool
 	Config             map[string]string
 	Secrets            []*Secret
@@ -67,7 +71,21 @@ func (f *fakeRunner) Run(name string, args ...string) ([]byte, error) {
 }
 
 func (f *fakeRunner) handleStatusSet(args []string) {
-	f.Status = args[0]
+	if len(args) == 0 {
+		f.Err = fmt.Errorf("status-set command requires at least one argument")
+		return
+	}
+
+	if args[0] == "--application" {
+		if len(args) < 2 {
+			f.Err = fmt.Errorf("status-set command requires an application status after --application")
+			return
+		}
+
+		f.AppStatus = args[1]
+	} else {
+		f.UnitStatus = args[0]
+	}
 }
 
 func (f *fakeRunner) handleIsLeader(_ []string) {
@@ -447,8 +465,12 @@ func (f *fakeRunner) handleApplicationVersionSet(args []string) {
 }
 
 type fakeGetter struct {
-	HookName   string
-	ActionName string
+	HookName    string
+	ActionName  string
+	Model       *Model
+	AppName     string
+	UnitID      int
+	JujuVersion string
 }
 
 func (f *fakeGetter) Get(key string) string {
@@ -457,6 +479,14 @@ func (f *fakeGetter) Get(key string) string {
 		return f.HookName
 	case "JUJU_ACTION_NAME":
 		return f.ActionName
+	case "JUJU_MODEL_NAME":
+		return f.Model.Name
+	case "JUJU_MODEL_UUID":
+		return f.Model.UUID
+	case "JUJU_UNIT_NAME":
+		return fmt.Sprintf("%s/%d", f.AppName, f.UnitID)
+	case "JUJU_VERSION":
+		return f.JujuVersion
 	}
 
 	return ""
@@ -487,6 +517,14 @@ func setUnitIDs(relations []*Relation) {
 func (c *Context) Run(hookName string, state *State) (*State, error) {
 	setRelationIDs(state.Relations)
 	setUnitIDs(state.Relations)
+
+	if state.Model == nil {
+		state.Model = &Model{
+			Name: "test-model",
+			UUID: "12345678-1234-5678-1234-567812345678",
+		}
+	}
+
 	fakeRunner := &fakeRunner{
 		Output:    []byte(``),
 		Err:       nil,
@@ -498,7 +536,11 @@ func (c *Context) Run(hookName string, state *State) (*State, error) {
 	}
 
 	fakeGetter := &fakeGetter{
-		HookName: hookName,
+		HookName:    hookName,
+		Model:       state.Model,
+		AppName:     c.AppName,
+		UnitID:      c.UnitID,
+		JujuVersion: c.JujuVersion,
 	}
 
 	goops.SetRunner(fakeRunner)
@@ -509,7 +551,8 @@ func (c *Context) Run(hookName string, state *State) (*State, error) {
 		return nil, fmt.Errorf("failed to run charm: %w", err)
 	}
 
-	state.UnitStatus = fakeRunner.Status
+	state.UnitStatus = fakeRunner.UnitStatus
+	state.AppStatus = fakeRunner.AppStatus
 	state.Secrets = fakeRunner.Secrets
 	state.ApplicationVersion = fakeRunner.ApplicationVersion
 	state.Ports = fakeRunner.Ports
@@ -527,8 +570,19 @@ func (c *Context) RunAction(actionName string, state *State, params map[string]s
 		ActionParameters: params,
 	}
 
+	if state.Model == nil {
+		state.Model = &Model{
+			Name: "test-model",
+			UUID: "12345678-1234-5678-1234-567812345678",
+		}
+	}
+
 	fakeGetter := &fakeGetter{
-		ActionName: actionName,
+		ActionName:  actionName,
+		Model:       state.Model,
+		AppName:     c.AppName,
+		UnitID:      c.UnitID,
+		JujuVersion: c.JujuVersion,
 	}
 
 	goops.SetRunner(fakeRunner)
@@ -539,7 +593,8 @@ func (c *Context) RunAction(actionName string, state *State, params map[string]s
 		return nil, err
 	}
 
-	state.UnitStatus = fakeRunner.Status
+	state.UnitStatus = fakeRunner.UnitStatus
+	state.AppStatus = fakeRunner.AppStatus
 	state.Secrets = fakeRunner.Secrets
 	c.ActionResults = fakeRunner.ActionResults
 	c.ActionError = fakeRunner.ActionError
@@ -573,12 +628,19 @@ type Port struct {
 	Protocol string
 }
 
+type Model struct {
+	Name string
+	UUID string
+}
+
 type State struct {
 	Leader             bool
 	UnitStatus         string
+	AppStatus          string
 	Config             map[string]string
 	Secrets            []*Secret
 	ApplicationVersion string
 	Relations          []*Relation
 	Ports              []*Port
+	Model              *Model
 }
