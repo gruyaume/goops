@@ -46,6 +46,36 @@ func TestCharmGetRelationIDs(t *testing.T) {
 	}
 }
 
+func GetRelationIDsNoRelation() error {
+	relationIDs, err := goops.GetRelationIDs("certificates")
+	if err != nil {
+		return err
+	}
+
+	if len(relationIDs) != 0 {
+		return fmt.Errorf("expected no relation IDs, got %d", len(relationIDs))
+	}
+
+	return nil
+}
+
+func TestCharmGetRelationIDsNoRelation(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: GetRelationIDsNoRelation,
+	}
+
+	stateIn := &goopstest.State{}
+
+	stateOut, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if len(stateOut.Relations) != 0 {
+		t.Fatalf("expected no relations, got %d", len(stateOut.Relations))
+	}
+}
+
 func ListRelationUnits1Result() error {
 	relationUnits, err := goops.ListRelationUnits("certificates:0")
 	if err != nil {
