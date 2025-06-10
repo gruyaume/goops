@@ -81,10 +81,9 @@ You can then pack and deploy your charm as usual with `charmcraft pack` and `juj
 
 ## Reference
 
-### Design principles
+### API Documentation
 
-- **Reliability**: Our top priority is building predictable and robust charms.
-- **Simplicity**: `goops` serves as a minimal mapping between Juju concepts and Go constructs. It is not a framework; it does not impose charm design patterns.
+The API documentation for `goops` is available at [pkg.go.dev/github.com/gruyaume/goops](https://pkg.go.dev/github.com/gruyaume/goops).
 
 ### Example Charms
 
@@ -99,6 +98,19 @@ Charm Libraries are maintained centrally at [github.com/gruyaume/charm-libraries
 ### Unit Testing
 
 [`goopstest`](goopstest/README.md) is a unit testing framework for `goops` charms. It allows you to simulate Juju environments and test your charm logic without needing a live Juju controller.
+
+### Design principles
+
+- **Reliability**: Our top priority is building predictable and robust charms.
+- **Simplicity**: `goops` serves as a minimal mapping between Juju concepts and Go constructs. It is not a framework; it does not impose charm design patterns.
+
+### Contributing
+
+Contributions to `goops` are welcome! For details on how to contribute, please refer to the [Contributing Guide](CONTRIBUTING.md).
+
+### Discussion
+
+If you have questions, feedback, announcements, or ideas, please [Open a New Discussion](https://github.com/gruyaume/goops/discussions).
 
 ### Juju compatibility
 

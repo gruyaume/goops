@@ -52,3 +52,7 @@ func TestCharm(t *testing.T) {
 	}
 }
 ```
+
+### API Documentation
+
+The API documentation for `goopstest` is available at [pkg.go.dev/github.com/gruyaume/goops/goopstest](https://pkg.go.dev/github.com/gruyaume/goops/goopstest).
