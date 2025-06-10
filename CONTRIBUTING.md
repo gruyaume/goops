@@ -7,7 +7,7 @@
 ### Run tests
 
 ```shell
-go test ./...     # unit tests
+go test ./...            # unit tests
 go vet ./...             # static analysis
 golangci-lint run ./...  # linting
 ```
