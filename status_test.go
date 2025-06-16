@@ -69,3 +69,83 @@ func TestSetAppStatus_Success(t *testing.T) {
 		t.Errorf("Expected no output, got %q", string(fakeRunner.Output))
 	}
 }
+
+func TestGetUnitStatus_Success(t *testing.T) {
+	fakeRunner := &FakeRunner{
+		Output: []byte(`{"status": "active", "message": "Unit is active"}`),
+		Err:    nil,
+	}
+
+	goops.SetRunner(fakeRunner)
+
+	status, err := goops.GetUnitStatus()
+	if err != nil {
+		t.Fatalf("GetUnitStatus returned an error: %v", err)
+	}
+
+	if status.Code != goops.StatusActive {
+		t.Errorf("Expected status %q, got %q", goops.StatusActive, status.Code)
+	}
+
+	if status.Message != "Unit is active" {
+		t.Errorf("Expected message %q, got %q", "Unit is active", status.Message)
+	}
+
+	if fakeRunner.Command != "status-get" {
+		t.Errorf("Expected command %q, got %q", "status-get", fakeRunner.Command)
+	}
+
+	if len(fakeRunner.Args) != 2 {
+		t.Fatalf("Expected 2 argument, got %d", len(fakeRunner.Args))
+	}
+
+	if fakeRunner.Args[0] != "--include-data" {
+		t.Errorf("Expected argument %q, got %q", "--include-data", fakeRunner.Args[0])
+	}
+
+	if fakeRunner.Args[1] != "--format=json" {
+		t.Errorf("Expected argument %q, got %q", "--format=json", fakeRunner.Args[1])
+	}
+}
+
+func TestGetAppStatus_Success(t *testing.T) {
+	fakeRunner := &FakeRunner{
+		Output: []byte(`{"status": "active", "message": "Application is active"}`),
+		Err:    nil,
+	}
+
+	goops.SetRunner(fakeRunner)
+
+	status, err := goops.GetAppStatus()
+	if err != nil {
+		t.Fatalf("GetAppStatus returned an error: %v", err)
+	}
+
+	if status.Code != goops.StatusActive {
+		t.Errorf("Expected status %q, got %q", goops.StatusActive, status.Code)
+	}
+
+	if status.Message != "Application is active" {
+		t.Errorf("Expected message %q, got %q", "Application is active", status.Message)
+	}
+
+	if fakeRunner.Command != "status-get" {
+		t.Errorf("Expected command %q, got %q", "status-get", fakeRunner.Command)
+	}
+
+	if len(fakeRunner.Args) != 3 {
+		t.Fatalf("Expected 3 argument, got %d", len(fakeRunner.Args))
+	}
+
+	if fakeRunner.Args[0] != "--application" {
+		t.Errorf("Expected argument %q, got %q", "--application", fakeRunner.Args[0])
+	}
+
+	if fakeRunner.Args[1] != "--include-data" {
+		t.Errorf("Expected argument %q, got %q", "--include-data", fakeRunner.Args[1])
+	}
+
+	if fakeRunner.Args[2] != "--format=json" {
+		t.Errorf("Expected argument %q, got %q", "--format=json", fakeRunner.Args[2])
+	}
+}

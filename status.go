@@ -62,7 +62,7 @@ func SetAppStatus(status StatusCode, message ...string) error {
 	return nil
 }
 
-func GetStatus() (*Status, error) {
+func GetUnitStatus() (*Status, error) {
 	commandRunner := GetRunner()
 
 	args := []string{"--include-data", "--format=json"}
@@ -77,6 +77,26 @@ func GetStatus() (*Status, error) {
 	err = json.Unmarshal(output, &status)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse status: %w", err)
+	}
+
+	return &status, nil
+}
+
+func GetAppStatus() (*Status, error) {
+	commandRunner := GetRunner()
+
+	args := []string{"--application", "--include-data", "--format=json"}
+
+	output, err := commandRunner.Run(statusGetCommand, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get application status: %w", err)
+	}
+
+	var status Status
+
+	err = json.Unmarshal(output, &status)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse application status: %w", err)
 	}
 
 	return &status, nil
