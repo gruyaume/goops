@@ -25,24 +25,22 @@ func FailActionf(format string, args ...any) error {
 	return nil
 }
 
-func GetActionParameter(key string) (string, error) {
+func GetActionParams(params any) error {
 	commandRunner := GetCommandRunner()
 
-	args := []string{key, "--format=json"}
+	args := []string{"--format=json"}
 
 	output, err := commandRunner.Run(actionGetCommand, args...)
 	if err != nil {
-		return "", fmt.Errorf("failed to get action parameter: %w", err)
+		return fmt.Errorf("failed to get action parameter: %w", err)
 	}
 
-	var actionParameter string
-
-	err = json.Unmarshal(output, &actionParameter)
+	err = json.Unmarshal(output, params)
 	if err != nil {
-		return "", fmt.Errorf("failed to parse action parameter: %w", err)
+		return fmt.Errorf("failed to parse action parameter: %w", err)
 	}
 
-	return actionParameter, nil
+	return nil
 }
 
 // ActionLogf records a progress message for the current action.

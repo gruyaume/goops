@@ -35,3 +35,10 @@ provides:
 actions:
   get-ca-certificate:
     description: Outputs the CA cert
+    params:
+      accept-tos:
+        type: boolean
+        default: false
+        description: >-
+          Do you accept the terms of service?
+    required: [accept-tos]

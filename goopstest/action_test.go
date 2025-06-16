@@ -1,6 +1,7 @@
 package goopstest_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/gruyaume/goops"
@@ -162,15 +163,21 @@ func TestCharmActionFailed(t *testing.T) {
 	}
 }
 
+type ExampleActionParams struct {
+	WhateverKey string `json:"whatever-key"`
+}
+
 func ActionParameters() error {
-	params, err := goops.GetActionParameter("key")
+	actionParams := ExampleActionParams{}
+
+	err := goops.GetActionParams(&actionParams)
 	if err != nil {
-		_ = goops.FailActionf("Action parameter 'key' not set")
+		_ = goops.FailActionf("couldn't get action parameters: %v", err)
 		return nil
 	}
 
-	if params != "expected-value" {
-		_ = goops.FailActionf("got ActionParameter[key]=%s, want expected-value", params)
+	if actionParams.WhateverKey != "expected-value" {
+		_ = goops.FailActionf("Action parameter 'whatever-key' not set")
 		return nil
 	}
 
@@ -192,7 +199,7 @@ func TestCharmActionParameters(t *testing.T) {
 	stateIn := &goopstest.State{}
 
 	_, err := ctx.RunAction("run-action", stateIn, map[string]string{
-		"key": "expected-value",
+		"whatever-key": "expected-value",
 	})
 	if err != nil {
 		t.Fatalf("Run returned an error: %v", err)
@@ -215,8 +222,14 @@ func TestCharmActionParameterNotSet(t *testing.T) {
 		t.Fatalf("Run returned an error: %v", err)
 	}
 
-	if ctx.ActionError == nil || ctx.ActionError.Error() != "Action parameter 'key' not set" {
-		t.Errorf("got ActionError=%q, want 'Action parameter 'key' not set'", ctx.ActionError.Error())
+	if ctx.ActionError == nil {
+		t.Fatal("Expected ActionError to be set, got nil")
+	}
+
+	fmt.Println("ActionError:", ctx.ActionError.Error())
+
+	if ctx.ActionError.Error() != "Action parameter 'whatever-key' not set" {
+		t.Errorf("got ActionError=%q, want 'Action parameter 'whatever-key' not set'", ctx.ActionError.Error())
 	}
 
 	if ctx.ActionResults != nil {

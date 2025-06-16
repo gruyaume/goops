@@ -32,37 +32,44 @@ func TestActionFail_Success(t *testing.T) {
 	}
 }
 
+type MyActionParams struct {
+	Fruit string `json:"fruit"`
+	Color string `json:"color"`
+}
+
 func TestActionGet_Success(t *testing.T) {
 	fakeRunner := &FakeRunner{
-		Output: []byte(`"banana"`),
+		Output: []byte(`{"fruit": "banana"}`),
 		Err:    nil,
 	}
 
 	goops.SetCommandRunner(fakeRunner)
 
-	result, err := goops.GetActionParameter("fruit")
+	actionParams := MyActionParams{}
+
+	err := goops.GetActionParams(&actionParams)
 	if err != nil {
 		t.Fatalf("ActionGet returned an error: %v", err)
 	}
 
-	if result != "banana" {
-		t.Fatalf("Expected %q, got %q", "banana", result)
+	if actionParams.Fruit != "banana" {
+		t.Fatalf("Expected %q, got %q", "banana", actionParams.Fruit)
+	}
+
+	if actionParams.Color != "" {
+		t.Fatalf("Expected color to be empty, got %q", actionParams.Color)
 	}
 
 	if fakeRunner.Command != "action-get" {
 		t.Errorf("Expected command %q, got %q", "action-get", fakeRunner.Command)
 	}
 
-	if len(fakeRunner.Args) != 2 {
-		t.Fatalf("Expected 2 arguments, got %d", len(fakeRunner.Args))
+	if len(fakeRunner.Args) != 1 {
+		t.Fatalf("Expected 1 argument, got %d", len(fakeRunner.Args))
 	}
 
-	if fakeRunner.Args[0] != "fruit" {
-		t.Errorf("Expected argument %q, got %q", "fruit", fakeRunner.Args[0])
-	}
-
-	if fakeRunner.Args[1] != "--format=json" {
-		t.Errorf("Expected argument %q, got %q", "--format=json", fakeRunner.Args[1])
+	if fakeRunner.Args[0] != "--format=json" {
+		t.Errorf("Expected argument %q, got %q", "--format=json", fakeRunner.Args[0])
 	}
 }
 
