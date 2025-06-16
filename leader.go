@@ -10,7 +10,7 @@ const (
 )
 
 func IsLeader() (bool, error) {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	args := []string{"--format=json"}
 

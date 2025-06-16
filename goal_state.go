@@ -22,7 +22,7 @@ type GoalState struct {
 }
 
 func GetGoalState() (*GoalState, error) {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	args := []string{"--format=json"}
 

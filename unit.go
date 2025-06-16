@@ -10,7 +10,7 @@ const (
 )
 
 func getUnit(key string) (string, error) {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	args := []string{key}
 

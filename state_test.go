@@ -12,7 +12,7 @@ func TestStateDelete_Success(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	err := goops.DeleteState("key")
 	if err != nil {
@@ -38,7 +38,7 @@ func TestStateGet_Success(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	state, err := goops.GetState("key")
 	if err != nil {

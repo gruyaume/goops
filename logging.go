@@ -24,7 +24,7 @@ var levelStrings = []string{
 }
 
 func logf(level Level, format string, args ...any) {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	message := fmt.Sprintf(format, args...)
 

@@ -8,7 +8,7 @@ import (
 )
 
 func ApplicationVersion() error {
-	err := goops.SetApplicationVersion("1.2.3")
+	err := goops.SetAppVersion("1.2.3")
 	if err != nil {
 		return err
 	}

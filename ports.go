@@ -58,7 +58,7 @@ func SetPorts(ports []*Port) error {
 }
 
 func OpenPort(port int, protocol string) error {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	if port < 0 || port > 65535 {
 		return fmt.Errorf("port %d is out of range", port)
@@ -79,7 +79,7 @@ func OpenPort(port int, protocol string) error {
 }
 
 func ClosePort(port int, protocol string) error {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	if port < 0 || port > 65535 {
 		return fmt.Errorf("port %d is out of range", port)
@@ -100,7 +100,7 @@ func ClosePort(port int, protocol string) error {
 }
 
 func OpenedPorts() ([]*Port, error) {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	args := []string{"--format=json"}
 

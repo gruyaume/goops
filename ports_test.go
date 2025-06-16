@@ -12,7 +12,7 @@ func TestOpenPortTCP_Success(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	err := goops.OpenPort(80, "tcp")
 	if err != nil {
@@ -38,7 +38,7 @@ func TestOpenPortUDP_Success(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	err := goops.OpenPort(80, "udp")
 	if err != nil {
@@ -64,7 +64,7 @@ func TestOpenPortInvalidPort_Failure(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	err := goops.OpenPort(-1, "tcp")
 	if err == nil {
@@ -86,7 +86,7 @@ func TestOpenPortInvalidProtocol_Failure(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	err := goops.OpenPort(80, "invalid")
 	if err == nil {
@@ -108,7 +108,7 @@ func TestClosePortTCP_Success(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	err := goops.ClosePort(80, "tcp")
 	if err != nil {
@@ -134,7 +134,7 @@ func TestClosePortUDP_Success(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	err := goops.ClosePort(80, "udp")
 	if err != nil {
@@ -160,7 +160,7 @@ func TestClosePortInvalidPort_Failure(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	err := goops.ClosePort(-1, "tcp")
 	if err == nil {
@@ -182,7 +182,7 @@ func TestClosePortInvalidProtocol_Failure(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	err := goops.ClosePort(80, "invalid")
 	if err == nil {

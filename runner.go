@@ -35,10 +35,10 @@ type CommandRunner interface {
 	Run(name string, args ...string) ([]byte, error)
 }
 
-func GetRunner() CommandRunner {
+func GetCommandRunner() CommandRunner {
 	return defaultRunner
 }
 
-func SetRunner(runner CommandRunner) {
+func SetCommandRunner(runner CommandRunner) {
 	defaultRunner = runner
 }

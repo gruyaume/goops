@@ -53,7 +53,7 @@ type AddSecretOptions struct {
 }
 
 func AddSecret(opts *AddSecretOptions) (string, error) {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	if len(opts.Content) == 0 {
 		return "", fmt.Errorf("content cannot be empty")
@@ -93,7 +93,7 @@ func AddSecret(opts *AddSecretOptions) (string, error) {
 }
 
 func GetSecretByID(id string, peek bool, refresh bool) (map[string]string, error) {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	var args []string
 	args = append(args, id)
@@ -124,7 +124,7 @@ func GetSecretByID(id string, peek bool, refresh bool) (map[string]string, error
 }
 
 func GetSecretByLabel(label string, peek bool, refresh bool) (map[string]string, error) {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	var args []string
 
@@ -156,7 +156,7 @@ func GetSecretByLabel(label string, peek bool, refresh bool) (map[string]string,
 }
 
 func GrantSecretToRelation(id string, relation string) error {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	args := []string{id, "--relation=" + relation}
 
@@ -169,7 +169,7 @@ func GrantSecretToRelation(id string, relation string) error {
 }
 
 func GrantSecretToUnit(id string, relation string, unit string) error {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	args := []string{id, "--relation=" + relation, "--unit=" + unit}
 
@@ -182,7 +182,7 @@ func GrantSecretToUnit(id string, relation string, unit string) error {
 }
 
 func GetSecretIDs() ([]string, error) {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	output, err := commandRunner.Run(secredIDsCommand, "--format=json")
 	if err != nil {
@@ -200,7 +200,7 @@ func GetSecretIDs() ([]string, error) {
 }
 
 func GetSecretInfoByID(id string) (map[string]SecretInfo, error) {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	args := []string{}
 
@@ -228,7 +228,7 @@ func GetSecretInfoByID(id string) (map[string]SecretInfo, error) {
 }
 
 func GetSecretInfoByLabel(label string) (map[string]SecretInfo, error) {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	args := []string{}
 
@@ -256,7 +256,7 @@ func GetSecretInfoByLabel(label string) (map[string]SecretInfo, error) {
 }
 
 func RemoveSecret(id string) error {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	args := []string{id}
 
@@ -276,7 +276,7 @@ type RevokeSecretOptions struct {
 }
 
 func RevokeSecret(id string) error {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	args := []string{id}
 
@@ -289,7 +289,7 @@ func RevokeSecret(id string) error {
 }
 
 func RevokeSecretFromRelation(id string, relation string) error {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	args := []string{id}
 
@@ -304,7 +304,7 @@ func RevokeSecretFromRelation(id string, relation string) error {
 }
 
 func RevokeSecretFromApp(id string, app string) error {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	args := []string{id}
 
@@ -319,7 +319,7 @@ func RevokeSecretFromApp(id string, app string) error {
 }
 
 func RevokeSecretFromUnit(id string, unit string) error {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	args := []string{id}
 
@@ -334,7 +334,7 @@ func RevokeSecretFromUnit(id string, unit string) error {
 }
 
 func SetSecret(opts *SetSecretOptions) error {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	if opts.ID == "" {
 		return fmt.Errorf("secret ID cannot be empty")

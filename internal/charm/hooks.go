@@ -40,6 +40,8 @@ func generateAndStoreRootCertificate() error {
 		return fmt.Errorf("could not get config: %w", err)
 	}
 
+	goops.LogInfof("Generating root certificate with common name: %s", configOpts.CACommonName)
+
 	_, err = goops.GetSecretByLabel(CaCertificateSecretLabel, false, true)
 	if err != nil {
 		goops.LogInfof("could not get secret: %s", err.Error())
@@ -153,38 +155,28 @@ func setPorts() error {
 }
 
 func validateNetworkGet() error {
-	bindAddress, err := goops.GetNetworkBindAddress("certificates")
+	network, err := goops.GetNetwork("certificates")
 	if err != nil {
 		return fmt.Errorf("could not get network config: %w", err)
 	}
 
-	if bindAddress == "" {
+	if network.BindAddresses[0].Addresses[0].Value == "" {
 		return fmt.Errorf("network config bind addresses is empty")
 	}
 
-	goops.LogInfof("Bind address: %s", bindAddress)
+	goops.LogInfof("Bind address: %s", network.BindAddresses[0].Addresses[0].Value)
 
-	ingressAddress, err := goops.GetNetworkIngressAddress("certificates")
-	if err != nil {
-		return fmt.Errorf("could not get network ingress addresses: %w", err)
-	}
-
-	if ingressAddress == "" {
+	if network.IngressAddresses[0] == "" {
 		return fmt.Errorf("network config ingress address is empty")
 	}
 
-	goops.LogInfof("Ingress address: %s", ingressAddress)
+	goops.LogInfof("Ingress address: %s", network.IngressAddresses[0])
 
-	egressSubnets, err := goops.GetNetworkEgressSubnets("certificates")
-	if err != nil {
-		return fmt.Errorf("could not get network egress subnets: %w", err)
-	}
-
-	if len(egressSubnets) == 0 {
+	if len(network.EgressSubnets[0]) == 0 {
 		return fmt.Errorf("network config egress subnets is empty")
 	}
 
-	if egressSubnets[0] == "" {
+	if network.EgressSubnets[0] == "" {
 		return fmt.Errorf("network config egress subnet is empty")
 	}
 
@@ -323,7 +315,7 @@ func Configure() error {
 		return fmt.Errorf("could not validate state: %w", err)
 	}
 
-	err = goops.SetApplicationVersion("1.0.0")
+	err = goops.SetAppVersion("1.0.0")
 	if err != nil {
 		return fmt.Errorf("could not set application version using goops: %w", err)
 	}

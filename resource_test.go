@@ -12,7 +12,7 @@ func TestResourceGet_Success(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	result, err := goops.GetResource("software")
 	if err != nil {

@@ -12,7 +12,7 @@ func TestRelationIDs_Success(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	result, err := goops.GetRelationIDs("tls-certificates")
 	if err != nil {
@@ -56,7 +56,7 @@ func TestRelationGet_Success(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	result, err := goops.GetUnitRelationData("certificates:0", "tls-certificates-requirer/0")
 	if err != nil {
@@ -108,7 +108,7 @@ func TestListRelationUnits_Success(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	result, err := goops.ListRelationUnits("certificates:0")
 	if err != nil {
@@ -148,7 +148,7 @@ func TestGetRelationApp_Success(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	app, err := goops.GetRelationApp("certificates:0")
 	if err != nil {
@@ -176,7 +176,7 @@ func TestRelationSet_Success(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	err := goops.SetAppRelationData("certificates:0", map[string]string{
 		"username": "user1",
@@ -217,7 +217,7 @@ func TestRelationModelGet_Success(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	uuid, err := goops.GetRelationModel("certificates:0")
 	if err != nil {

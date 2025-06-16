@@ -12,7 +12,7 @@ const (
 )
 
 func AddStorage(name string, count int) error {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	args := []string{}
 
@@ -27,7 +27,7 @@ func AddStorage(name string, count int) error {
 }
 
 func GetStorageByID(id string) (string, error) {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	args := []string{id}
 
@@ -49,7 +49,7 @@ func GetStorageByID(id string) (string, error) {
 }
 
 func GetStorageByName(name string) (string, error) {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	args := []string{"-s", name}
 
@@ -71,7 +71,7 @@ func GetStorageByName(name string) (string, error) {
 }
 
 func ListStorage(name string) ([]string, error) {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	args := []string{name, "--format=json"}
 

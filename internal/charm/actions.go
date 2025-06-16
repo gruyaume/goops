@@ -6,7 +6,27 @@ import (
 	"github.com/gruyaume/goops"
 )
 
+type GetCACertificateActionParams struct {
+	AcceptTOS bool `json:"accept-tos"`
+}
+
 func HandleGetCACertificateAction() error {
+	getCAActionParams := GetCACertificateActionParams{}
+
+	err := goops.GetActionParams(&getCAActionParams)
+	if err != nil {
+		return fmt.Errorf("could not get action parameter 'accept-tos': %w", err)
+	}
+
+	if !getCAActionParams.AcceptTOS {
+		err := goops.FailActionf("You must accept the terms of service to get the CA certificate")
+		if err != nil {
+			return fmt.Errorf("could not fail action: %w and could not get action parameter 'accept-tos': %w", err, err)
+		}
+
+		return fmt.Errorf("you must accept the terms of service to get the CA certificate")
+	}
+
 	caCertificateSecret, err := goops.GetSecretByLabel(CaCertificateSecretLabel, false, true)
 	if err != nil {
 		err := goops.FailActionf("could not get CA certificate secret")

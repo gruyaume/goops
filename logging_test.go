@@ -12,7 +12,7 @@ func TestJujuLogStatusSet_Success(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	goops.LogDebugf("my message")
 

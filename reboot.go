@@ -5,7 +5,7 @@ const (
 )
 
 func Reboot(now bool) error {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	var args []string
 	if now {

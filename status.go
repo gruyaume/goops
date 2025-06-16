@@ -25,7 +25,7 @@ type Status struct {
 }
 
 func SetUnitStatus(status StatusCode, message ...string) error {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	var args []string
 
@@ -44,7 +44,7 @@ func SetUnitStatus(status StatusCode, message ...string) error {
 }
 
 func SetAppStatus(status StatusCode, message ...string) error {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	var args []string
 
@@ -63,7 +63,7 @@ func SetAppStatus(status StatusCode, message ...string) error {
 }
 
 func GetUnitStatus() (*Status, error) {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	args := []string{"--include-data", "--format=json"}
 
@@ -83,7 +83,7 @@ func GetUnitStatus() (*Status, error) {
 }
 
 func GetAppStatus() (*Status, error) {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	args := []string{"--application", "--include-data", "--format=json"}
 

@@ -14,7 +14,7 @@ const (
 )
 
 func GetRelationIDs(name string) ([]string, error) {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	args := []string{name, "--format=json"}
 
@@ -34,7 +34,7 @@ func GetRelationIDs(name string) ([]string, error) {
 }
 
 func GetUnitRelationData(id string, unitID string) (map[string]string, error) {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	args := []string{"-r=" + id, "-", unitID}
 
@@ -56,7 +56,7 @@ func GetUnitRelationData(id string, unitID string) (map[string]string, error) {
 }
 
 func GetAppRelationData(id string, unitID string) (map[string]string, error) {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	args := []string{"-r=" + id, "-", unitID, "--app"}
 
@@ -78,7 +78,7 @@ func GetAppRelationData(id string, unitID string) (map[string]string, error) {
 }
 
 func ListRelationUnits(id string) ([]string, error) {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	args := []string{"-r=" + id, "--format=json"}
 
@@ -98,7 +98,7 @@ func ListRelationUnits(id string) ([]string, error) {
 }
 
 func GetRelationApp(id string) (string, error) {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	args := []string{"-r=" + id, "--app", "--format=json"}
 
@@ -118,7 +118,7 @@ func GetRelationApp(id string) (string, error) {
 }
 
 func SetUnitRelationData(id string, data map[string]string) error {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	args := []string{"-r=" + id}
 
@@ -139,7 +139,7 @@ func SetUnitRelationData(id string, data map[string]string) error {
 }
 
 func SetAppRelationData(id string, data map[string]string) error {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	args := []string{"-r=" + id}
 
@@ -166,7 +166,7 @@ type RelationModel struct {
 }
 
 func GetRelationModel(id string) (string, error) {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	args := []string{"-r=" + id, "--format=json"}
 

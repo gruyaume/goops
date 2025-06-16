@@ -48,16 +48,16 @@ type JujuEnvironment struct {
 	Getter EnvironmentGetter
 }
 
-func GetEnvironment() EnvironmentGetter {
+func GetEnvGetter() EnvironmentGetter {
 	return defaultGetter
 }
 
-func SetEnvironment(envGetter EnvironmentGetter) {
+func SetEnvGetter(envGetter EnvironmentGetter) {
 	defaultGetter = envGetter
 }
 
 func ReadEnv() Environment {
-	envGetter := GetEnvironment()
+	envGetter := GetEnvGetter()
 
 	return Environment{
 		ActionName:         envGetter.Get("JUJU_ACTION_NAME"),

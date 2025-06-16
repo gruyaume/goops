@@ -4,12 +4,8 @@ const (
 	resourceGetCommand = "resource-get"
 )
 
-type ResourceGetOptions struct {
-	Name string
-}
-
 func GetResource(name string) (string, error) {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	args := []string{name}
 

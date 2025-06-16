@@ -558,21 +558,18 @@ func (f *fakeRunner) handleActionFail(args []string) {
 	f.ActionError = fmt.Errorf("%s", strings.Join(args, " "))
 }
 
-func (f *fakeRunner) handleActionGet(args []string) {
-	key := args[0]
-
-	if value, ok := f.ActionParameters[key]; ok {
-		output, err := json.Marshal(value)
-		if err != nil {
-			f.Err = fmt.Errorf("failed to marshal action parameter: %w", err)
-			return
-		}
-
-		f.Output = output
-	} else {
-		f.Err = fmt.Errorf("action parameter %s not found", key)
-		f.Output = []byte(`""`)
+func (f *fakeRunner) handleActionGet(_ []string) {
+	if f.ActionParameters == nil {
+		f.ActionParameters = make(map[string]string)
 	}
+
+	output, err := json.Marshal(f.ActionParameters)
+	if err != nil {
+		f.Err = fmt.Errorf("failed to marshal action parameters: %w", err)
+		return
+	}
+
+	f.Output = output
 }
 
 func (f *fakeRunner) handleApplicationVersionSet(args []string) {
@@ -661,8 +658,8 @@ func (c *Context) Run(hookName string, state *State) (*State, error) {
 		JujuVersion: c.JujuVersion,
 	}
 
-	goops.SetRunner(fakeRunner)
-	goops.SetEnvironment(fakeGetter)
+	goops.SetCommandRunner(fakeRunner)
+	goops.SetEnvGetter(fakeGetter)
 
 	err := c.Charm()
 	if err != nil {
@@ -705,8 +702,8 @@ func (c *Context) RunAction(actionName string, state *State, params map[string]s
 		JujuVersion: c.JujuVersion,
 	}
 
-	goops.SetRunner(fakeRunner)
-	goops.SetEnvironment(fakeGetter)
+	goops.SetCommandRunner(fakeRunner)
+	goops.SetEnvGetter(fakeGetter)
 
 	err := c.Charm()
 	if err != nil {
