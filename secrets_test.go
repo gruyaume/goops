@@ -117,6 +117,7 @@ func TestSecretAdd_Success(t *testing.T) {
 		Description: description,
 		Expire:      time.Now().Add(24 * time.Hour),
 		Label:       label,
+		Rotate:      goops.RotateNever,
 	}
 
 	result, err := goops.AddSecret(secretAddOptions)
@@ -133,8 +134,8 @@ func TestSecretAdd_Success(t *testing.T) {
 		t.Errorf("Expected command %q, got %q", "secret-add", fakeRunner.Command)
 	}
 
-	if len(fakeRunner.Args) != 5 {
-		t.Fatalf("Expected 5 arguments, got %d", len(fakeRunner.Args))
+	if len(fakeRunner.Args) != 6 {
+		t.Fatalf("Expected 6 arguments, got %d", len(fakeRunner.Args))
 	}
 
 	contentArg := fakeRunner.Args[0]
@@ -154,8 +155,12 @@ func TestSecretAdd_Success(t *testing.T) {
 		t.Errorf("Expected label arg %q, got %q", "--label=my-label", fakeRunner.Args[3])
 	}
 
-	if fakeRunner.Args[4] != "--expire="+expiry.Format(time.RFC3339) {
-		t.Errorf("Expected expire arg %q, got %q", "--expire="+expiry.Format(time.RFC3339), fakeRunner.Args[4])
+	if fakeRunner.Args[4] != "--rotate=never" {
+		t.Errorf("Expected rotate arg %q, got %q", "--rotate=never", fakeRunner.Args[4])
+	}
+
+	if fakeRunner.Args[5] != "--expire="+expiry.Format(time.RFC3339) {
+		t.Errorf("Expected expire arg %q, got %q", "--expire="+expiry.Format(time.RFC3339), fakeRunner.Args[5])
 	}
 }
 
@@ -171,6 +176,7 @@ func TestSecretAdd_EmptyContent(t *testing.T) {
 		Description: "my secret",
 		Expire:      time.Now().Add(24 * time.Hour),
 		Label:       "my-label",
+		Rotate:      goops.RotateNever,
 	}
 
 	_, err := goops.AddSecret(secretAddOptions)
@@ -325,20 +331,21 @@ func TestSecretSet_Success(t *testing.T) {
 	}
 	expiry := time.Now().Add(24 * time.Hour)
 
-	secretSetOpts := &goops.SetSecretOptions{
+	setSecretOpts := &goops.SetSecretOptions{
 		ID:      "123",
 		Content: secretContent,
 		Expire:  expiry,
 		Label:   "my-label",
+		Rotate:  goops.RotateNever,
 	}
 
-	err := goops.SecretSet(secretSetOpts)
+	err := goops.SetSecret(setSecretOpts)
 	if err != nil {
-		t.Fatalf("SecretSet returned an error: %v", err)
+		t.Fatalf("couldn't set secret: %v", err)
 	}
 
-	if len(fakeRunner.Args) != 4 {
-		t.Fatalf("Expected 4 arguments, got %d", len(fakeRunner.Args))
+	if len(fakeRunner.Args) != 5 {
+		t.Fatalf("Expected 5 arguments, got %d", len(fakeRunner.Args))
 	}
 
 	if fakeRunner.Args[0] != "username=user1" && fakeRunner.Args[1] != "username=user1" {
@@ -351,5 +358,13 @@ func TestSecretSet_Success(t *testing.T) {
 
 	if fakeRunner.Args[2] != "--label=my-label" {
 		t.Errorf("Expected ID arg %q, got %q", "--label=my-label", fakeRunner.Args[2])
+	}
+
+	if fakeRunner.Args[3] != "--rotate=never" {
+		t.Errorf("Expected ID arg %q, got %q", "--rotate=never", fakeRunner.Args[3])
+	}
+
+	if fakeRunner.Args[4] != "--expire="+expiry.Format(time.RFC3339) {
+		t.Errorf("Expected ID arg %q, got %q", "--expire="+expiry.Format(time.RFC3339), fakeRunner.Args[4])
 	}
 }

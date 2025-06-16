@@ -24,6 +24,15 @@ type SecretInfo struct {
 	Rotation string `json:"rotation"`
 }
 
+type SecretRotate string
+
+const (
+	RotateHourly  SecretRotate = "hourly"
+	RotateDaily   SecretRotate = "daily"
+	RotateMonthly SecretRotate = "monthly"
+	RotateNever   SecretRotate = "never"
+)
+
 type SetSecretOptions struct {
 	ID          string
 	Content     map[string]string
@@ -31,7 +40,7 @@ type SetSecretOptions struct {
 	Expire      time.Time
 	Label       string
 	Owner       string
-	Rotate      string // allowed values: hourly, daily, monthly, never
+	Rotate      SecretRotate
 }
 
 type AddSecretOptions struct {
@@ -40,7 +49,7 @@ type AddSecretOptions struct {
 	Expire      time.Time
 	Label       string
 	Owner       string
-	Rotate      string // allowed values: hourly, daily, monthly, never
+	Rotate      SecretRotate
 }
 
 func AddSecret(opts *AddSecretOptions) (string, error) {
@@ -68,7 +77,7 @@ func AddSecret(opts *AddSecretOptions) (string, error) {
 	}
 
 	if opts.Rotate != "" {
-		args = append(args, "--rotate="+opts.Rotate)
+		args = append(args, "--rotate="+string(opts.Rotate))
 	}
 
 	if !opts.Expire.IsZero() {
@@ -324,7 +333,7 @@ func RevokeSecretFromUnit(id string, unit string) error {
 	return nil
 }
 
-func SecretSet(opts *SetSecretOptions) error {
+func SetSecret(opts *SetSecretOptions) error {
 	commandRunner := GetRunner()
 
 	if opts.ID == "" {
@@ -353,7 +362,7 @@ func SecretSet(opts *SetSecretOptions) error {
 	}
 
 	if opts.Rotate != "" {
-		args = append(args, "--rotate="+opts.Rotate)
+		args = append(args, "--rotate="+string(opts.Rotate))
 	}
 
 	if !opts.Expire.IsZero() {
