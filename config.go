@@ -15,7 +15,7 @@ var ErrConfigNotSet = errors.New("config option not set")
 func GetConfig(config any) error {
 	commandRunner := GetRunner()
 
-	args := []string{"--format=json"}
+	args := []string{"--all", "--format=json"}
 
 	output, err := commandRunner.Run(configGetCommand, args...)
 	if err != nil {
