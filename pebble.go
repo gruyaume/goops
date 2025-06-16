@@ -26,7 +26,6 @@ type PebbleClient interface {
 	AddLayer(opts *client.AddLayerOptions) error
 	Restart(opts *client.ServiceOptions) (changeID string, err error)
 	Start(opts *client.ServiceOptions) (changeID string, err error)
-	// ... and all the other pebble.Client methods
 }
 
 type PebbleExecProcess interface {
@@ -44,6 +43,7 @@ func (g realPebbleGetter) Pebble(container string) PebbleClient {
 	if err != nil {
 		panic(err) // shouldn't happen
 	}
+
 	return &realPebbleStub{pebble}
 }
 
