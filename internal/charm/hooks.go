@@ -328,12 +328,12 @@ func Configure() error {
 		return fmt.Errorf("could not set application version using goops: %w", err)
 	}
 
-	existingStatus, err := goops.GetStatus()
+	existingStatus, err := goops.GetUnitStatus()
 	if err != nil {
-		return fmt.Errorf("could not get status: %w", err)
+		return fmt.Errorf("could not get unit status: %w", err)
 	}
 
-	goops.LogInfof("Current status: %s %s", existingStatus.Code, existingStatus.Message)
+	goops.LogInfof("Current unit status: %s %s", existingStatus.Code, existingStatus.Message)
 
 	err = goops.SetUnitStatus(goops.StatusActive, "A happy charm")
 	if err != nil {
