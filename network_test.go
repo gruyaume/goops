@@ -14,11 +14,7 @@ func TestNetworkGet_Success(t *testing.T) {
 
 	goops.SetCommandRunner(fakeRunner)
 
-	networkGetOptions := &goops.NetworkGetOptions{
-		BindingName: "whatever",
-	}
-
-	result, err := goops.GetNetwork(networkGetOptions)
+	result, err := goops.GetNetwork("whatever")
 	if err != nil {
 		t.Fatalf("NetworkGet returned an error: %v", err)
 	}
