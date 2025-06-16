@@ -40,6 +40,8 @@ func generateAndStoreRootCertificate() error {
 		return fmt.Errorf("could not get config: %w", err)
 	}
 
+	goops.LogInfof("Generating root certificate with common name: %s", configOpts.CACommonName)
+
 	_, err = goops.GetSecretByLabel(CaCertificateSecretLabel, false, true)
 	if err != nil {
 		goops.LogInfof("could not get secret: %s", err.Error())
