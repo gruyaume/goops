@@ -19,14 +19,14 @@ func main() {
 			err := charm.HandleGetCACertificateAction()
 			if err != nil {
 				goops.LogErrorf("Error handling get-ca-certificate action: %s", err.Error())
-				os.Exit(0)
+				os.Exit(1)
 			}
 
 			goops.LogInfof("Handled get-ca-certificate action successfully")
 			os.Exit(0)
 		default:
 			goops.LogErrorf("Action '%s' not recognized, exiting", env.ActionName)
-			os.Exit(0)
+			os.Exit(1)
 		}
 	}
 
@@ -36,7 +36,7 @@ func main() {
 		err := charm.Configure()
 		if err != nil {
 			goops.LogErrorf("Error handling default hook: %s", err.Error())
-			os.Exit(0)
+			os.Exit(1)
 		}
 	}
 }

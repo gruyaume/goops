@@ -44,7 +44,7 @@ func main() {
 	err := Configure()
 	if err != nil {
 		goops.LogErrorf("Error handling %s hook: %v", env.HookName, err)
-		return
+		os.Exit(1)
 	}
 }
 
