@@ -7,13 +7,19 @@ import (
 	"github.com/gruyaume/goops/goopstest"
 )
 
+type MyConfig struct {
+	WhateverKey string `json:"whatever_key"`
+}
+
 func ActiveIfExpectedConfig() error {
-	value, err := goops.GetConfigString("blabla")
+	myConfig := MyConfig{}
+
+	err := goops.GetConfig(&myConfig)
 	if err != nil {
 		return err
 	}
 
-	if value == "expected" {
+	if myConfig.WhateverKey == "expected" {
 		_ = goops.SetUnitStatus(goops.StatusActive, "Config is set to expected value")
 	} else {
 		_ = goops.SetUnitStatus(goops.StatusBlocked, "Config is not set to expected value")
@@ -22,10 +28,16 @@ func ActiveIfExpectedConfig() error {
 	return nil
 }
 
+type MyBadConfig struct {
+	WhateverKey string `json:"whatever_key"`
+}
+
 func ActiveInexistantConfig() error {
-	_, err := goops.GetConfigString("doesntexist")
+	myBadConfig := MyBadConfig{}
+
+	err := goops.GetConfig(myBadConfig)
 	if err != nil {
-		_ = goops.SetUnitStatus(goops.StatusBlocked, "Config key does not exist")
+		_ = goops.SetUnitStatus(goops.StatusBlocked, "Config is not set")
 	}
 
 	return nil
@@ -44,7 +56,7 @@ func TestCharmConfig(t *testing.T) {
 			name:     "ActiveIfExpectedConfig",
 			handler:  ActiveIfExpectedConfig,
 			hookName: "start",
-			key:      "blabla",
+			key:      "whatever_key",
 			value:    "expected",
 			want:     string(goops.StatusActive),
 		},
@@ -52,7 +64,7 @@ func TestCharmConfig(t *testing.T) {
 			name:     "BlockedIfNotExpectedConfig",
 			handler:  ActiveIfExpectedConfig,
 			hookName: "start",
-			key:      "blabla",
+			key:      "whatever_key",
 			value:    "not-expected",
 			want:     string(goops.StatusBlocked),
 		},
@@ -60,7 +72,7 @@ func TestCharmConfig(t *testing.T) {
 			name:     "ActiveInexistantConfig",
 			handler:  ActiveInexistantConfig,
 			hookName: "start",
-			key:      "blabla",
+			key:      "whatever_key",
 			value:    "whatever",
 			want:     string(goops.StatusBlocked),
 		},

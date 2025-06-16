@@ -185,13 +185,19 @@ func (f *fakeRunner) handleClosePort(args []string) {
 	f.Err = fmt.Errorf("port %d/%s not found", port, protocol)
 }
 
-func (f *fakeRunner) handleConfigGet(args []string) {
-	if value, ok := f.Config[args[0]]; ok {
-		f.Output = []byte(fmt.Sprintf(`"%s"`, value))
-	} else {
-		f.Output = []byte(`""`)
-		f.Err = fmt.Errorf("config key %s not found", args[0])
+func (f *fakeRunner) handleConfigGet(_ []string) {
+	if len(f.Config) == 0 {
+		f.Output = []byte(`{}`)
+		return
 	}
+
+	output, err := json.Marshal(f.Config)
+	if err != nil {
+		f.Err = fmt.Errorf("failed to marshal config: %w", err)
+		return
+	}
+
+	f.Output = output
 }
 
 func (f *fakeRunner) handleRelationIDs(args []string) {

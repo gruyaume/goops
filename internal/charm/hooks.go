@@ -13,13 +13,19 @@ const (
 	TLSCertificatesIntegration = "certificates"
 )
 
+type ConfigOptions struct {
+	CACommonName string `json:"ca-common-name"`
+}
+
 func isConfigValid() (bool, error) {
-	caCommonNameConfig, err := goops.GetConfig("ca-common-name")
+	configOpts := ConfigOptions{}
+
+	err := goops.GetConfig(&configOpts)
 	if err != nil {
 		return false, fmt.Errorf("could not get config: %w", err)
 	}
 
-	if caCommonNameConfig == "" {
+	if configOpts.CACommonName == "" {
 		return false, fmt.Errorf("ca-common-name config is empty")
 	}
 
@@ -27,7 +33,9 @@ func isConfigValid() (bool, error) {
 }
 
 func generateAndStoreRootCertificate() error {
-	caCommonName, err := goops.GetConfigString("ca-common-name")
+	configOpts := ConfigOptions{}
+
+	err := goops.GetConfig(&configOpts)
 	if err != nil {
 		return fmt.Errorf("could not get config: %w", err)
 	}
@@ -36,12 +44,12 @@ func generateAndStoreRootCertificate() error {
 	if err != nil {
 		goops.LogInfof("could not get secret: %s", err.Error())
 
-		caCertPEM, caKeyPEM, err := GenerateRootCertificate(caCommonName)
+		caCertPEM, caKeyPEM, err := GenerateRootCertificate(configOpts.CACommonName)
 		if err != nil {
 			return fmt.Errorf("could not generate root certificate: %w", err)
 		}
 
-		goops.LogInfof("Generated new root certificate with common name: %s", caCommonName)
+		goops.LogInfof("Generated new root certificate with common name: %s", configOpts.CACommonName)
 
 		secretContent := map[string]string{
 			"private-key":    caKeyPEM,
