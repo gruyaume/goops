@@ -55,6 +55,7 @@ func generateAndStoreRootCertificate() error {
 			Description: "ca certificate and private key for the certificates charm",
 			Expire:      expiry,
 			Label:       CaCertificateSecretLabel,
+			Rotate:      goops.RotateNever,
 		})
 		if err != nil {
 			return fmt.Errorf("could not add secret: %w", err)
