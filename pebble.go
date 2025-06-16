@@ -20,6 +20,12 @@ type PebbleClient interface {
 	Stop(opts *client.ServiceOptions) (changeID string, err error)
 	WaitChange(changeID string, options *client.WaitChangeOptions) (*client.Change, error)
 	Exec(opts *client.ExecOptions) (PebbleExecProcess, error)
+	SysInfo() (*client.SysInfo, error)
+	Push(opts *client.PushOptions) error
+	Pull(opts *client.PullOptions) error
+	AddLayer(opts *client.AddLayerOptions) error
+	Restart(opts *client.ServiceOptions) (changeID string, err error)
+	Start(opts *client.ServiceOptions) (changeID string, err error)
 	// ... and all the other pebble.Client methods
 }
 
