@@ -12,7 +12,7 @@ func TestActionFail_Success(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	err := goops.FailActionf("my failure message")
 	if err != nil {
@@ -38,7 +38,7 @@ func TestActionGet_Success(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	result, err := goops.GetActionParameter("fruit")
 	if err != nil {
@@ -72,9 +72,9 @@ func TestActionLog_Success(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
-	err := goops.LogActionf("my log message")
+	err := goops.ActionLogf("my log message")
 	if err != nil {
 		t.Fatalf("ActionLog returned an error: %v", err)
 	}
@@ -98,7 +98,7 @@ func TestActionSet_Success(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	actionSetValues := map[string]string{
 		"fruit": "banana",

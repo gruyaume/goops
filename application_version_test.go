@@ -12,11 +12,11 @@ func TestApplicationVersionSet_Success(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	version := "1.2.3"
 
-	err := goops.SetApplicationVersion(version)
+	err := goops.SetAppVersion(version)
 	if err != nil {
 		t.Fatalf("ApplicationVersionSet returned an error: %v", err)
 	}

@@ -12,7 +12,7 @@ func TestSetUnitStatus_Success(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	err := goops.SetUnitStatus(goops.StatusActive)
 	if err != nil {
@@ -42,7 +42,7 @@ func TestSetAppStatus_Success(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	err := goops.SetAppStatus(goops.StatusActive)
 	if err != nil {
@@ -76,7 +76,7 @@ func TestGetUnitStatus_Success(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	status, err := goops.GetUnitStatus()
 	if err != nil {
@@ -114,7 +114,7 @@ func TestGetAppStatus_Success(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	status, err := goops.GetAppStatus()
 	if err != nil {

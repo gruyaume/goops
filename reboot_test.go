@@ -12,7 +12,7 @@ func TestJujuReboot_Success(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	err := goops.Reboot(true)
 	if err != nil {

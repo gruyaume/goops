@@ -12,7 +12,7 @@ func TestStorageAdd_Success(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	err := goops.AddStorage("database-storage", 1)
 	if err != nil {
@@ -38,7 +38,7 @@ func TestStorageAddWithCount_Success(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	err := goops.AddStorage("database-storage", 2)
 	if err != nil {
@@ -64,7 +64,7 @@ func TestStorageGetByName_Success(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	storage, err := goops.GetStorageByName("database-storage")
 	if err != nil {
@@ -102,7 +102,7 @@ func TestStorageGetByID_Success(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	storage, err := goops.GetStorageByID("21127934-8986-11e5-af63-feff819cdc9f")
 	if err != nil {
@@ -136,7 +136,7 @@ func TestStorageList_Success(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	storage, err := goops.ListStorage("database-storage")
 	if err != nil {

@@ -661,8 +661,8 @@ func (c *Context) Run(hookName string, state *State) (*State, error) {
 		JujuVersion: c.JujuVersion,
 	}
 
-	goops.SetRunner(fakeRunner)
-	goops.SetEnvironment(fakeGetter)
+	goops.SetCommandRunner(fakeRunner)
+	goops.SetEnvGetter(fakeGetter)
 
 	err := c.Charm()
 	if err != nil {
@@ -705,8 +705,8 @@ func (c *Context) RunAction(actionName string, state *State, params map[string]s
 		JujuVersion: c.JujuVersion,
 	}
 
-	goops.SetRunner(fakeRunner)
-	goops.SetEnvironment(fakeGetter)
+	goops.SetCommandRunner(fakeRunner)
+	goops.SetEnvGetter(fakeGetter)
 
 	err := c.Charm()
 	if err != nil {

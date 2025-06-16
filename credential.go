@@ -7,7 +7,7 @@ const (
 )
 
 func GetCredential() (map[string]string, error) {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	args := []string{"--format=json"}
 

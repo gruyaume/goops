@@ -13,7 +13,7 @@ const (
 )
 
 func FailActionf(format string, args ...any) error {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	message := fmt.Sprintf(format, args...)
 
@@ -26,7 +26,7 @@ func FailActionf(format string, args ...any) error {
 }
 
 func GetActionParameter(key string) (string, error) {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	args := []string{key, "--format=json"}
 
@@ -45,8 +45,9 @@ func GetActionParameter(key string) (string, error) {
 	return actionParameter, nil
 }
 
-func LogActionf(format string, args ...any) error {
-	commandRunner := GetRunner()
+// ActionLogf records a progress message for the current action.
+func ActionLogf(format string, args ...any) error {
+	commandRunner := GetCommandRunner()
 
 	message := fmt.Sprintf(format, args...)
 
@@ -59,7 +60,7 @@ func LogActionf(format string, args ...any) error {
 }
 
 func SetActionResults(results map[string]string) error {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	var args []string
 

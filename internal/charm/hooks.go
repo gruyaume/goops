@@ -323,7 +323,7 @@ func Configure() error {
 		return fmt.Errorf("could not validate state: %w", err)
 	}
 
-	err = goops.SetApplicationVersion("1.0.0")
+	err = goops.SetAppVersion("1.0.0")
 	if err != nil {
 		return fmt.Errorf("could not set application version using goops: %w", err)
 	}

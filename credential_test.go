@@ -12,7 +12,7 @@ func TestCredentialGet_Success(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	result, err := goops.GetCredential()
 	if err != nil {

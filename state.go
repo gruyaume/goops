@@ -12,7 +12,7 @@ const (
 )
 
 func DeleteState(key string) error {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	args := []string{key}
 
@@ -29,7 +29,7 @@ func DeleteState(key string) error {
 }
 
 func GetState(key string) (string, error) {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	args := []string{key, "--format=json"}
 
@@ -53,7 +53,7 @@ func GetState(key string) (string, error) {
 }
 
 func SetState(key string, value string) error {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	args := []string{key + "=" + value}
 

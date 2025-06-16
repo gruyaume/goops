@@ -12,7 +12,7 @@ func TestGoalState_Success(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	expectedGoalState := goops.GoalState{
 		Units: map[string]*goops.UnitStatus{

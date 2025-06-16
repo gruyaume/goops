@@ -6,8 +6,8 @@ const (
 	applicationVersionSetCommand = "application-version-set"
 )
 
-func SetApplicationVersion(version string) error {
-	commandRunner := GetRunner()
+func SetAppVersion(version string) error {
+	commandRunner := GetCommandRunner()
 
 	args := []string{}
 	if version != "" {

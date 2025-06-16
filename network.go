@@ -35,7 +35,7 @@ type NetworkGetOptions struct {
 }
 
 func GetNetwork(opts *NetworkGetOptions) (*Network, error) {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	var args []string
 
@@ -81,7 +81,7 @@ func GetNetwork(opts *NetworkGetOptions) (*Network, error) {
 }
 
 func GetNetworkBindAddress(bindingName string) (string, error) {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	var args []string
 
@@ -105,7 +105,7 @@ func GetNetworkBindAddress(bindingName string) (string, error) {
 }
 
 func GetNetworkIngressAddress(bindingName string) (string, error) {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	var args []string
 
@@ -133,7 +133,7 @@ func GetNetworkIngressAddress(bindingName string) (string, error) {
 }
 
 func GetNetworkEgressSubnets(bindingName string) ([]string, error) {
-	commandRunner := GetRunner()
+	commandRunner := GetCommandRunner()
 
 	var args []string
 

@@ -13,7 +13,7 @@ func TestSecretIDs_Success(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	result, err := goops.GetSecretIDs()
 	if err != nil {
@@ -53,7 +53,7 @@ func TestSecretGet_Success(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	result, err := goops.GetSecretByLabel("my-label", false, true)
 	if err != nil {
@@ -108,7 +108,7 @@ func TestSecretAdd_Success(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	expiry := time.Now().Add(24 * time.Hour)
 
@@ -170,7 +170,7 @@ func TestSecretAdd_EmptyContent(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	secretAddOptions := &goops.AddSecretOptions{
 		Description: "my secret",
@@ -191,7 +191,7 @@ func TestSecretGrant_Success(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	err := goops.GrantSecretToRelation("123", "certificates:0")
 	if err != nil {
@@ -221,7 +221,7 @@ func TestSecretInfoGet_Success(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	secretInfo, err := goops.GetSecretInfoByLabel("my-secret-label")
 	if err != nil {
@@ -279,7 +279,7 @@ func TestSecretRemove_Success(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	err := goops.RemoveSecret("123")
 	if err != nil {
@@ -301,7 +301,7 @@ func TestSecretRevoke_Success(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	err := goops.RevokeSecret("123")
 	if err != nil {
@@ -323,7 +323,7 @@ func TestSecretSet_Success(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	secretContent := map[string]string{
 		"username": "user1",

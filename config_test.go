@@ -18,7 +18,7 @@ func TestGetConfigSuccess(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	var dat MyConfig
 
@@ -46,7 +46,7 @@ func TestGetConfigFailure(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	var dat MyConfig
 

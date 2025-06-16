@@ -12,7 +12,7 @@ func TestIsLeader_Success(t *testing.T) {
 		Err:    nil,
 	}
 
-	goops.SetRunner(fakeRunner)
+	goops.SetCommandRunner(fakeRunner)
 
 	result, err := goops.IsLeader()
 	if err != nil {
