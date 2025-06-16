@@ -9,11 +9,11 @@ import (
 var defaultPebbleGetter PebbleGetter = realPebbleGetter{}
 
 type PebbleGetter interface {
-	Pebble(container string) PebbleClient
+	GetPebble(container string) PebbleClient
 }
 
-func Pebble(container string) PebbleClient {
-	return defaultPebbleGetter.Pebble(container)
+func GetPebble(container string) PebbleClient {
+	return defaultPebbleGetter.GetPebble(container)
 }
 
 type PebbleClient interface {
@@ -36,7 +36,7 @@ type PebbleExecProcess interface {
 
 type realPebbleGetter struct{}
 
-func (g realPebbleGetter) Pebble(container string) PebbleClient {
+func (g realPebbleGetter) GetPebble(container string) PebbleClient {
 	pebble, err := client.New(&client.Config{
 		Socket: fmt.Sprintf("/charm/containers/%s/pebble.socket", container),
 	})
