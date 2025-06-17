@@ -4,14 +4,9 @@ import (
 	"os"
 )
 
-var defaultGetter EnvironmentGetter
+var defaultGetter EnvironmentGetter = &realExecutionEnvironment{}
 
-// ExecutionEnvironment is the default implementation of EnvironmentGetter.
-type ExecutionEnvironment struct{}
-
-func init() {
-	defaultGetter = &ExecutionEnvironment{}
-}
+type realExecutionEnvironment struct{}
 
 type Environment struct {
 	ActionName         string
@@ -40,7 +35,7 @@ type EnvironmentGetter interface {
 	Get(name string) string
 }
 
-func (r *ExecutionEnvironment) Get(name string) string {
+func (r *realExecutionEnvironment) Get(name string) string {
 	return os.Getenv(name)
 }
 

@@ -6,14 +6,18 @@ import (
 	"github.com/canonical/pebble/client"
 )
 
-var defaultPebbleGetter PebbleGetter = realPebbleGetter{}
+var defaultPebbleGetter PebbleGetter = &realPebbleGetter{}
 
 type PebbleGetter interface {
-	GetPebble(container string) PebbleClient
+	Pebble(container string) PebbleClient
 }
 
-func GetPebble(container string) PebbleClient {
-	return defaultPebbleGetter.GetPebble(container)
+func Pebble(container string) PebbleClient {
+	return defaultPebbleGetter.Pebble(container)
+}
+
+func SetPebbleGetter(getter PebbleGetter) {
+	defaultPebbleGetter = getter
 }
 
 type PebbleClient interface {
@@ -36,7 +40,7 @@ type PebbleExecProcess interface {
 
 type realPebbleGetter struct{}
 
-func (g realPebbleGetter) GetPebble(container string) PebbleClient {
+func (g realPebbleGetter) Pebble(container string) PebbleClient {
 	pebble, err := client.New(&client.Config{
 		Socket: fmt.Sprintf("/charm/containers/%s/pebble.socket", container),
 	})

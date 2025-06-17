@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/canonical/pebble/client"
 	"github.com/gruyaume/goops"
 )
 
@@ -18,7 +19,7 @@ type Context struct {
 	ActionError   error
 }
 
-type fakeRunner struct {
+type fakeCommandRunner struct {
 	Command            string
 	Args               []string
 	Output             []byte
@@ -39,7 +40,7 @@ type fakeRunner struct {
 	UnitID             int
 }
 
-func (f *fakeRunner) Run(name string, args ...string) ([]byte, error) {
+func (f *fakeCommandRunner) Run(name string, args ...string) ([]byte, error) {
 	f.Output = []byte(``)
 	f.Err = nil
 	f.Command = name
@@ -76,7 +77,7 @@ func (f *fakeRunner) Run(name string, args ...string) ([]byte, error) {
 	return nil, fmt.Errorf("unknown command: %s", name)
 }
 
-func (f *fakeRunner) handleStatusSet(args []string) {
+func (f *fakeCommandRunner) handleStatusSet(args []string) {
 	if len(args) == 0 {
 		f.Err = fmt.Errorf("status-set command requires at least one argument")
 		return
@@ -94,7 +95,7 @@ func (f *fakeRunner) handleStatusSet(args []string) {
 	}
 }
 
-func (f *fakeRunner) handleIsLeader(_ []string) {
+func (f *fakeCommandRunner) handleIsLeader(_ []string) {
 	if f.Leader {
 		f.Output = []byte(`true`)
 	} else {
@@ -102,7 +103,7 @@ func (f *fakeRunner) handleIsLeader(_ []string) {
 	}
 }
 
-func (f *fakeRunner) handleOpenedPorts(_ []string) {
+func (f *fakeCommandRunner) handleOpenedPorts(_ []string) {
 	portList := make([]string, len(f.Ports))
 	for i, port := range f.Ports {
 		portList[i] = fmt.Sprintf("%d/%s", port.Port, port.Protocol)
@@ -117,7 +118,7 @@ func (f *fakeRunner) handleOpenedPorts(_ []string) {
 	f.Output = output
 }
 
-func (f *fakeRunner) handleOpenPort(args []string) {
+func (f *fakeCommandRunner) handleOpenPort(args []string) {
 	if len(args) != 1 {
 		f.Err = fmt.Errorf("open-port command requires exactly one argument")
 		return
@@ -149,7 +150,7 @@ func (f *fakeRunner) handleOpenPort(args []string) {
 	})
 }
 
-func (f *fakeRunner) handleClosePort(args []string) {
+func (f *fakeCommandRunner) handleClosePort(args []string) {
 	if len(args) != 1 {
 		f.Err = fmt.Errorf("close-port command requires exactly one argument")
 		return
@@ -185,7 +186,7 @@ func (f *fakeRunner) handleClosePort(args []string) {
 	f.Err = fmt.Errorf("port %d/%s not found", port, protocol)
 }
 
-func (f *fakeRunner) handleConfigGet(_ []string) {
+func (f *fakeCommandRunner) handleConfigGet(_ []string) {
 	if len(f.Config) == 0 {
 		f.Output = []byte(`{}`)
 		return
@@ -200,7 +201,7 @@ func (f *fakeRunner) handleConfigGet(_ []string) {
 	f.Output = output
 }
 
-func (f *fakeRunner) handleRelationIDs(args []string) {
+func (f *fakeCommandRunner) handleRelationIDs(args []string) {
 	if len(f.Relations) == 0 {
 		f.Output = []byte(`[]`)
 		return
@@ -225,7 +226,7 @@ func safeCopy(data DataBag) DataBag {
 	return data
 }
 
-func (f *fakeRunner) findRelationByID(id string) *Relation {
+func (f *fakeCommandRunner) findRelationByID(id string) *Relation {
 	for i := range f.Relations {
 		if f.Relations[i].ID == id {
 			return f.Relations[i]
@@ -254,7 +255,7 @@ func parseRelationGetArgs(args []string) (isApp bool, relationID string, unitID 
 	return isApp, relationID, unitID, nil
 }
 
-func (f *fakeRunner) handleRelationGet(args []string) {
+func (f *fakeCommandRunner) handleRelationGet(args []string) {
 	isApp, relationID, unitID, err := parseRelationGetArgs(args)
 	if err != nil {
 		f.Err = err
@@ -281,7 +282,7 @@ func (f *fakeRunner) handleRelationGet(args []string) {
 	}
 }
 
-func (f *fakeRunner) selectRelationData(rel *Relation, isApp, isLocal bool, unitID string) (any, error) {
+func (f *fakeCommandRunner) selectRelationData(rel *Relation, isApp, isLocal bool, unitID string) (any, error) {
 	if isApp {
 		if isLocal {
 			return safeCopy(rel.LocalAppData), nil
@@ -306,7 +307,7 @@ func (f *fakeRunner) selectRelationData(rel *Relation, isApp, isLocal bool, unit
 	return unitData, nil
 }
 
-func (f *fakeRunner) handleRelationList(args []string) {
+func (f *fakeCommandRunner) handleRelationList(args []string) {
 	relationID := strings.TrimPrefix(args[0], "-r=")
 
 	for _, relation := range f.Relations {
@@ -352,7 +353,7 @@ func parseRelationSetArgs(args []string) (isApp bool, relationID string, data ma
 	return isApp, relationID, data, nil
 }
 
-func (f *fakeRunner) handleRelationSet(args []string) {
+func (f *fakeCommandRunner) handleRelationSet(args []string) {
 	isApp, relationID, data, err := parseRelationSetArgs(args)
 	if err != nil {
 		f.Err = err
@@ -391,7 +392,7 @@ func filterOutLabelArgs(args []string) []string {
 	return filtered
 }
 
-func (f *fakeRunner) handleSecretAdd(args []string) {
+func (f *fakeCommandRunner) handleSecretAdd(args []string) {
 	label := extractLabelFromArgs(args)
 	filtered := filterOutLabelArgs(args)
 
@@ -403,7 +404,7 @@ func (f *fakeRunner) handleSecretAdd(args []string) {
 	})
 }
 
-func (f *fakeRunner) handleSecretGet(args []string) {
+func (f *fakeCommandRunner) handleSecretGet(args []string) {
 	label := extractLabelFromArgs(args)
 	if label == "" {
 		f.Err = fmt.Errorf("no --label specified")
@@ -447,7 +448,7 @@ func findSecretByLabel(secrets []*Secret, label string) *Secret {
 	return nil
 }
 
-func (f *fakeRunner) handleSecretRemove(args []string) {
+func (f *fakeCommandRunner) handleSecretRemove(args []string) {
 	for i, secret := range f.Secrets {
 		if strings.Contains(args[0], secret.ID) || strings.Contains(args[0], "--label="+secret.Label) {
 			f.Secrets = append(f.Secrets[:i], f.Secrets[i+1:]...)
@@ -456,7 +457,7 @@ func (f *fakeRunner) handleSecretRemove(args []string) {
 	}
 }
 
-func (f *fakeRunner) handleStateGet(args []string) {
+func (f *fakeCommandRunner) handleStateGet(args []string) {
 	if len(args) == 0 {
 		f.Err = fmt.Errorf("state-get command requires at least one argument")
 		return
@@ -489,7 +490,7 @@ func (f *fakeRunner) handleStateGet(args []string) {
 	f.Output = output
 }
 
-func (f *fakeRunner) handleStateSet(args []string) {
+func (f *fakeCommandRunner) handleStateSet(args []string) {
 	if len(args) == 0 {
 		f.Err = fmt.Errorf("state-set command requires at least one argument")
 		return
@@ -517,7 +518,7 @@ func (f *fakeRunner) handleStateSet(args []string) {
 	}
 }
 
-func (f *fakeRunner) handleStateDelete(args []string) {
+func (f *fakeCommandRunner) handleStateDelete(args []string) {
 	if len(args) == 0 {
 		f.Err = fmt.Errorf("state-delete command requires at least one argument")
 		return
@@ -550,15 +551,15 @@ func parseKeyValueArgs(args []string) map[string]string {
 	return result
 }
 
-func (f *fakeRunner) handleActionSet(args []string) {
+func (f *fakeCommandRunner) handleActionSet(args []string) {
 	f.ActionResults = parseKeyValueArgs(args)
 }
 
-func (f *fakeRunner) handleActionFail(args []string) {
+func (f *fakeCommandRunner) handleActionFail(args []string) {
 	f.ActionError = fmt.Errorf("%s", strings.Join(args, " "))
 }
 
-func (f *fakeRunner) handleActionGet(_ []string) {
+func (f *fakeCommandRunner) handleActionGet(_ []string) {
 	if f.ActionParameters == nil {
 		f.ActionParameters = make(map[string]string)
 	}
@@ -572,11 +573,11 @@ func (f *fakeRunner) handleActionGet(_ []string) {
 	f.Output = output
 }
 
-func (f *fakeRunner) handleApplicationVersionSet(args []string) {
+func (f *fakeCommandRunner) handleApplicationVersionSet(args []string) {
 	f.ApplicationVersion = args[0]
 }
 
-type fakeGetter struct {
+type fakeEnvGetter struct {
 	HookName    string
 	ActionName  string
 	Model       *Model
@@ -585,7 +586,61 @@ type fakeGetter struct {
 	JujuVersion string
 }
 
-func (f *fakeGetter) Get(key string) string {
+type fakePebbleGetter struct {
+	CanConnect bool
+}
+
+type FakePebbleClient struct {
+	CanConnect bool
+}
+
+func (f *FakePebbleClient) AddLayer(*client.AddLayerOptions) error {
+	return nil
+}
+
+func (f *FakePebbleClient) Exec(*client.ExecOptions) (goops.PebbleExecProcess, error) {
+	return nil, nil
+}
+
+func (f *FakePebbleClient) Pull(*client.PullOptions) error {
+	return nil
+}
+
+func (f *FakePebbleClient) Push(*client.PushOptions) error {
+	return nil
+}
+
+func (f *FakePebbleClient) Restart(*client.ServiceOptions) (string, error) {
+	return "", nil
+}
+
+func (f *FakePebbleClient) Start(*client.ServiceOptions) (string, error) {
+	return "", nil
+}
+
+func (f *FakePebbleClient) Stop(*client.ServiceOptions) (string, error) {
+	return "", nil
+}
+
+func (f *FakePebbleClient) SysInfo() (*client.SysInfo, error) {
+	if !f.CanConnect {
+		return nil, fmt.Errorf("cannot connect to Pebble")
+	}
+
+	return nil, nil
+}
+
+func (f *FakePebbleClient) WaitChange(string, *client.WaitChangeOptions) (*client.Change, error) {
+	return nil, nil
+}
+
+func (f *fakePebbleGetter) Pebble(string) goops.PebbleClient {
+	return &FakePebbleClient{
+		CanConnect: f.CanConnect,
+	}
+}
+
+func (f *fakeEnvGetter) Get(key string) string {
 	switch key {
 	case "JUJU_HOOK_NAME":
 		return f.HookName
@@ -637,7 +692,7 @@ func (c *Context) Run(hookName string, state *State) (*State, error) {
 		}
 	}
 
-	fakeRunner := &fakeRunner{
+	fakeCommandRunner := &fakeCommandRunner{
 		Output:      []byte(``),
 		Err:         nil,
 		Leader:      state.Leader,
@@ -650,7 +705,7 @@ func (c *Context) Run(hookName string, state *State) (*State, error) {
 		UnitID:      c.UnitID,
 	}
 
-	fakeGetter := &fakeGetter{
+	fakeEnvGetter := &fakeEnvGetter{
 		HookName:    hookName,
 		Model:       state.Model,
 		AppName:     c.AppName,
@@ -658,26 +713,34 @@ func (c *Context) Run(hookName string, state *State) (*State, error) {
 		JujuVersion: c.JujuVersion,
 	}
 
-	goops.SetCommandRunner(fakeRunner)
-	goops.SetEnvGetter(fakeGetter)
+	// TO DO: Handle multiple containers
+	if len(state.Containers) > 0 {
+		fakePebbleGetter := &fakePebbleGetter{
+			CanConnect: state.Containers[0].CanConnect,
+		}
+		goops.SetPebbleGetter(fakePebbleGetter)
+	}
+
+	goops.SetCommandRunner(fakeCommandRunner)
+	goops.SetEnvGetter(fakeEnvGetter)
 
 	err := c.Charm()
 	if err != nil {
 		return nil, fmt.Errorf("failed to run charm: %w", err)
 	}
 
-	state.UnitStatus = fakeRunner.UnitStatus
-	state.AppStatus = fakeRunner.AppStatus
-	state.Secrets = fakeRunner.Secrets
-	state.ApplicationVersion = fakeRunner.ApplicationVersion
-	state.Ports = fakeRunner.Ports
-	state.StoredState = fakeRunner.StoredState
+	state.UnitStatus = fakeCommandRunner.UnitStatus
+	state.AppStatus = fakeCommandRunner.AppStatus
+	state.Secrets = fakeCommandRunner.Secrets
+	state.ApplicationVersion = fakeCommandRunner.ApplicationVersion
+	state.Ports = fakeCommandRunner.Ports
+	state.StoredState = fakeCommandRunner.StoredState
 
 	return state, nil
 }
 
 func (c *Context) RunAction(actionName string, state *State, params map[string]string) (*State, error) {
-	fakeRunner := &fakeRunner{
+	fakeCommandRunner := &fakeCommandRunner{
 		Output:           []byte(``),
 		Err:              nil,
 		Leader:           state.Leader,
@@ -694,7 +757,7 @@ func (c *Context) RunAction(actionName string, state *State, params map[string]s
 		}
 	}
 
-	fakeGetter := &fakeGetter{
+	fakeEnvGetter := &fakeEnvGetter{
 		ActionName:  actionName,
 		Model:       state.Model,
 		AppName:     c.AppName,
@@ -702,19 +765,19 @@ func (c *Context) RunAction(actionName string, state *State, params map[string]s
 		JujuVersion: c.JujuVersion,
 	}
 
-	goops.SetCommandRunner(fakeRunner)
-	goops.SetEnvGetter(fakeGetter)
+	goops.SetCommandRunner(fakeCommandRunner)
+	goops.SetEnvGetter(fakeEnvGetter)
 
 	err := c.Charm()
 	if err != nil {
 		return nil, err
 	}
 
-	state.UnitStatus = fakeRunner.UnitStatus
-	state.AppStatus = fakeRunner.AppStatus
-	state.Secrets = fakeRunner.Secrets
-	c.ActionResults = fakeRunner.ActionResults
-	c.ActionError = fakeRunner.ActionError
+	state.UnitStatus = fakeCommandRunner.UnitStatus
+	state.AppStatus = fakeCommandRunner.AppStatus
+	state.Secrets = fakeCommandRunner.Secrets
+	c.ActionResults = fakeCommandRunner.ActionResults
+	c.ActionError = fakeCommandRunner.ActionError
 
 	return state, nil
 }
@@ -752,6 +815,29 @@ type Model struct {
 
 type StoredState map[string]string
 
+type Mount struct {
+	Location string
+	Source   string
+}
+
+type Exec struct {
+	Command    []string
+	ReturnCode int
+	Stdout     string
+	Stderr     string
+}
+
+type Container struct {
+	Name            string
+	CanConnect      bool
+	Layers          map[string][]byte
+	ServiceStatuses map[string]client.ServiceStatus
+	Mounts          map[string]Mount
+	Execs           []Exec
+	Notices         []client.Notice
+	CheckInfos      []client.CheckInfo
+}
+
 type State struct {
 	Leader             bool
 	UnitStatus         string
@@ -763,4 +849,5 @@ type State struct {
 	Ports              []*Port
 	Model              *Model
 	StoredState        StoredState
+	Containers         []*Container
 }

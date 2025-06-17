@@ -1,7 +1,6 @@
 package goopstest_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/gruyaume/goops"
@@ -225,8 +224,6 @@ func TestCharmActionParameterNotSet(t *testing.T) {
 	if ctx.ActionError == nil {
 		t.Fatal("Expected ActionError to be set, got nil")
 	}
-
-	fmt.Println("ActionError:", ctx.ActionError.Error())
 
 	if ctx.ActionError.Error() != "Action parameter 'whatever-key' not set" {
 		t.Errorf("got ActionError=%q, want 'Action parameter 'whatever-key' not set'", ctx.ActionError.Error())
