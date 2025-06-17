@@ -7,6 +7,8 @@
 - An event (Act)
 - An output state (Assert)
 
+## Getting Started
+
 ```go
 package charm_test
 
@@ -34,6 +36,7 @@ func Configure() error {
 }
 
 func TestCharm(t *testing.T) {
+	// Arrange
 	ctx := goopstest.Context{
 		Charm: Configure,
 	}
@@ -42,16 +45,26 @@ func TestCharm(t *testing.T) {
 		Leader: false,
 	}
 
+	// Act
 	stateOut, err := ctx.Run("install", stateIn)
 	if err != nil {
 		t.Fatalf("Run returned an error: %v", err)
 	}
 
+	// Assert
 	if stateOut.UnitStatus != string(goops.StatusBlocked) {
 		t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, goops.StatusBlocked)
 	}
 }
 ```
+
+## Writing tests for Kubernetes charms
+
+```go
+// TO DO: Add example for Kubernetes charms
+```
+
+## Reference
 
 ### API Documentation
 
