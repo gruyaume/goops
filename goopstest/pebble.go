@@ -49,7 +49,7 @@ func (f *FakePebbleClient) Pull(opts *client.PullOptions) error {
 			return fmt.Errorf("refusing to read outside of mount source: %s", safePath)
 		}
 
-		sourceFile, err := os.Open(safePath) // #nosec G304 -- path validated above
+		sourceFile, err := os.Open(safePath)
 		if err != nil {
 			return fmt.Errorf("cannot open mount %s at %s: %w", mountName, safePath, err)
 		}
@@ -93,7 +93,7 @@ func (f *FakePebbleClient) pushToMount(mountName string, mount Mount, opts *clie
 		return fmt.Errorf("cannot create directory for mount %s at %s: %w", mountName, filepath.Dir(safePath), err)
 	}
 
-	destFile, err := os.OpenFile(safePath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o600) // #nosec G304 -- validated path
+	destFile, err := os.OpenFile(safePath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o600)
 	if err != nil {
 		return fmt.Errorf("cannot open mount %s at %s: %w", mountName, safePath, err)
 	}
