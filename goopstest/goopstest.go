@@ -637,7 +637,7 @@ func (c *Context) Run(hookName string, state *State) (*State, error) {
 		}
 	}
 
-	fakeCommandRunner := &fakeCommandRunner{
+	fakeCommand := &fakeCommandRunner{
 		Output:      []byte(``),
 		Err:         nil,
 		Leader:      state.Leader,
@@ -650,7 +650,7 @@ func (c *Context) Run(hookName string, state *State) (*State, error) {
 		UnitID:      c.UnitID,
 	}
 
-	fakeEnvGetter := &fakeEnvGetter{
+	fakeEnv := &fakeEnvGetter{
 		HookName:    hookName,
 		Model:       state.Model,
 		AppName:     c.AppName,
@@ -659,27 +659,34 @@ func (c *Context) Run(hookName string, state *State) (*State, error) {
 	}
 
 	// TO DO: Handle multiple containers
+	var fakePebble *FakePebbleClient
 	if len(state.Containers) > 0 {
-		fakePebbleGetter := &fakePebbleGetter{
+		fakePebble = &FakePebbleClient{
 			CanConnect: state.Containers[0].CanConnect,
+			Layers:     state.Containers[0].Layers,
 		}
-		goops.SetPebbleGetter(fakePebbleGetter)
 	}
 
-	goops.SetCommandRunner(fakeCommandRunner)
-	goops.SetEnvGetter(fakeEnvGetter)
+	goops.SetPebbleGetter(fakePebble)
+	goops.SetCommandRunner(fakeCommand)
+	goops.SetEnvGetter(fakeEnv)
 
 	err := c.Charm()
 	if err != nil {
 		return nil, fmt.Errorf("failed to run charm: %w", err)
 	}
 
-	state.UnitStatus = fakeCommandRunner.UnitStatus
-	state.AppStatus = fakeCommandRunner.AppStatus
-	state.Secrets = fakeCommandRunner.Secrets
-	state.ApplicationVersion = fakeCommandRunner.ApplicationVersion
-	state.Ports = fakeCommandRunner.Ports
-	state.StoredState = fakeCommandRunner.StoredState
+	state.UnitStatus = fakeCommand.UnitStatus
+	state.AppStatus = fakeCommand.AppStatus
+	state.Secrets = fakeCommand.Secrets
+	state.ApplicationVersion = fakeCommand.ApplicationVersion
+	state.Ports = fakeCommand.Ports
+	state.StoredState = fakeCommand.StoredState
+
+	// TO DO: Handle multiple containers
+	if len(state.Containers) > 0 && fakePebble != nil {
+		state.Containers[0].Layers = fakePebble.Layers
+	}
 
 	return state, nil
 }
