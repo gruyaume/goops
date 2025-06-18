@@ -26,9 +26,31 @@ func (f *FakePebbleClient) Exec(*client.ExecOptions) (goops.PebbleExecProcess, e
 	return nil, nil
 }
 
-func (f *FakePebbleClient) Pull(*client.PullOptions) error {
+func (f *FakePebbleClient) Pull(opts *client.PullOptions) error {
 	if !f.CanConnect {
 		return fmt.Errorf("cannot connect to Pebble")
+	}
+
+	if opts.Target == nil {
+		return fmt.Errorf("target file cannot be nil")
+	}
+
+	for mountName, mount := range f.Mounts {
+		if mount.Location == opts.Path {
+			tempLocation := mount.Source + mount.Location
+
+			sourceFile, err := os.Open(tempLocation)
+			if err != nil {
+				return fmt.Errorf("cannot open mount %s at %s: %w", mountName, tempLocation, err)
+			}
+
+			defer sourceFile.Close()
+
+			_, err = io.Copy(opts.Target, sourceFile)
+			if err != nil {
+				return fmt.Errorf("failed to copy file contents from %s: %w", tempLocation, err)
+			}
+		}
 	}
 
 	return nil

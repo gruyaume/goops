@@ -1,8 +1,11 @@
 package goopstest_test
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -633,14 +636,10 @@ func ContainerReplanPebbleService() error {
 
 func ContainerPushFile() error {
 	pebble := goops.Pebble("example")
-	content := `# Example configuration file`
-	path := "/etc/config.yaml"
-
-	source := strings.NewReader(content)
 
 	err := pebble.Push(&client.PushOptions{
-		Source: source,
-		Path:   path,
+		Source: strings.NewReader(`# Example configuration file`),
+		Path:   "/etc/config.yaml",
 	})
 	if err != nil {
 		return fmt.Errorf("could not push file: %w", err)
@@ -689,5 +688,78 @@ func TestContainerPushFile(t *testing.T) {
 	expectedContent := "# Example configuration file"
 	if string(content) != expectedContent {
 		t.Errorf("Expected file content '%s', got '%s'", expectedContent, string(content))
+	}
+}
+
+func ContainerPullFile() error {
+	pebble := goops.Pebble("example")
+
+	target := &bytes.Buffer{}
+
+	err := pebble.Pull(&client.PullOptions{
+		Path:   "/etc/config.yaml",
+		Target: target,
+	})
+	if err != nil {
+		return fmt.Errorf("could not push file: %w", err)
+	}
+
+	if target.String() != "# Example configuration file" {
+		return fmt.Errorf("expected file content '# Example configuration file', got '%s'", target.String())
+	}
+
+	return nil
+}
+
+func TestContainerPullFile(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: ContainerPullFile,
+	}
+
+	dname, err := os.MkdirTemp("", "sampledir")
+	if err != nil {
+		t.Fatalf("Failed to create temporary directory: %v", err)
+	}
+
+	defer os.RemoveAll(dname)
+
+	tempLocation := dname + "/etc/config.yaml"
+
+	err = os.MkdirAll(filepath.Dir(tempLocation), 0o755)
+	if err != nil {
+		t.Fatalf("cannot create directory for mount %s at %s: %v", "config", filepath.Dir(tempLocation), err)
+	}
+
+	destFile, err := os.OpenFile(tempLocation, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o755)
+	if err != nil {
+		t.Fatalf("cannot open mount %s at %s: %v", "config", tempLocation, err)
+	}
+
+	defer destFile.Close()
+
+	source := strings.NewReader(`# Example configuration file`)
+
+	if _, err := io.Copy(destFile, source); err != nil {
+		t.Fatalf("failed to copy file contents to %s: %v", tempLocation, err)
+	}
+
+	stateIn := &goopstest.State{
+		Containers: []*goopstest.Container{
+			{
+				Name:       "example",
+				CanConnect: true,
+				Mounts: map[string]goopstest.Mount{
+					"config": {
+						Location: "/etc/config.yaml",
+						Source:   dname,
+					},
+				},
+			},
+		},
+	}
+
+	_, err = ctx.Run("install", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
 	}
 }
