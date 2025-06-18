@@ -13,14 +13,34 @@ import (
 )
 
 type FakePebbleClient struct {
-	CanConnect      bool
-	Layers          map[string]*Layer
-	ServiceStatuses map[string]client.ServiceStatus
-	Mounts          map[string]Mount
+	Containers    []*Container
+	ContainerName string
+}
+
+func (f *FakePebbleClient) getContainer() *Container {
+	var container *Container
+
+	for _, c := range f.Containers {
+		if c.Name == f.ContainerName {
+			container = c
+			break
+		}
+	}
+
+	if container == nil {
+		return nil
+	}
+
+	return container
 }
 
 func (f *FakePebbleClient) Exec(*client.ExecOptions) (goops.PebbleExecProcess, error) {
-	if !f.CanConnect {
+	container := f.getContainer()
+	if container == nil {
+		return nil, fmt.Errorf("container not found")
+	}
+
+	if !container.CanConnect {
 		return nil, fmt.Errorf("cannot connect to Pebble")
 	}
 
@@ -28,7 +48,12 @@ func (f *FakePebbleClient) Exec(*client.ExecOptions) (goops.PebbleExecProcess, e
 }
 
 func (f *FakePebbleClient) Pull(opts *client.PullOptions) error {
-	if !f.CanConnect {
+	container := f.getContainer()
+	if container == nil {
+		return fmt.Errorf("container not found")
+	}
+
+	if !container.CanConnect {
 		return fmt.Errorf("cannot connect to Pebble")
 	}
 
@@ -36,7 +61,7 @@ func (f *FakePebbleClient) Pull(opts *client.PullOptions) error {
 		return fmt.Errorf("target file cannot be nil")
 	}
 
-	for mountName, mount := range f.Mounts {
+	for mountName, mount := range container.Mounts {
 		if mount.Location != opts.Path {
 			continue
 		}
@@ -49,7 +74,7 @@ func (f *FakePebbleClient) Pull(opts *client.PullOptions) error {
 			return fmt.Errorf("refusing to read outside of mount source: %s", safePath)
 		}
 
-		sourceFile, err := os.Open(safePath)
+		sourceFile, err := os.Open(safePath) // #nosec G304 -- path validated above
 		if err != nil {
 			return fmt.Errorf("cannot open mount %s at %s: %w", mountName, safePath, err)
 		}
@@ -64,11 +89,16 @@ func (f *FakePebbleClient) Pull(opts *client.PullOptions) error {
 }
 
 func (f *FakePebbleClient) Push(opts *client.PushOptions) error {
-	if !f.CanConnect {
+	container := f.getContainer()
+	if container == nil {
+		return fmt.Errorf("container not found")
+	}
+
+	if !container.CanConnect {
 		return fmt.Errorf("cannot connect to Pebble")
 	}
 
-	for mountName, mount := range f.Mounts {
+	for mountName, mount := range container.Mounts {
 		if mount.Location != opts.Path {
 			continue
 		}
@@ -93,7 +123,7 @@ func (f *FakePebbleClient) pushToMount(mountName string, mount Mount, opts *clie
 		return fmt.Errorf("cannot create directory for mount %s at %s: %w", mountName, filepath.Dir(safePath), err)
 	}
 
-	destFile, err := os.OpenFile(safePath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o600)
+	destFile, err := os.OpenFile(safePath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o600) // #nosec G304 -- validated path
 	if err != nil {
 		return fmt.Errorf("cannot open mount %s at %s: %w", mountName, safePath, err)
 	}
@@ -107,7 +137,12 @@ func (f *FakePebbleClient) pushToMount(mountName string, mount Mount, opts *clie
 }
 
 func (f *FakePebbleClient) Restart(*client.ServiceOptions) (string, error) {
-	if !f.CanConnect {
+	container := f.getContainer()
+	if container == nil {
+		return "", fmt.Errorf("container not found")
+	}
+
+	if !container.CanConnect {
 		return "", fmt.Errorf("cannot connect to Pebble")
 	}
 
@@ -115,7 +150,12 @@ func (f *FakePebbleClient) Restart(*client.ServiceOptions) (string, error) {
 }
 
 func (f *FakePebbleClient) Replan(*client.ServiceOptions) (string, error) {
-	if !f.CanConnect {
+	container := f.getContainer()
+	if container == nil {
+		return "", fmt.Errorf("container not found")
+	}
+
+	if !container.CanConnect {
 		return "", fmt.Errorf("cannot connect to Pebble")
 	}
 
@@ -123,45 +163,60 @@ func (f *FakePebbleClient) Replan(*client.ServiceOptions) (string, error) {
 }
 
 func (f *FakePebbleClient) Start(opts *client.ServiceOptions) (string, error) {
-	if !f.CanConnect {
+	container := f.getContainer()
+	if container == nil {
+		return "", fmt.Errorf("container not found")
+	}
+
+	if !container.CanConnect {
 		return "", fmt.Errorf("cannot connect to Pebble")
 	}
 
 	for _, name := range opts.Names {
-		if f.ServiceStatuses == nil {
-			f.ServiceStatuses = make(map[string]client.ServiceStatus)
+		if container.ServiceStatuses == nil {
+			container.ServiceStatuses = make(map[string]client.ServiceStatus)
 		}
 
-		f.ServiceStatuses[name] = client.StatusActive
+		container.ServiceStatuses[name] = client.StatusActive
 	}
 
 	return "123", nil
 }
 
 func (f *FakePebbleClient) Stop(opts *client.ServiceOptions) (string, error) {
-	if !f.CanConnect {
+	container := f.getContainer()
+	if container == nil {
+		return "", fmt.Errorf("container not found")
+	}
+
+	if !container.CanConnect {
 		return "", fmt.Errorf("cannot connect to Pebble")
 	}
 
 	for _, name := range opts.Names {
-		if f.ServiceStatuses == nil {
-			f.ServiceStatuses = make(map[string]client.ServiceStatus)
+		if container.ServiceStatuses == nil {
+			container.ServiceStatuses = make(map[string]client.ServiceStatus)
 		}
 
-		f.ServiceStatuses[name] = client.StatusInactive
+		container.ServiceStatuses[name] = client.StatusInactive
 	}
 
 	return "123", nil
 }
 
 func (f *FakePebbleClient) Services(opts *client.ServicesOptions) ([]*client.ServiceInfo, error) {
-	if !f.CanConnect {
+	container := f.getContainer()
+	if container == nil {
+		return nil, fmt.Errorf("container not found")
+	}
+
+	if !container.CanConnect {
 		return nil, fmt.Errorf("cannot connect to Pebble")
 	}
 
 	var services []*client.ServiceInfo
 
-	for _, layer := range f.Layers {
+	for _, layer := range container.Layers {
 		for name, service := range layer.Services {
 			if opts.Names != nil && !contains(opts.Names, name) {
 				continue
@@ -170,7 +225,7 @@ func (f *FakePebbleClient) Services(opts *client.ServicesOptions) ([]*client.Ser
 			services = append(services, &client.ServiceInfo{
 				Name:    name,
 				Startup: client.ServiceStartup(service.Startup),
-				Current: f.ServiceStatuses[name],
+				Current: container.ServiceStatuses[name],
 			})
 		}
 	}
@@ -189,7 +244,12 @@ func contains(slice []string, item string) bool {
 }
 
 func (f *FakePebbleClient) SysInfo() (*client.SysInfo, error) {
-	if !f.CanConnect {
+	container := f.getContainer()
+	if container == nil {
+		return nil, fmt.Errorf("container not found")
+	}
+
+	if !container.CanConnect {
 		return nil, fmt.Errorf("cannot connect to Pebble")
 	}
 
@@ -197,7 +257,12 @@ func (f *FakePebbleClient) SysInfo() (*client.SysInfo, error) {
 }
 
 func (f *FakePebbleClient) WaitChange(string, *client.WaitChangeOptions) (*client.Change, error) {
-	if !f.CanConnect {
+	container := f.getContainer()
+	if container == nil {
+		return nil, fmt.Errorf("container not found")
+	}
+
+	if !container.CanConnect {
 		return nil, fmt.Errorf("cannot connect to Pebble")
 	}
 
@@ -238,7 +303,12 @@ type pebblePlan struct {
 }
 
 func (f *FakePebbleClient) PlanBytes(_ *client.PlanOptions) ([]byte, error) {
-	if !f.CanConnect {
+	container := f.getContainer()
+	if container == nil {
+		return nil, fmt.Errorf("container not found")
+	}
+
+	if !container.CanConnect {
 		return nil, fmt.Errorf("cannot connect to Pebble")
 	}
 
@@ -248,7 +318,7 @@ func (f *FakePebbleClient) PlanBytes(_ *client.PlanOptions) ([]byte, error) {
 		LogTargets: make(map[string]logTarget),
 	}
 
-	for _, layer := range f.Layers {
+	for _, layer := range container.Layers {
 		for serviceName, service := range layer.Services {
 			plan.Services[serviceName] = serviceConfig(service)
 		}
@@ -263,7 +333,12 @@ func (f *FakePebbleClient) PlanBytes(_ *client.PlanOptions) ([]byte, error) {
 }
 
 func (f *FakePebbleClient) AddLayer(opts *client.AddLayerOptions) error {
-	if !f.CanConnect {
+	container := f.getContainer()
+	if container == nil {
+		return fmt.Errorf("container not found")
+	}
+
+	if !container.CanConnect {
 		return fmt.Errorf("cannot connect to Pebble")
 	}
 
@@ -272,17 +347,24 @@ func (f *FakePebbleClient) AddLayer(opts *client.AddLayerOptions) error {
 		return fmt.Errorf("cannot unmarshal layer data: %w", err)
 	}
 
-	if f.Layers == nil {
-		f.Layers = make(map[string]*Layer)
+	if container.Layers == nil {
+		container.Layers = make(map[string]*Layer)
 	}
 
-	f.Layers[opts.Label] = &layer
+	container.Layers[opts.Label] = &layer
 
 	return nil
 }
 
-func (f *FakePebbleClient) Pebble(string) goops.PebbleClient {
-	return f
+type fakePebbleGetter struct {
+	Containers []*Container
+}
+
+func (f *fakePebbleGetter) Pebble(name string) goops.PebbleClient {
+	return &FakePebbleClient{
+		Containers:    f.Containers,
+		ContainerName: name,
+	}
 }
 
 type Service struct {

@@ -85,23 +85,25 @@ func TestContainerCantConnect(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		ctx := goopstest.Context{
-			Charm: tt.fn,
-		}
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := goopstest.Context{
+				Charm: tt.fn,
+			}
 
-		stateIn := &goopstest.State{
-			Containers: []*goopstest.Container{
-				{
-					Name:       "example",
-					CanConnect: false,
+			stateIn := &goopstest.State{
+				Containers: []*goopstest.Container{
+					{
+						Name:       "example",
+						CanConnect: false,
+					},
 				},
-			},
-		}
+			}
 
-		_, err := ctx.Run("install", stateIn)
-		if err.Error() != "failed to run charm: cannot connect to Pebble" {
-			t.Errorf("Run should have returned 'failed to run charm: cannot connect to Pebble', got: %v", err)
-		}
+			_, err := ctx.Run("install", stateIn)
+			if err.Error() != "failed to run charm: cannot connect to Pebble" {
+				t.Errorf("Run should have returned 'failed to run charm: cannot connect to Pebble', got: %v", err)
+			}
+		})
 	}
 }
 
@@ -735,5 +737,94 @@ func TestContainerPullFile(t *testing.T) {
 	_, err = ctx.Run("install", stateIn)
 	if err != nil {
 		t.Fatalf("Run returned an error: %v", err)
+	}
+}
+
+func MultiContainer() error {
+	pebble1 := goops.Pebble("example1")
+	pebble2 := goops.Pebble("example2")
+
+	_, err := pebble1.SysInfo()
+	if err != nil {
+		return fmt.Errorf("could not connect to example1 Pebble: %w", err)
+	}
+
+	_, err = pebble2.SysInfo()
+	if err != nil {
+		return fmt.Errorf("could not connect to example2 Pebble: %w", err)
+	}
+
+	return nil
+}
+
+func TestMultiContainer(t *testing.T) {
+	tests := []struct {
+		name               string
+		example1CanConnect bool
+		example2CanConnect bool
+		expectError        bool
+		expectedError      string
+	}{
+		{
+			name:               "CanConnectBothContainers",
+			example1CanConnect: true,
+			example2CanConnect: true,
+			expectError:        false,
+			expectedError:      "",
+		},
+		{
+			name:               "CantConnectExample1",
+			example1CanConnect: false,
+			example2CanConnect: true,
+			expectError:        true,
+			expectedError:      "failed to run charm: could not connect to example1 Pebble: cannot connect to Pebble",
+		},
+		{
+			name:               "CantConnectExample2",
+			example1CanConnect: true,
+			example2CanConnect: false,
+			expectError:        true,
+			expectedError:      "failed to run charm: could not connect to example2 Pebble: cannot connect to Pebble",
+		},
+		{
+			name:               "CantConnectBothContainers",
+			example1CanConnect: false,
+			example2CanConnect: false,
+			expectError:        true,
+			expectedError:      "failed to run charm: could not connect to example1 Pebble: cannot connect to Pebble",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := goopstest.Context{
+				Charm: MultiContainer,
+			}
+
+			stateIn := &goopstest.State{
+				Containers: []*goopstest.Container{
+					{
+						Name:       "example1",
+						CanConnect: tt.example1CanConnect,
+					},
+					{
+						Name:       "example2",
+						CanConnect: tt.example2CanConnect,
+					},
+				},
+			}
+
+			_, err := ctx.Run("install", stateIn)
+			if tt.expectError {
+				if err == nil {
+					t.Errorf("Run should have returned an error, but got none")
+				} else if err.Error() != tt.expectedError {
+					t.Errorf("Run returned error %v, expected %v", err, tt.expectedError)
+				}
+			} else {
+				if err != nil {
+					t.Fatalf("Run returned an error: %v", err)
+				}
+			}
+		})
 	}
 }

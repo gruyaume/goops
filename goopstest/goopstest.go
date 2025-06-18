@@ -679,15 +679,8 @@ func (c *Context) Run(hookName string, state *State) (*State, error) {
 		Metadata:    c.Metadata,
 	}
 
-	// TO DO: Handle multiple containers
-	var fakePebble *FakePebbleClient
-	if len(state.Containers) > 0 {
-		fakePebble = &FakePebbleClient{
-			CanConnect:      state.Containers[0].CanConnect,
-			Layers:          state.Containers[0].Layers,
-			ServiceStatuses: state.Containers[0].ServiceStatuses,
-			Mounts:          state.Containers[0].Mounts,
-		}
+	fakePebble := &fakePebbleGetter{
+		Containers: state.Containers,
 	}
 
 	goops.SetPebbleGetter(fakePebble)
@@ -705,12 +698,7 @@ func (c *Context) Run(hookName string, state *State) (*State, error) {
 	state.ApplicationVersion = fakeCommand.ApplicationVersion
 	state.Ports = fakeCommand.Ports
 	state.StoredState = fakeCommand.StoredState
-
-	// TO DO: Handle multiple containers
-	if len(state.Containers) > 0 && fakePebble != nil {
-		state.Containers[0].Layers = fakePebble.Layers
-		state.Containers[0].ServiceStatuses = fakePebble.ServiceStatuses
-	}
+	state.Containers = fakePebble.Containers
 
 	return state, nil
 }
