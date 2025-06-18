@@ -6,16 +6,11 @@ import (
 	"os/exec"
 )
 
-var defaultRunner CommandRunner
+var defaultRunner CommandRunner = &realHookCommand{}
 
-// HookCommand is the default implementation of CommandRunner using os/exec.
-type HookCommand struct{}
+type realHookCommand struct{}
 
-func init() {
-	defaultRunner = &HookCommand{}
-}
-
-func (r *HookCommand) Run(name string, args ...string) ([]byte, error) {
+func (r *realHookCommand) Run(name string, args ...string) ([]byte, error) {
 	cmd := exec.Command(name, args...)
 
 	var stderr bytes.Buffer

@@ -31,7 +31,7 @@ func buildCharm() error {
 	return nil
 }
 
-func waitForActiveStatus(client *juju.Client, timeout time.Duration) error {
+func waitForActiveStatus(t *testing.T, client *juju.Client, timeout time.Duration) error {
 	start := time.Now()
 
 	for {
@@ -47,6 +47,8 @@ func waitForActiveStatus(client *juju.Client, timeout time.Duration) error {
 		if status.Applications["example"].ApplicationStatus.Current == "active" {
 			return nil
 		}
+
+		t.Log("Waiting for active status, current status:", status)
 
 		time.Sleep(1 * time.Second)
 	}
@@ -88,18 +90,17 @@ func TestIntegration(t *testing.T) {
 
 	t.Log("Charm built successfully")
 
-	deployOpts := &juju.DeployOptions{
+	err = jujuClient.Deploy(&juju.DeployOptions{
 		Charm: "./example_amd64.charm",
-	}
-
-	err = jujuClient.Deploy(deployOpts)
+		Trust: true,
+	})
 	if err != nil {
 		t.Fatalf("Failed to deploy charm: %v", err)
 	}
 
 	t.Log("Charm deployed successfully")
 
-	err = waitForActiveStatus(jujuClient, 5*time.Minute)
+	err = waitForActiveStatus(t, jujuClient, 5*time.Minute)
 	if err != nil {
 		t.Fatalf("Failed to wait for active status: %v", err)
 	}

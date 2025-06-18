@@ -1,25 +1,20 @@
-# goopstest
-
-**The unit testing framework for Goops charms.**
-
-`goopstest` follows the same design principles as [ops-testing](https://ops.readthedocs.io/en/latest/reference/ops-testing.html#ops-testing), allowing users to write unit tests in a "state-transition" style. Each test consists of:
-- A Context and an initial state (Arrange)
-- An event (Act)
-- An output state (Assert)
-
-## Getting Started
-
-```go
-package charm_test
+// This file is meant to test the README.md documentation. It should always contain copies of the examples listed in README.md
+package goopstest_test
 
 import (
+	"fmt"
+	"os"
+	"reflect"
+	"strings"
 	"testing"
 
+	"github.com/canonical/pebble/client"
 	"github.com/gruyaume/goops"
 	"github.com/gruyaume/goops/goopstest"
+	"gopkg.in/yaml.v3"
 )
 
-func Configure() error {
+func ConfigureBasic() error {
 	isLeader, err := goops.IsLeader()
 	if err != nil {
 		return err
@@ -35,10 +30,10 @@ func Configure() error {
 	return nil
 }
 
-func TestCharm(t *testing.T) {
+func TestCharmBasic(t *testing.T) {
 	// Arrange
 	ctx := goopstest.Context{
-		Charm: Configure,
+		Charm: ConfigureBasic,
 	}
 
 	stateIn := &goopstest.State{
@@ -56,27 +51,8 @@ func TestCharm(t *testing.T) {
 		t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, goops.StatusBlocked)
 	}
 }
-```
 
-## Writing tests for Kubernetes charms
-
-```go
-package charm_test
-
-import (
-	"fmt"
-	"os"
-	"reflect"
-	"strings"
-	"testing"
-
-	"github.com/canonical/pebble/client"
-	"github.com/gruyaume/goops"
-	"github.com/gruyaume/goops/goopstest"
-	"gopkg.in/yaml.v3"
-)
-
-func Configure() error {
+func ConfigureKubernetes() error {
 	pebble := goops.Pebble("example")
 
 	_, err := pebble.SysInfo()
@@ -126,9 +102,10 @@ func Configure() error {
 	return nil
 }
 
-func TestCharm(t *testing.T) {
+func TestCharmKubernetes(t *testing.T) {
+	// Arrange
 	ctx := goopstest.Context{
-		Charm: Configure,
+		Charm: ConfigureKubernetes,
 	}
 
 	dname, err := os.MkdirTemp("", "sampledir")
@@ -153,11 +130,13 @@ func TestCharm(t *testing.T) {
 		},
 	}
 
+	// Act
 	stateOut, err := ctx.Run("install", stateIn)
 	if err != nil {
 		t.Fatalf("Run returned an error: %v", err)
 	}
 
+	// Assert
 	if len(stateOut.Containers) != 1 {
 		t.Fatalf("Expected 1 container in stateOut, got %d", len(stateOut.Containers))
 	}
@@ -201,10 +180,3 @@ func TestCharm(t *testing.T) {
 		t.Errorf("Expected file content '# Example configuration file', got '%s'", string(content))
 	}
 }
-```
-
-## Reference
-
-### API Documentation
-
-The API documentation for `goopstest` is available at [pkg.go.dev/github.com/gruyaume/goops/goopstest](https://pkg.go.dev/github.com/gruyaume/goops/goopstest).

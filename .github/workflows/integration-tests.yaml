@@ -15,11 +15,10 @@ jobs:
       - name: Setup operator environment
         uses: charmed-kubernetes/actions-operator@main
         with:
-          provider: microk8s
-          channel: 1.32-strict/stable
           juju-channel: 3.6/stable
+          provider: lxd
           lxd-channel: 5.21/stable
-    
+
       - name: Run integration tests
         run: |
-          INTEGRATION=1 go test ./...
+          INTEGRATION=1 go test ./... -v

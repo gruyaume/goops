@@ -4,14 +4,9 @@ import (
 	"os"
 )
 
-var defaultGetter EnvironmentGetter
+var defaultGetter EnvironmentGetter = &realExecutionEnvironment{}
 
-// ExecutionEnvironment is the default implementation of EnvironmentGetter.
-type ExecutionEnvironment struct{}
-
-func init() {
-	defaultGetter = &ExecutionEnvironment{}
-}
+type realExecutionEnvironment struct{}
 
 type Environment struct {
 	ActionName         string
@@ -38,10 +33,15 @@ type Environment struct {
 
 type EnvironmentGetter interface {
 	Get(name string) string
+	ReadFile(name string) ([]byte, error)
 }
 
-func (r *ExecutionEnvironment) Get(name string) string {
+func (r *realExecutionEnvironment) Get(name string) string {
 	return os.Getenv(name)
+}
+
+func (r *realExecutionEnvironment) ReadFile(name string) ([]byte, error) {
+	return os.ReadFile(name) // #nosec G304
 }
 
 type JujuEnvironment struct {

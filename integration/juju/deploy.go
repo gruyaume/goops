@@ -11,6 +11,7 @@ const (
 type DeployOptions struct {
 	Charm           string
 	ApplicationName string
+	Trust           bool
 }
 
 func (j Client) Deploy(opts *DeployOptions) error {
@@ -21,6 +22,10 @@ func (j Client) Deploy(opts *DeployOptions) error {
 	args := []string{deployCommand, opts.Charm}
 	if opts.ApplicationName != "" {
 		args = append(args, opts.ApplicationName)
+	}
+
+	if opts.Trust {
+		args = append(args, "--trust")
 	}
 
 	_, err := j.Runner.Run(args...)
