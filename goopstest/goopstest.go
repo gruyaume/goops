@@ -686,6 +686,7 @@ func (c *Context) Run(hookName string, state *State) (*State, error) {
 			CanConnect:      state.Containers[0].CanConnect,
 			Layers:          state.Containers[0].Layers,
 			ServiceStatuses: state.Containers[0].ServiceStatuses,
+			Mounts:          state.Containers[0].Mounts,
 		}
 	}
 

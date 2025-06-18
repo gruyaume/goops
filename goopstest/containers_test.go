@@ -2,6 +2,8 @@ package goopstest_test
 
 import (
 	"fmt"
+	"os"
+	"strings"
 	"testing"
 
 	"github.com/canonical/pebble/client"
@@ -627,4 +629,65 @@ func ContainerReplanPebbleService() error {
 	}
 
 	return nil
+}
+
+func ContainerPushFile() error {
+	pebble := goops.Pebble("example")
+	content := `# Example configuration file`
+	path := "/etc/config.yaml"
+
+	source := strings.NewReader(content)
+
+	err := pebble.Push(&client.PushOptions{
+		Source: source,
+		Path:   path,
+	})
+	if err != nil {
+		return fmt.Errorf("could not push file: %w", err)
+	}
+
+	return nil
+}
+
+func TestContainerPushFile(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: ContainerPushFile,
+	}
+
+	dname, err := os.MkdirTemp("", "sampledir")
+	if err != nil {
+		t.Fatalf("Failed to create temporary directory: %v", err)
+	}
+
+	defer os.RemoveAll(dname)
+
+	stateIn := &goopstest.State{
+		Containers: []*goopstest.Container{
+			{
+				Name:       "example",
+				CanConnect: true,
+				Mounts: map[string]goopstest.Mount{
+					"config": {
+						Location: "/etc/config.yaml",
+						Source:   dname,
+					},
+				},
+			},
+		},
+	}
+
+	_, err = ctx.Run("install", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	content, err := os.ReadFile(dname + "/etc/config.yaml")
+	if err != nil {
+		t.Fatalf("Failed to read pushed file: %v", err)
+	}
+
+	expectedContent := "# Example configuration file"
+	if string(content) != expectedContent {
+		t.Errorf("Expected file content '%s', got '%s'", expectedContent, string(content))
+	}
 }

@@ -2,6 +2,9 @@ package goopstest
 
 import (
 	"fmt"
+	"io"
+	"os"
+	"path/filepath"
 
 	"github.com/canonical/pebble/client"
 	"github.com/gruyaume/goops"
@@ -12,6 +15,7 @@ type FakePebbleClient struct {
 	CanConnect      bool
 	Layers          map[string]*Layer
 	ServiceStatuses map[string]client.ServiceStatus
+	Mounts          map[string]Mount
 }
 
 func (f *FakePebbleClient) Exec(*client.ExecOptions) (goops.PebbleExecProcess, error) {
@@ -30,9 +34,31 @@ func (f *FakePebbleClient) Pull(*client.PullOptions) error {
 	return nil
 }
 
-func (f *FakePebbleClient) Push(*client.PushOptions) error {
+func (f *FakePebbleClient) Push(opts *client.PushOptions) error {
 	if !f.CanConnect {
 		return fmt.Errorf("cannot connect to Pebble")
+	}
+
+	for mountName, mount := range f.Mounts {
+		if mount.Location == opts.Path {
+			tempLocation := mount.Source + mount.Location
+
+			err := os.MkdirAll(filepath.Dir(tempLocation), 0o755)
+			if err != nil {
+				return fmt.Errorf("cannot create directory for mount %s at %s: %w", mountName, filepath.Dir(tempLocation), err)
+			}
+
+			destFile, err := os.OpenFile(tempLocation, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o755)
+			if err != nil {
+				return fmt.Errorf("cannot open mount %s at %s: %w", mountName, tempLocation, err)
+			}
+
+			defer destFile.Close()
+
+			if _, err := io.Copy(destFile, opts.Source); err != nil {
+				return fmt.Errorf("failed to copy file contents to %s: %w", tempLocation, err)
+			}
+		}
 	}
 
 	return nil
