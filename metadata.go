@@ -2,7 +2,6 @@ package goops
 
 import (
 	"fmt"
-	"os"
 
 	"gopkg.in/yaml.v3"
 )
@@ -47,7 +46,9 @@ func ReadMetadata() (*Metadata, error) {
 
 	path := env.CharmDir + "/metadata.yaml"
 
-	yamlFile, err := os.ReadFile(path) // #nosec G304
+	envGetter := GetEnvGetter()
+
+	yamlFile, err := envGetter.ReadFile(path) // #nosec G304
 	if err != nil {
 		return nil, fmt.Errorf("failed to read metadata file: %w", err)
 	}

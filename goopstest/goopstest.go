@@ -7,10 +7,12 @@ import (
 	"strings"
 
 	"github.com/gruyaume/goops"
+	"gopkg.in/yaml.v3"
 )
 
 type Context struct {
 	Charm         func() error
+	Metadata      goops.Metadata
 	AppName       string
 	UnitID        int
 	JujuVersion   string
@@ -583,6 +585,7 @@ type fakeEnvGetter struct {
 	AppName     string
 	UnitID      int
 	JujuVersion string
+	Metadata    goops.Metadata
 }
 
 func (f *fakeEnvGetter) Get(key string) string {
@@ -602,6 +605,19 @@ func (f *fakeEnvGetter) Get(key string) string {
 	}
 
 	return ""
+}
+
+func (f *fakeEnvGetter) ReadFile(name string) ([]byte, error) {
+	if strings.HasSuffix(name, "metadata.yaml") {
+		data, err := yaml.Marshal(f.Metadata)
+		if err != nil {
+			return nil, fmt.Errorf("failed to marshal metadata: %w", err)
+		}
+
+		return data, nil
+	}
+
+	return nil, fmt.Errorf("file %s not found", name)
 }
 
 // For each relation, we set the ID to: <name>:<number>
@@ -627,6 +643,10 @@ func setUnitIDs(relations []*Relation) {
 }
 
 func (c *Context) Run(hookName string, state *State) (*State, error) {
+	if c.Charm == nil {
+		return nil, fmt.Errorf("charm function is not set in the context")
+	}
+
 	setRelationIDs(state.Relations)
 	setUnitIDs(state.Relations)
 
@@ -656,6 +676,7 @@ func (c *Context) Run(hookName string, state *State) (*State, error) {
 		AppName:     c.AppName,
 		UnitID:      c.UnitID,
 		JujuVersion: c.JujuVersion,
+		Metadata:    c.Metadata,
 	}
 
 	// TO DO: Handle multiple containers

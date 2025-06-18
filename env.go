@@ -33,10 +33,15 @@ type Environment struct {
 
 type EnvironmentGetter interface {
 	Get(name string) string
+	ReadFile(name string) ([]byte, error)
 }
 
 func (r *realExecutionEnvironment) Get(name string) string {
 	return os.Getenv(name)
+}
+
+func (r *realExecutionEnvironment) ReadFile(name string) ([]byte, error) {
+	return os.ReadFile(name) // #nosec G304
 }
 
 type JujuEnvironment struct {
