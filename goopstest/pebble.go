@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/canonical/pebble/client"
 	"github.com/gruyaume/goops"
@@ -62,25 +63,48 @@ func (f *FakePebbleClient) Push(opts *client.PushOptions) error {
 	}
 
 	for mountName, mount := range f.Mounts {
-		if mount.Location == opts.Path {
-			tempLocation := mount.Source + mount.Location
-
-			err := os.MkdirAll(filepath.Dir(tempLocation), 0o750)
-			if err != nil {
-				return fmt.Errorf("cannot create directory for mount %s at %s: %w", mountName, filepath.Dir(tempLocation), err)
-			}
-
-			destFile, err := os.OpenFile(tempLocation, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o600)
-			if err != nil {
-				return fmt.Errorf("cannot open mount %s at %s: %w", mountName, tempLocation, err)
-			}
-
-			defer destFile.Close()
-
-			if _, err := io.Copy(destFile, opts.Source); err != nil {
-				return fmt.Errorf("failed to copy file contents to %s: %w", tempLocation, err)
-			}
+		if mount.Location != opts.Path {
+			continue
 		}
+
+		if err := f.pushToMount(mountName, mount, opts); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (f *FakePebbleClient) pushToMount(mountName string, mount Mount, opts *client.PushOptions) error {
+	tempLocation := filepath.Join(mount.Source, filepath.Clean(mount.Location))
+
+	absTempLocation, err := filepath.Abs(tempLocation)
+	if err != nil {
+		return fmt.Errorf("failed to get absolute path for %s: %w", tempLocation, err)
+	}
+
+	absMountSource, err := filepath.Abs(mount.Source)
+	if err != nil {
+		return fmt.Errorf("failed to get absolute path for mount source %s: %w", mount.Source, err)
+	}
+
+	rel, err := filepath.Rel(absMountSource, absTempLocation)
+	if err != nil || strings.HasPrefix(rel, "..") || filepath.IsAbs(rel) {
+		return fmt.Errorf("refusing to write outside of mount source: %s", absTempLocation)
+	}
+
+	if err := os.MkdirAll(filepath.Dir(absTempLocation), 0o750); err != nil {
+		return fmt.Errorf("cannot create directory for mount %s at %s: %w", mountName, filepath.Dir(absTempLocation), err)
+	}
+
+	destFile, err := os.OpenFile(absTempLocation, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o600)
+	if err != nil {
+		return fmt.Errorf("cannot open mount %s at %s: %w", mountName, absTempLocation, err)
+	}
+	defer destFile.Close()
+
+	if _, err := io.Copy(destFile, opts.Source); err != nil {
+		return fmt.Errorf("failed to copy file contents to %s: %w", absTempLocation, err)
 	}
 
 	return nil
