@@ -65,12 +65,12 @@ func (f *FakePebbleClient) Push(opts *client.PushOptions) error {
 		if mount.Location == opts.Path {
 			tempLocation := mount.Source + mount.Location
 
-			err := os.MkdirAll(filepath.Dir(tempLocation), 0o755)
+			err := os.MkdirAll(filepath.Dir(tempLocation), 0o750)
 			if err != nil {
 				return fmt.Errorf("cannot create directory for mount %s at %s: %w", mountName, filepath.Dir(tempLocation), err)
 			}
 
-			destFile, err := os.OpenFile(tempLocation, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o755)
+			destFile, err := os.OpenFile(tempLocation, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o600)
 			if err != nil {
 				return fmt.Errorf("cannot open mount %s at %s: %w", mountName, tempLocation, err)
 			}
