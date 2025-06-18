@@ -76,35 +76,25 @@ func (f *FakePebbleClient) Push(opts *client.PushOptions) error {
 }
 
 func (f *FakePebbleClient) pushToMount(mountName string, mount Mount, opts *client.PushOptions) error {
-	tempLocation := filepath.Join(mount.Source, filepath.Clean(mount.Location))
+	safePath := filepath.Join(mount.Source, filepath.Clean(mount.Location))
 
-	absTempLocation, err := filepath.Abs(tempLocation)
-	if err != nil {
-		return fmt.Errorf("failed to get absolute path for %s: %w", tempLocation, err)
-	}
-
-	absMountSource, err := filepath.Abs(mount.Source)
-	if err != nil {
-		return fmt.Errorf("failed to get absolute path for mount source %s: %w", mount.Source, err)
-	}
-
-	rel, err := filepath.Rel(absMountSource, absTempLocation)
+	rel, err := filepath.Rel(mount.Source, safePath)
 	if err != nil || strings.HasPrefix(rel, "..") || filepath.IsAbs(rel) {
-		return fmt.Errorf("refusing to write outside of mount source: %s", absTempLocation)
+		return fmt.Errorf("refusing to write outside of mount source: %s", safePath)
 	}
 
-	if err := os.MkdirAll(filepath.Dir(absTempLocation), 0o750); err != nil {
-		return fmt.Errorf("cannot create directory for mount %s at %s: %w", mountName, filepath.Dir(absTempLocation), err)
+	if err := os.MkdirAll(filepath.Dir(safePath), 0o750); err != nil {
+		return fmt.Errorf("cannot create directory for mount %s at %s: %w", mountName, filepath.Dir(safePath), err)
 	}
 
-	destFile, err := os.OpenFile(absTempLocation, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o600)
+	destFile, err := os.OpenFile(safePath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o600) // #nosec G304 -- validated path
 	if err != nil {
-		return fmt.Errorf("cannot open mount %s at %s: %w", mountName, absTempLocation, err)
+		return fmt.Errorf("cannot open mount %s at %s: %w", mountName, safePath, err)
 	}
 	defer destFile.Close()
 
 	if _, err := io.Copy(destFile, opts.Source); err != nil {
-		return fmt.Errorf("failed to copy file contents to %s: %w", absTempLocation, err)
+		return fmt.Errorf("failed to copy file contents to %s: %w", safePath, err)
 	}
 
 	return nil
