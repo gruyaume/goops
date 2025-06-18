@@ -90,11 +90,10 @@ func TestIntegration(t *testing.T) {
 
 	t.Log("Charm built successfully")
 
-	deployOpts := &juju.DeployOptions{
+	err = jujuClient.Deploy(&juju.DeployOptions{
 		Charm: "./example_amd64.charm",
-	}
-
-	err = jujuClient.Deploy(deployOpts)
+		Trust: true,
+	})
 	if err != nil {
 		t.Fatalf("Failed to deploy charm: %v", err)
 	}
