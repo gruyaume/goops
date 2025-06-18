@@ -10,6 +10,95 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+func ContainerCantConnectAddLayer() error {
+	pebble := goops.Pebble("example")
+
+	err := pebble.AddLayer(&client.AddLayerOptions{})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func ContainerCantConnectPush() error {
+	pebble := goops.Pebble("example")
+
+	err := pebble.Push(&client.PushOptions{})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func ContainerCantConnectPull() error {
+	pebble := goops.Pebble("example")
+
+	err := pebble.Pull(&client.PullOptions{})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func ContainerCantConnectExec() error {
+	pebble := goops.Pebble("example")
+
+	_, err := pebble.Exec(&client.ExecOptions{
+		Command: []string{"echo", "hello"},
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func TestContainerCantConnect(t *testing.T) {
+	tests := []struct {
+		name string
+		fn   func() error
+	}{
+		{
+			name: "ContainerCantConnectAddLayer",
+			fn:   ContainerCantConnectAddLayer,
+		},
+		{
+			name: "ContainerCantConnectPush",
+			fn:   ContainerCantConnectPush,
+		},
+		{
+			name: "ContainerCantConnectPull",
+			fn:   ContainerCantConnectPull,
+		},
+		{
+			name: "ContainerCantConnectExec",
+			fn:   ContainerCantConnectExec,
+		},
+	}
+	for _, tt := range tests {
+		ctx := goopstest.Context{
+			Charm: tt.fn,
+		}
+
+		stateIn := &goopstest.State{
+			Containers: []*goopstest.Container{
+				{
+					Name:       "example",
+					CanConnect: false,
+				},
+			},
+		}
+
+		_, err := ctx.Run("install", stateIn)
+		if err.Error() != "failed to run charm: cannot connect to Pebble" {
+			t.Errorf("Run should have returned 'failed to run charm: cannot connect to Pebble', got: %v", err)
+		}
+	}
+}
+
 func ContainerCanConnect() error {
 	pebble := goops.Pebble("example")
 
@@ -19,26 +108,6 @@ func ContainerCanConnect() error {
 	}
 
 	return nil
-}
-
-func TestContainerCantConnect(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm: ContainerCanConnect,
-	}
-
-	stateIn := &goopstest.State{
-		Containers: []*goopstest.Container{
-			{
-				Name:       "example",
-				CanConnect: false,
-			},
-		},
-	}
-
-	_, err := ctx.Run("install", stateIn)
-	if err == nil {
-		t.Fatalf("Run should have returned an error, but got nil")
-	}
 }
 
 func TestContainerCanConnect(t *testing.T) {

@@ -14,26 +14,50 @@ type FakePebbleClient struct {
 }
 
 func (f *FakePebbleClient) Exec(*client.ExecOptions) (goops.PebbleExecProcess, error) {
+	if !f.CanConnect {
+		return nil, fmt.Errorf("cannot connect to Pebble")
+	}
+
 	return nil, nil
 }
 
 func (f *FakePebbleClient) Pull(*client.PullOptions) error {
+	if !f.CanConnect {
+		return fmt.Errorf("cannot connect to Pebble")
+	}
+
 	return nil
 }
 
 func (f *FakePebbleClient) Push(*client.PushOptions) error {
+	if !f.CanConnect {
+		return fmt.Errorf("cannot connect to Pebble")
+	}
+
 	return nil
 }
 
 func (f *FakePebbleClient) Restart(*client.ServiceOptions) (string, error) {
+	if !f.CanConnect {
+		return "", fmt.Errorf("cannot connect to Pebble")
+	}
+
 	return "", nil
 }
 
 func (f *FakePebbleClient) Start(*client.ServiceOptions) (string, error) {
+	if !f.CanConnect {
+		return "", fmt.Errorf("cannot connect to Pebble")
+	}
+
 	return "", nil
 }
 
 func (f *FakePebbleClient) Stop(*client.ServiceOptions) (string, error) {
+	if !f.CanConnect {
+		return "", fmt.Errorf("cannot connect to Pebble")
+	}
+
 	return "", nil
 }
 
@@ -46,6 +70,10 @@ func (f *FakePebbleClient) SysInfo() (*client.SysInfo, error) {
 }
 
 func (f *FakePebbleClient) WaitChange(string, *client.WaitChangeOptions) (*client.Change, error) {
+	if !f.CanConnect {
+		return nil, fmt.Errorf("cannot connect to Pebble")
+	}
+
 	return nil, nil
 }
 
@@ -83,6 +111,10 @@ type pebblePlan struct {
 }
 
 func (f *FakePebbleClient) PlanBytes(_ *client.PlanOptions) ([]byte, error) {
+	if !f.CanConnect {
+		return nil, fmt.Errorf("cannot connect to Pebble")
+	}
+
 	plan := pebblePlan{
 		Services:   make(map[string]serviceConfig),
 		Checks:     make(map[string]check),
@@ -104,6 +136,10 @@ func (f *FakePebbleClient) PlanBytes(_ *client.PlanOptions) ([]byte, error) {
 }
 
 func (f *FakePebbleClient) AddLayer(opts *client.AddLayerOptions) error {
+	if !f.CanConnect {
+		return fmt.Errorf("cannot connect to Pebble")
+	}
+
 	var layer Layer
 	if err := yaml.Unmarshal(opts.LayerData, &layer); err != nil {
 		return fmt.Errorf("cannot unmarshal layer data: %w", err)
