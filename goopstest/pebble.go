@@ -37,20 +37,26 @@ func (f *FakePebbleClient) Pull(opts *client.PullOptions) error {
 	}
 
 	for mountName, mount := range f.Mounts {
-		if mount.Location == opts.Path {
-			tempLocation := mount.Source + mount.Location
+		if mount.Location != opts.Path {
+			continue
+		}
 
-			sourceFile, err := os.Open(tempLocation)
-			if err != nil {
-				return fmt.Errorf("cannot open mount %s at %s: %w", mountName, tempLocation, err)
-			}
+		safePath := filepath.Join(mount.Source, filepath.Clean(mount.Location))
 
-			defer sourceFile.Close()
+		// Validate that safePath is within mount.Source
+		rel, err := filepath.Rel(mount.Source, safePath)
+		if err != nil || strings.HasPrefix(rel, "..") || filepath.IsAbs(rel) {
+			return fmt.Errorf("refusing to read outside of mount source: %s", safePath)
+		}
 
-			_, err = io.Copy(opts.Target, sourceFile)
-			if err != nil {
-				return fmt.Errorf("failed to copy file contents from %s: %w", tempLocation, err)
-			}
+		sourceFile, err := os.Open(safePath) // #nosec G304 -- path validated above
+		if err != nil {
+			return fmt.Errorf("cannot open mount %s at %s: %w", mountName, safePath, err)
+		}
+		defer sourceFile.Close()
+
+		if _, err := io.Copy(opts.Target, sourceFile); err != nil {
+			return fmt.Errorf("failed to copy file contents from %s: %w", safePath, err)
 		}
 	}
 
