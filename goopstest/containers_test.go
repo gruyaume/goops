@@ -363,3 +363,268 @@ func TestContainerAddPebbleLayer(t *testing.T) {
 		t.Fatalf("Expected no services in Pebble layer 'example-log-forwarding', got %d", len(stateOut.Containers[0].Layers["example-log-forwarding"].Services))
 	}
 }
+
+func ConatainerStartPebbleService() error {
+	pebble := goops.Pebble("example")
+
+	changeID, err := pebble.Start(&client.ServiceOptions{
+		Names: []string{"my-service"},
+	})
+	if err != nil {
+		return fmt.Errorf("could not start Pebble service: %w", err)
+	}
+
+	if changeID == "" {
+		return fmt.Errorf("expected non-empty change ID after starting service")
+	}
+
+	return nil
+}
+
+func TestContainerStartPebbleService(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: ConatainerStartPebbleService,
+	}
+
+	stateIn := &goopstest.State{
+		Containers: []*goopstest.Container{
+			{
+				Name:       "example",
+				CanConnect: true,
+				Layers: map[string]*goopstest.Layer{
+					"my-service": {
+						Summary:     "My service layer",
+						Description: "This layer configures my service",
+						Services: map[string]goopstest.Service{
+							"my-service": {
+								Startup:  "enabled",
+								Override: "replace",
+								Command:  "/bin/my-service --config /etc/my-service/config.yaml",
+							},
+						},
+					},
+				},
+				ServiceStatuses: map[string]client.ServiceStatus{
+					"my-service": client.StatusInactive,
+				},
+			},
+		},
+	}
+
+	stateOut, err := ctx.Run("install", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if stateOut.Containers[0].ServiceStatuses["my-service"] != client.StatusActive {
+		t.Errorf("Expected service 'my-service' to be active, got %s", stateOut.Containers[0].ServiceStatuses["my-service"])
+	}
+}
+
+func ContainerGetPebbleServiceStatus() error {
+	pebble := goops.Pebble("example")
+
+	services, err := pebble.Services(&client.ServicesOptions{
+		Names: []string{"my-service"},
+	})
+	if err != nil {
+		return fmt.Errorf("could not get Pebble services: %w", err)
+	}
+
+	if len(services) != 1 {
+		return fmt.Errorf("expected exactly one service, got %d", len(services))
+	}
+
+	if services[0].Name != "my-service" {
+		return fmt.Errorf("expected service name 'my-service', got '%s'", services[0].Name)
+	}
+
+	if services[0].Current != client.StatusError {
+		return fmt.Errorf("expected service status 'error', got '%s'", services[0].Current)
+	}
+
+	if services[0].Startup != client.StartupEnabled {
+		return fmt.Errorf("expected service startup 'enabled', got '%s'", services[0].Startup)
+	}
+
+	return nil
+}
+
+func TestContainerGetPebbleServiceStatus(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: ContainerGetPebbleServiceStatus,
+	}
+
+	stateIn := &goopstest.State{
+		Containers: []*goopstest.Container{
+			{
+				Name:       "example",
+				CanConnect: true,
+				Layers: map[string]*goopstest.Layer{
+					"my-service": {
+						Summary:     "My service layer",
+						Description: "This layer configures my service",
+						Services: map[string]goopstest.Service{
+							"my-service": {
+								Startup:  "enabled",
+								Override: "replace",
+								Command:  "/bin/my-service --config /etc/my-service/config.yaml",
+							},
+						},
+					},
+				},
+				ServiceStatuses: map[string]client.ServiceStatus{
+					"my-service": client.StatusError,
+				},
+			},
+		},
+	}
+
+	stateOut, err := ctx.Run("install", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if len(stateOut.Containers) != 1 {
+		t.Fatalf("Expected 1 container in stateOut, got %d", len(stateOut.Containers))
+	}
+
+	if len(stateOut.Containers[0].ServiceStatuses) != 1 {
+		t.Fatalf("Expected 1 service status in container, got %d", len(stateOut.Containers[0].ServiceStatuses))
+	}
+
+	if stateOut.Containers[0].ServiceStatuses["my-service"] != client.StatusError {
+		t.Errorf("Expected service 'my-service' to be error, got %s", stateOut.Containers[0].ServiceStatuses["my-service"])
+	}
+}
+
+func ContainerStopPebbleService() error {
+	pebble := goops.Pebble("example")
+
+	changeID, err := pebble.Stop(&client.ServiceOptions{
+		Names: []string{"my-service"},
+	})
+	if err != nil {
+		return fmt.Errorf("could not stop Pebble service: %w", err)
+	}
+
+	if changeID == "" {
+		return fmt.Errorf("expected non-empty change ID after stopping service")
+	}
+
+	return nil
+}
+
+func TestContainerStopPebbleService(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: ContainerStopPebbleService,
+	}
+
+	stateIn := &goopstest.State{
+		Containers: []*goopstest.Container{
+			{
+				Name:       "example",
+				CanConnect: true,
+				Layers: map[string]*goopstest.Layer{
+					"my-service": {
+						Summary:     "My service layer",
+						Description: "This layer configures my service",
+						Services: map[string]goopstest.Service{
+							"my-service": {
+								Startup:  "enabled",
+								Override: "replace",
+								Command:  "/bin/my-service --config /etc/my-service/config.yaml",
+							},
+						},
+					},
+				},
+				ServiceStatuses: map[string]client.ServiceStatus{
+					"my-service": client.StatusActive,
+				},
+			},
+		},
+	}
+
+	stateOut, err := ctx.Run("install", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if stateOut.Containers[0].ServiceStatuses["my-service"] != client.StatusInactive {
+		t.Errorf("Expected service 'my-service' to be inactive, got %s", stateOut.Containers[0].ServiceStatuses["my-service"])
+	}
+}
+
+func ContainerRestartPebbleService() error {
+	pebble := goops.Pebble("example")
+
+	changeID, err := pebble.Restart(&client.ServiceOptions{
+		Names: []string{"my-service"},
+	})
+	if err != nil {
+		return fmt.Errorf("could not restart Pebble service: %w", err)
+	}
+
+	if changeID == "" {
+		return fmt.Errorf("expected non-empty change ID after restarting service")
+	}
+
+	return nil
+}
+
+func TestContainerRestartPebbleService(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: ContainerRestartPebbleService,
+	}
+
+	stateIn := &goopstest.State{
+		Containers: []*goopstest.Container{
+			{
+				Name:       "example",
+				CanConnect: true,
+				Layers: map[string]*goopstest.Layer{
+					"my-service": {
+						Summary:     "My service layer",
+						Description: "This layer configures my service",
+						Services: map[string]goopstest.Service{
+							"my-service": {
+								Startup:  "enabled",
+								Override: "replace",
+								Command:  "/bin/my-service --config /etc/my-service/config.yaml",
+							},
+						},
+					},
+				},
+				ServiceStatuses: map[string]client.ServiceStatus{
+					"my-service": client.StatusActive,
+				},
+			},
+		},
+	}
+
+	stateOut, err := ctx.Run("install", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if stateOut.Containers[0].ServiceStatuses["my-service"] != client.StatusActive {
+		t.Errorf("Expected service 'my-service' to be active, got %s", stateOut.Containers[0].ServiceStatuses["my-service"])
+	}
+}
+
+func ContainerReplanPebbleService() error {
+	pebble := goops.Pebble("example")
+
+	changeID, err := pebble.Replan(&client.ServiceOptions{
+		Names: []string{"my-service"},
+	})
+	if err != nil {
+		return fmt.Errorf("could not replan Pebble service: %w", err)
+	}
+
+	if changeID == "" {
+		return fmt.Errorf("expected non-empty change ID after replanning service")
+	}
+
+	return nil
+}

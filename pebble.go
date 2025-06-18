@@ -30,6 +30,8 @@ type PebbleClient interface {
 	AddLayer(opts *client.AddLayerOptions) error
 	Restart(opts *client.ServiceOptions) (changeID string, err error)
 	Start(opts *client.ServiceOptions) (changeID string, err error)
+	Replan(opts *client.ServiceOptions) (changeID string, err error)
+	Services(opts *client.ServicesOptions) ([]*client.ServiceInfo, error)
 	PlanBytes(_ *client.PlanOptions) (data []byte, err error)
 }
 

@@ -9,8 +9,9 @@ import (
 )
 
 type FakePebbleClient struct {
-	CanConnect bool
-	Layers     map[string]*Layer
+	CanConnect      bool
+	Layers          map[string]*Layer
+	ServiceStatuses map[string]client.ServiceStatus
 }
 
 func (f *FakePebbleClient) Exec(*client.ExecOptions) (goops.PebbleExecProcess, error) {
@@ -42,23 +43,81 @@ func (f *FakePebbleClient) Restart(*client.ServiceOptions) (string, error) {
 		return "", fmt.Errorf("cannot connect to Pebble")
 	}
 
-	return "", nil
+	return "123", nil
 }
 
-func (f *FakePebbleClient) Start(*client.ServiceOptions) (string, error) {
+func (f *FakePebbleClient) Replan(*client.ServiceOptions) (string, error) {
 	if !f.CanConnect {
 		return "", fmt.Errorf("cannot connect to Pebble")
 	}
 
-	return "", nil
+	return "123", nil
 }
 
-func (f *FakePebbleClient) Stop(*client.ServiceOptions) (string, error) {
+func (f *FakePebbleClient) Start(opts *client.ServiceOptions) (string, error) {
 	if !f.CanConnect {
 		return "", fmt.Errorf("cannot connect to Pebble")
 	}
 
-	return "", nil
+	for _, name := range opts.Names {
+		if f.ServiceStatuses == nil {
+			f.ServiceStatuses = make(map[string]client.ServiceStatus)
+		}
+
+		f.ServiceStatuses[name] = client.StatusActive
+	}
+
+	return "123", nil
+}
+
+func (f *FakePebbleClient) Stop(opts *client.ServiceOptions) (string, error) {
+	if !f.CanConnect {
+		return "", fmt.Errorf("cannot connect to Pebble")
+	}
+
+	for _, name := range opts.Names {
+		if f.ServiceStatuses == nil {
+			f.ServiceStatuses = make(map[string]client.ServiceStatus)
+		}
+
+		f.ServiceStatuses[name] = client.StatusInactive
+	}
+
+	return "123", nil
+}
+
+func (f *FakePebbleClient) Services(opts *client.ServicesOptions) ([]*client.ServiceInfo, error) {
+	if !f.CanConnect {
+		return nil, fmt.Errorf("cannot connect to Pebble")
+	}
+
+	var services []*client.ServiceInfo
+
+	for _, layer := range f.Layers {
+		for name, service := range layer.Services {
+			if opts.Names != nil && !contains(opts.Names, name) {
+				continue
+			}
+
+			services = append(services, &client.ServiceInfo{
+				Name:    name,
+				Startup: client.ServiceStartup(service.Startup),
+				Current: f.ServiceStatuses[name],
+			})
+		}
+	}
+
+	return services, nil
+}
+
+func contains(slice []string, item string) bool {
+	for _, s := range slice {
+		if s == item {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (f *FakePebbleClient) SysInfo() (*client.SysInfo, error) {

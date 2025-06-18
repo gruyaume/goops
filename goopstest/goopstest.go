@@ -683,8 +683,9 @@ func (c *Context) Run(hookName string, state *State) (*State, error) {
 	var fakePebble *FakePebbleClient
 	if len(state.Containers) > 0 {
 		fakePebble = &FakePebbleClient{
-			CanConnect: state.Containers[0].CanConnect,
-			Layers:     state.Containers[0].Layers,
+			CanConnect:      state.Containers[0].CanConnect,
+			Layers:          state.Containers[0].Layers,
+			ServiceStatuses: state.Containers[0].ServiceStatuses,
 		}
 	}
 
@@ -707,6 +708,7 @@ func (c *Context) Run(hookName string, state *State) (*State, error) {
 	// TO DO: Handle multiple containers
 	if len(state.Containers) > 0 && fakePebble != nil {
 		state.Containers[0].Layers = fakePebble.Layers
+		state.Containers[0].ServiceStatuses = fakePebble.ServiceStatuses
 	}
 
 	return state, nil
