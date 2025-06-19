@@ -19,6 +19,7 @@ type Context struct {
 	ActionResults map[string]string
 	ActionError   error
 	JujuLog       []JujuLogLine
+	CharmErr      error
 }
 
 type LogLevel string
@@ -734,7 +735,7 @@ func (c *Context) Run(hookName string, state *State) (*State, error) {
 
 	err := c.Charm()
 	if err != nil {
-		return nil, fmt.Errorf("failed to run charm: %w", err)
+		c.CharmErr = err
 	}
 
 	state.UnitStatus = fakeCommand.UnitStatus
