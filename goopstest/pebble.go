@@ -99,7 +99,11 @@ func (f *FakePebbleClient) Push(opts *client.PushOptions) error {
 	}
 
 	for mountName, mount := range container.Mounts {
-		if mount.Location != opts.Path {
+		mountLocation := filepath.Clean(mount.Location)
+		targetPath := filepath.Clean(opts.Path)
+
+		rel, err := filepath.Rel(mountLocation, targetPath)
+		if err != nil || strings.HasPrefix(rel, "..") || filepath.IsAbs(rel) {
 			continue
 		}
 
@@ -112,18 +116,18 @@ func (f *FakePebbleClient) Push(opts *client.PushOptions) error {
 }
 
 func (f *FakePebbleClient) pushToMount(mountName string, mount Mount, opts *client.PushOptions) error {
-	safePath := filepath.Join(mount.Source, filepath.Clean(mount.Location))
-
-	rel, err := filepath.Rel(mount.Source, safePath)
-	if err != nil || strings.HasPrefix(rel, "..") || filepath.IsAbs(rel) {
-		return fmt.Errorf("refusing to write outside of mount source: %s", safePath)
+	relPath, err := filepath.Rel("/", filepath.Clean(opts.Path))
+	if err != nil || strings.HasPrefix(relPath, "..") || filepath.IsAbs(relPath) {
+		return fmt.Errorf("invalid absolute path: %s", opts.Path)
 	}
+
+	safePath := filepath.Join(mount.Source, relPath)
 
 	if err := os.MkdirAll(filepath.Dir(safePath), 0o750); err != nil {
 		return fmt.Errorf("cannot create directory for mount %s at %s: %w", mountName, filepath.Dir(safePath), err)
 	}
 
-	destFile, err := os.OpenFile(safePath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o600) // #nosec G304 -- validated path
+	destFile, err := os.OpenFile(safePath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o600) // #nosec G304
 	if err != nil {
 		return fmt.Errorf("cannot open mount %s at %s: %w", mountName, safePath, err)
 	}
