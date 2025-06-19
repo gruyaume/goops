@@ -18,6 +18,21 @@ type Context struct {
 	JujuVersion   string
 	ActionResults map[string]string
 	ActionError   error
+	JujuLog       []JujuLogLine
+}
+
+type LogLevel string
+
+const (
+	LogLevelInfo    LogLevel = "INFO"
+	LogLevelWarning LogLevel = "WARNING"
+	LogLevelError   LogLevel = "ERROR"
+	LogLevelDebug   LogLevel = "DEBUG"
+)
+
+type JujuLogLine struct {
+	Level   LogLevel
+	Message string
 }
 
 type fakeCommandRunner struct {
@@ -39,6 +54,7 @@ type fakeCommandRunner struct {
 	StoredState        StoredState
 	AppName            string
 	UnitID             int
+	JujuLog            []JujuLogLine
 }
 
 func (f *fakeCommandRunner) Run(name string, args ...string) ([]byte, error) {
@@ -68,6 +84,7 @@ func (f *fakeCommandRunner) Run(name string, args ...string) ([]byte, error) {
 		"state-set":               f.handleStateSet,
 		"state-delete":            f.handleStateDelete,
 		"status-set":              f.handleStatusSet,
+		"juju-log":                f.handleJujuLog,
 	}
 
 	if handler, exists := handlers[name]; exists {
@@ -94,6 +111,34 @@ func (f *fakeCommandRunner) handleStatusSet(args []string) {
 	} else {
 		f.UnitStatus = args[0]
 	}
+}
+
+func (f *fakeCommandRunner) handleJujuLog(args []string) {
+	var logLevel LogLevel
+
+	if len(args) > 0 {
+		switch args[0] {
+		case "--log-level=INFO":
+			logLevel = LogLevelInfo
+		case "--log-level=WARNING":
+			logLevel = LogLevelWarning
+		case "--log-level=ERROR":
+			logLevel = LogLevelError
+		case "--log-level=DEBUG":
+			logLevel = LogLevelDebug
+		default:
+			logLevel = LogLevelInfo
+		}
+
+		args = args[1:]
+	}
+
+	message := strings.Join(args, " ")
+	newLogEntry := JujuLogLine{
+		Level:   logLevel,
+		Message: message,
+	}
+	f.JujuLog = append(f.JujuLog, newLogEntry)
 }
 
 func (f *fakeCommandRunner) handleIsLeader(_ []string) {
@@ -699,6 +744,8 @@ func (c *Context) Run(hookName string, state *State) (*State, error) {
 	state.Ports = fakeCommand.Ports
 	state.StoredState = fakeCommand.StoredState
 	state.Containers = fakePebble.Containers
+
+	c.JujuLog = fakeCommand.JujuLog
 
 	return state, nil
 }
