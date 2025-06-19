@@ -643,7 +643,7 @@ func TestContainerPushFile(t *testing.T) {
 				CanConnect: true,
 				Mounts: map[string]goopstest.Mount{
 					"config": {
-						Location: "/etc/config.yaml",
+						Location: "/etc",
 						Source:   dname,
 					},
 				},
