@@ -100,8 +100,8 @@ func TestContainerCantConnect(t *testing.T) {
 			}
 
 			_, err := ctx.Run("install", stateIn)
-			if err.Error() != "failed to run charm: cannot connect to Pebble" {
-				t.Errorf("Run should have returned 'failed to run charm: cannot connect to Pebble', got: %v", err)
+			if ctx.CharmErr.Error() != "cannot connect to Pebble" {
+				t.Errorf("Run should have returned 'cannot connect to Pebble', got: %v", err)
 			}
 		})
 	}
@@ -254,8 +254,8 @@ func TestContainerUnexistantGetPebblePlan(t *testing.T) {
 	}
 
 	_, err := ctx.Run("install", stateIn)
-	if err.Error() != "failed to run charm: service 'my-service' not found in plan" {
-		t.Fatalf("Run should have returned 'failed to run charm: service 'my-service' not found in plan', got: %v", err)
+	if ctx.CharmErr.Error() != "service 'my-service' not found in plan" {
+		t.Fatalf("Run should have returned 'service 'my-service' not found in plan', got: %v", err)
 	}
 }
 
@@ -777,21 +777,21 @@ func TestMultiContainer(t *testing.T) {
 			example1CanConnect: false,
 			example2CanConnect: true,
 			expectError:        true,
-			expectedError:      "failed to run charm: could not connect to example1 Pebble: cannot connect to Pebble",
+			expectedError:      "could not connect to example1 Pebble: cannot connect to Pebble",
 		},
 		{
 			name:               "CantConnectExample2",
 			example1CanConnect: true,
 			example2CanConnect: false,
 			expectError:        true,
-			expectedError:      "failed to run charm: could not connect to example2 Pebble: cannot connect to Pebble",
+			expectedError:      "could not connect to example2 Pebble: cannot connect to Pebble",
 		},
 		{
 			name:               "CantConnectBothContainers",
 			example1CanConnect: false,
 			example2CanConnect: false,
 			expectError:        true,
-			expectedError:      "failed to run charm: could not connect to example1 Pebble: cannot connect to Pebble",
+			expectedError:      "could not connect to example1 Pebble: cannot connect to Pebble",
 		},
 	}
 	for _, tt := range tests {
@@ -814,15 +814,19 @@ func TestMultiContainer(t *testing.T) {
 			}
 
 			_, err := ctx.Run("install", stateIn)
+			if err != nil {
+				t.Errorf("Run failed: %v", err)
+			}
+
 			if tt.expectError {
-				if err == nil {
-					t.Errorf("Run should have returned an error, but got none")
-				} else if err.Error() != tt.expectedError {
-					t.Errorf("Run returned error %v, expected %v", err, tt.expectedError)
+				if ctx.CharmErr == nil {
+					t.Errorf("Charm should have returned an error, but got none")
+				} else if ctx.CharmErr.Error() != tt.expectedError {
+					t.Errorf("Charm returned error %v, expected %v", ctx.CharmErr.Error(), tt.expectedError)
 				}
 			} else {
 				if err != nil {
-					t.Fatalf("Run returned an error: %v", err)
+					t.Fatalf("Charm returned an error: %v", err)
 				}
 			}
 		})
