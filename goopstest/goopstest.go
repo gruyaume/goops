@@ -452,18 +452,51 @@ func (f *fakeCommandRunner) handleSecretAdd(args []string) {
 }
 
 func (f *fakeCommandRunner) handleSecretGet(args []string) {
-	label := extractLabelFromArgs(args)
-	if label == "" {
-		f.Err = fmt.Errorf("no --label specified")
+	var label, id string
+
+	// Extract --label if present
+	for _, arg := range args {
+		if strings.HasPrefix(arg, "--label=") {
+			label = strings.TrimPrefix(arg, "--label=")
+			break
+		}
+	}
+
+	if label != "" {
+		secret := findSecretByLabel(f.Secrets, label)
+		if secret == nil {
+			f.Err = fmt.Errorf("secret with label %q not found", label)
+			return
+		}
+
+		f.setSecretOutput(secret)
+
 		return
 	}
 
-	secret := findSecretByLabel(f.Secrets, label)
+	// No label; try extracting ID from positional args
+	for _, arg := range args {
+		if !strings.HasPrefix(arg, "--") {
+			id = arg
+			break
+		}
+	}
+
+	if id == "" {
+		f.Err = fmt.Errorf("no --label or ID specified")
+		return
+	}
+
+	secret := findSecretByID(f.Secrets, id)
 	if secret == nil {
-		f.Err = fmt.Errorf("secret with label %q not found", label)
+		f.Err = fmt.Errorf("secret with ID %q not found", id)
 		return
 	}
 
+	f.setSecretOutput(secret)
+}
+
+func (f *fakeCommandRunner) setSecretOutput(secret *Secret) {
 	output, err := json.Marshal(secret.Content)
 	if err != nil {
 		f.Err = fmt.Errorf("failed to marshal secret content: %w", err)
@@ -471,6 +504,16 @@ func (f *fakeCommandRunner) handleSecretGet(args []string) {
 	}
 
 	f.Output = output
+}
+
+func findSecretByID(secrets []*Secret, id string) *Secret {
+	for _, s := range secrets {
+		if s.ID == id {
+			return s
+		}
+	}
+
+	return nil
 }
 
 // extractLabelFromArgs returns the label from args if present.
