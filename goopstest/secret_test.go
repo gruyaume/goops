@@ -8,7 +8,7 @@ import (
 	"github.com/gruyaume/goops/goopstest"
 )
 
-func GetSecret() error {
+func GetSecretByLabel() error {
 	secretLabel := "whatever-label"
 
 	secret, err := goops.GetSecretByLabel(secretLabel, false, true)
@@ -32,7 +32,7 @@ func GetSecret() error {
 	return nil
 }
 
-func TestCharmGetSecret(t *testing.T) {
+func TestCharmGetSecretByLabel(t *testing.T) {
 	tests := []struct {
 		name     string
 		handler  func() error
@@ -42,16 +42,16 @@ func TestCharmGetSecret(t *testing.T) {
 		want     string
 	}{
 		{
-			name:     "GetSecret",
-			handler:  GetSecret,
+			name:     "GetSecretByLabel",
+			handler:  GetSecretByLabel,
 			hookName: "start",
 			key:      "secret-key",
 			value:    "expected-value",
 			want:     string(goops.StatusActive),
 		},
 		{
-			name:     "GetSecretUnexpectedValue",
-			handler:  GetSecret,
+			name:     "GetSecretByLabelUnexpectedValue",
+			handler:  GetSecretByLabel,
 			hookName: "start",
 			key:      "secret-key",
 			value:    "unexpected-value",
@@ -98,9 +98,9 @@ func TestCharmGetSecret(t *testing.T) {
 	}
 }
 
-func TestCharmGetUnexistingSecret(t *testing.T) {
+func TestCharmGetUnexistingSecretByLabel(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: GetSecret,
+		Charm: GetSecretByLabel,
 	}
 
 	stateIn := &goopstest.State{}
@@ -116,6 +116,100 @@ func TestCharmGetUnexistingSecret(t *testing.T) {
 
 	if len(stateOut.Secrets) != 0 {
 		t.Errorf("got %d secrets, want 0", len(stateOut.Secrets))
+	}
+}
+
+func GetSecretByID() error {
+	secretID := "12345"
+
+	secret, err := goops.GetSecretByID(secretID, false, true)
+	if err != nil {
+		_ = goops.SetUnitStatus(goops.StatusMaintenance, "Secret does not exist")
+		return nil
+	}
+
+	secretValue, ok := secret["secret-key"]
+	if !ok {
+		return goops.FailActionf("secret key not found in secret with ID %s", secretID)
+	}
+
+	if secretValue != "expected-value" {
+		_ = goops.SetUnitStatus(goops.StatusBlocked, "Secret is not set to expected value")
+		return nil
+	}
+
+	_ = goops.SetUnitStatus(goops.StatusActive, "Secret is set to expected value")
+
+	return nil
+}
+
+func TestCharmGetSecretByID(t *testing.T) {
+	tests := []struct {
+		name     string
+		handler  func() error
+		hookName string
+		key      string
+		value    string
+		want     string
+	}{
+		{
+			name:     "GetSecretByID",
+			handler:  GetSecretByID,
+			hookName: "start",
+			key:      "secret-key",
+			value:    "expected-value",
+			want:     string(goops.StatusActive),
+		},
+		{
+			name:     "GetSecretByIDUnexpectedValue",
+			handler:  GetSecretByID,
+			hookName: "start",
+			key:      "secret-key",
+			value:    "unexpected-value",
+			want:     string(goops.StatusBlocked),
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			ctx := goopstest.Context{
+				Charm: tc.handler,
+			}
+
+			mySecret := &goopstest.Secret{
+				ID: "12345",
+				Content: map[string]string{
+					tc.key: tc.value,
+				},
+			}
+
+			stateIn := &goopstest.State{
+				Secrets: []*goopstest.Secret{
+					mySecret,
+				},
+			}
+
+			stateOut, err := ctx.Run(tc.hookName, stateIn)
+			if err != nil {
+				t.Fatalf("Run returned an error: %v", err)
+			}
+
+			if ctx.CharmErr != nil {
+				t.Fatalf("Run returned an error: %v", ctx.CharmErr)
+			}
+
+			if stateOut.UnitStatus != tc.want {
+				t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, tc.want)
+			}
+
+			for _, secret := range stateOut.Secrets {
+				if secret.ID == mySecret.ID {
+					if secret.Content[tc.key] != tc.value {
+						t.Errorf("got Secret[%s]=%s, want %s", tc.key, secret.Content[tc.key], tc.value)
+					}
+				}
+			}
+		})
 	}
 }
 
