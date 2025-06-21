@@ -1,6 +1,7 @@
 package goopstest_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/gruyaume/goops"
@@ -35,8 +36,12 @@ type MyBadConfig struct {
 func ActiveInexistantConfig() error {
 	myBadConfig := MyBadConfig{}
 
-	err := goops.GetConfig(myBadConfig)
+	err := goops.GetConfig(&myBadConfig)
 	if err != nil {
+		return fmt.Errorf("failed to get config: %w", err)
+	}
+
+	if myBadConfig.WhateverKey == "" {
 		_ = goops.SetUnitStatus(goops.StatusBlocked, "Config is not set")
 	}
 
@@ -72,7 +77,7 @@ func TestCharmConfig(t *testing.T) {
 			name:     "ActiveInexistantConfig",
 			handler:  ActiveInexistantConfig,
 			hookName: "start",
-			key:      "whatever_key",
+			key:      "a-different-key",
 			value:    "whatever",
 			want:     string(goops.StatusBlocked),
 		},
@@ -84,7 +89,7 @@ func TestCharmConfig(t *testing.T) {
 				Charm: tc.handler,
 			}
 
-			config := map[string]string{
+			config := map[string]any{
 				tc.key: tc.value,
 			}
 
@@ -95,6 +100,10 @@ func TestCharmConfig(t *testing.T) {
 			stateOut, err := ctx.Run(tc.hookName, stateIn)
 			if err != nil {
 				t.Fatalf("Run returned an error: %v", err)
+			}
+
+			if ctx.CharmErr != nil {
+				t.Errorf("expected no error, got %v", ctx.CharmErr)
 			}
 
 			if stateOut.UnitStatus != tc.want {
