@@ -9,6 +9,7 @@ const (
 	configGetCommand = "config-get"
 )
 
+// GetConfig retrieves the Juju configuration options and unmarshals them into the provided config struct.
 func GetConfig(config any) error {
 	commandRunner := GetCommandRunner()
 

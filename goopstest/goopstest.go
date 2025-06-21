@@ -44,7 +44,7 @@ type fakeCommandRunner struct {
 	UnitStatus         string
 	AppStatus          string
 	Leader             bool
-	Config             map[string]string
+	Config             map[string]any
 	Secrets            []*Secret
 	ActionResults      map[string]string
 	ActionParameters   map[string]string
@@ -886,7 +886,7 @@ type State struct {
 	Leader             bool
 	UnitStatus         string
 	AppStatus          string
-	Config             map[string]string
+	Config             map[string]any
 	Secrets            []*Secret
 	ApplicationVersion string
 	Relations          []*Relation
