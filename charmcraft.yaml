@@ -41,4 +41,9 @@ actions:
         default: false
         description: >-
           Do you accept the terms of service?
+      email:
+        type: string
+        description: >-
+          Email address to be used for the CA certificate.
+          This is optional, but recommended.
     required: [accept-tos]

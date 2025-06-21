@@ -1,6 +1,7 @@
 package goopstest_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/gruyaume/goops"
@@ -163,7 +164,8 @@ func TestCharmActionFailed(t *testing.T) {
 }
 
 type ExampleActionParams struct {
-	WhateverKey string `json:"whatever-key"`
+	Email     string `json:"email"`
+	AcceptTOS bool   `json:"accept-tos"`
 }
 
 func ActionParameters() error {
@@ -175,8 +177,13 @@ func ActionParameters() error {
 		return nil
 	}
 
-	if actionParams.WhateverKey != "expected-value" {
+	if actionParams.Email != "expected-value" {
 		_ = goops.FailActionf("Action parameter 'whatever-key' not set")
+		return nil
+	}
+
+	if !actionParams.AcceptTOS {
+		_ = goops.FailActionf("You must accept the terms of service to run this action")
 		return nil
 	}
 
@@ -197,8 +204,9 @@ func TestCharmActionParameters(t *testing.T) {
 
 	stateIn := &goopstest.State{}
 
-	_, err := ctx.RunAction("run-action", stateIn, map[string]string{
-		"whatever-key": "expected-value",
+	_, err := ctx.RunAction("run-action", stateIn, map[string]any{
+		"email":      "expected-value",
+		"accept-tos": true,
 	})
 	if err != nil {
 		t.Fatalf("Run returned an error: %v", err)
@@ -231,5 +239,37 @@ func TestCharmActionParameterNotSet(t *testing.T) {
 
 	if ctx.ActionResults != nil {
 		t.Errorf("got ActionResults=%v, want nil", ctx.ActionResults)
+	}
+}
+
+func ActionParameters2() error {
+	actionParams := ExampleActionParams{}
+
+	err := goops.GetActionParams(&actionParams)
+	if err != nil {
+		return fmt.Errorf("couldn't get action parameters: %w", err)
+	}
+
+	return nil
+}
+
+func TestGetActionParamInNonActionHook(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: ActionParameters2,
+	}
+
+	stateIn := &goopstest.State{}
+
+	_, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr == nil {
+		t.Fatal("Expected CharmErr to be set, got nil")
+	}
+
+	if ctx.CharmErr.Error() != "couldn't get action parameters: failed to get action parameter: command action-get failed: ERROR not running an action" {
+		t.Errorf("got CharmErr=%q, want 'couldn't get action parameters: failed to get action parameter: command action-get failed: ERROR not running an action'", ctx.CharmErr.Error())
 	}
 }
