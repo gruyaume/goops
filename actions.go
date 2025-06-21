@@ -25,6 +25,7 @@ func FailActionf(format string, args ...any) error {
 	return nil
 }
 
+// GetActionParams retrieves the parameters for the current action and unmarshals them into the provided params struct.
 func GetActionParams(params any) error {
 	commandRunner := GetCommandRunner()
 
