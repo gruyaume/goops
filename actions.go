@@ -12,6 +12,8 @@ const (
 	actionSetCommand  = "action-set"
 )
 
+// FailActionf fails the current action with a formatted message.
+// This functionality only works when the charm is running in an action hook.
 func FailActionf(format string, args ...any) error {
 	commandRunner := GetCommandRunner()
 
@@ -26,6 +28,7 @@ func FailActionf(format string, args ...any) error {
 }
 
 // GetActionParams retrieves the parameters for the current action and unmarshals them into the provided params struct.
+// This functionality only works when the charm is running in an action hook.
 func GetActionParams(params any) error {
 	commandRunner := GetCommandRunner()
 
@@ -45,6 +48,7 @@ func GetActionParams(params any) error {
 }
 
 // ActionLogf records a progress message for the current action.
+// This functionality only works when the charm is running in an action hook.
 func ActionLogf(format string, args ...any) error {
 	commandRunner := GetCommandRunner()
 
@@ -58,6 +62,8 @@ func ActionLogf(format string, args ...any) error {
 	return nil
 }
 
+// SetActionResults sets action results.
+// This functionality only works when the charm is running in an action hook.
 func SetActionResults(results map[string]string) error {
 	commandRunner := GetCommandRunner()
 

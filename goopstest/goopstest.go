@@ -68,6 +68,7 @@ func (f *fakeCommandRunner) Run(name string, args ...string) ([]byte, error) {
 		"action-fail":             f.handleActionFail,
 		"action-get":              f.handleActionGet,
 		"action-set":              f.handleActionSet,
+		"action-log":              f.handleActionLog,
 		"application-version-set": f.handleApplicationVersionSet,
 		"config-get":              f.handleConfigGet,
 		"is-leader":               f.handleIsLeader,
@@ -642,10 +643,27 @@ func parseKeyValueArgs(args []string) map[string]string {
 }
 
 func (f *fakeCommandRunner) handleActionSet(args []string) {
+	if goops.ReadEnv().ActionName == "" {
+		f.Err = fmt.Errorf("command action-set failed: ERROR not running an action")
+		return
+	}
+
 	f.ActionResults = parseKeyValueArgs(args)
 }
 
+func (f *fakeCommandRunner) handleActionLog(_ []string) {
+	if goops.ReadEnv().ActionName == "" {
+		f.Err = fmt.Errorf("command action-log failed: ERROR not running an action")
+		return
+	}
+}
+
 func (f *fakeCommandRunner) handleActionFail(args []string) {
+	if goops.ReadEnv().ActionName == "" {
+		f.Err = fmt.Errorf("command action-fail failed: ERROR not running an action")
+		return
+	}
+
 	f.ActionError = fmt.Errorf("%s", strings.Join(args, " "))
 }
 
