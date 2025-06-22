@@ -688,6 +688,7 @@ func (f *fakeCommandRunner) handleActionGet(_ []string) {
 }
 
 func (f *fakeCommandRunner) handleApplicationVersionSet(args []string) {
+	fmt.Println("Hello argument:", args)
 	f.ApplicationVersion = args[0]
 }
 
@@ -855,6 +856,7 @@ func (c *Context) RunAction(actionName string, state *State, params map[string]a
 	state.UnitStatus = fakeCommandRunner.UnitStatus
 	state.AppStatus = fakeCommandRunner.AppStatus
 	state.Secrets = fakeCommandRunner.Secrets
+	state.ApplicationVersion = fakeCommandRunner.ApplicationVersion
 	c.ActionResults = fakeCommandRunner.ActionResults
 	c.ActionError = fakeCommandRunner.ActionError
 

@@ -112,3 +112,26 @@ func TestCharmConfig(t *testing.T) {
 		})
 	}
 }
+
+func TestActiveIfExpectedConfigInActionHook(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: ActiveIfExpectedConfig,
+	}
+
+	config := map[string]any{
+		"whatever_key": "expected",
+	}
+
+	stateIn := &goopstest.State{
+		Config: config,
+	}
+
+	stateOut, err := ctx.RunAction("run-action", stateIn, nil)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if stateOut.UnitStatus != string(goops.StatusActive) {
+		t.Errorf("Expected UnitStatus %q, got %q", goops.StatusActive, stateOut.UnitStatus)
+	}
+}
