@@ -613,3 +613,128 @@ func TestCharmGetSecretIDsNonLeader(t *testing.T) {
 		t.Errorf("got CharmErr=%q, want 'expected 2 secret IDs, got 0'", ctx.CharmErr.Error())
 	}
 }
+
+func GrantSecretToRelation() error {
+	secretID := "12345"
+	relation := "db:2"
+
+	err := goops.GrantSecretToRelation(secretID, relation)
+	if err != nil {
+		return err
+	}
+
+	_ = goops.SetUnitStatus(goops.StatusActive, fmt.Sprintf("Secret %s granted to relation %s", secretID, relation))
+
+	return nil
+}
+
+func TestCharmGrantSecretToRelation(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: GrantSecretToRelation,
+	}
+
+	stateIn := &goopstest.State{
+		Leader: true,
+		Secrets: []*goopstest.Secret{
+			{
+				ID: "12345",
+				Content: map[string]string{
+					"private-key":    "keycontent",
+					"ca-certificate": "certcontent",
+				},
+			},
+		},
+	}
+
+	stateOut, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Run returned an error: %v", ctx.CharmErr)
+	}
+
+	if stateOut.UnitStatus != string(goops.StatusActive) {
+		t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, string(goops.StatusActive))
+	}
+}
+
+func GrantSecretToUnit() error {
+	secretID := "12345"
+	relation := "db:0"
+	unitName := "db/1"
+
+	err := goops.GrantSecretToUnit(secretID, relation, unitName)
+	if err != nil {
+		return err
+	}
+
+	_ = goops.SetUnitStatus(goops.StatusActive, fmt.Sprintf("Secret %s granted to unit %s", secretID, unitName))
+
+	return nil
+}
+
+func TestCharmGrantSecretToUnit(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: GrantSecretToUnit,
+	}
+
+	stateIn := &goopstest.State{
+		Leader: true,
+		Secrets: []*goopstest.Secret{
+			{
+				ID: "12345",
+				Content: map[string]string{
+					"private-key":    "keycontent",
+					"ca-certificate": "certcontent",
+				},
+			},
+		},
+	}
+
+	stateOut, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Run returned an error: %v", ctx.CharmErr)
+	}
+
+	if stateOut.UnitStatus != string(goops.StatusActive) {
+		t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, string(goops.StatusActive))
+	}
+}
+
+func TestCharmGrantSecretNonLeader(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: GrantSecretToRelation,
+	}
+
+	stateIn := &goopstest.State{
+		Leader: false,
+		Secrets: []*goopstest.Secret{
+			{
+				ID: "12345",
+				Content: map[string]string{
+					"private-key":    "keycontent",
+					"ca-certificate": "certcontent",
+				},
+			},
+		},
+	}
+
+	_, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr == nil {
+		t.Fatalf("expected an error when not leader, got nil")
+	}
+
+	if ctx.CharmErr.Error() != "failed to grant secret: ERROR secret \"12345\" not found" {
+		t.Errorf("got CharmErr=%q, want 'failed to grant secret: ERROR secret \"12345\" not found'", ctx.CharmErr.Error())
+	}
+}

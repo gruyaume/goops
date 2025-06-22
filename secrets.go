@@ -285,13 +285,6 @@ func RemoveSecret(id string) error {
 	return nil
 }
 
-type RevokeSecretOptions struct {
-	ID       string
-	Unit     string
-	App      string
-	Relation string
-}
-
 // RevokeSecret revokes a secret by its ID.
 func RevokeSecret(id string) error {
 	commandRunner := GetCommandRunner()

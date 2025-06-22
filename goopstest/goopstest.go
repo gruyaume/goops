@@ -84,6 +84,7 @@ func (f *fakeCommandRunner) Run(name string, args ...string) ([]byte, error) {
 		"secret-remove":           f.handleSecretRemove,
 		"secret-info-get":         f.handleSecretInfoGet,
 		"secret-ids":              f.handleSecretIDs,
+		"secret-grant":            f.handleSecretGrant,
 		"state-get":               f.handleStateGet,
 		"state-set":               f.handleStateSet,
 		"state-delete":            f.handleStateDelete,
@@ -657,6 +658,20 @@ func (f *fakeCommandRunner) handleSecretIDs(_ []string) {
 	}
 
 	f.Output = output
+}
+
+func (f *fakeCommandRunner) handleSecretGrant(args []string) {
+	if len(args) == 0 {
+		f.Err = fmt.Errorf("secret-grant command requires at least one argument")
+		return
+	}
+
+	secretID := args[0]
+
+	if !f.Leader {
+		f.Err = fmt.Errorf(`ERROR secret "%s" not found`, secretID)
+		return
+	}
 }
 
 func (f *fakeCommandRunner) handleStateGet(args []string) {
