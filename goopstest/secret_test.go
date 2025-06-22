@@ -76,6 +76,7 @@ func TestCharmGetSecretByLabel(t *testing.T) {
 				Secrets: []*goopstest.Secret{
 					mySecret,
 				},
+				Leader: true,
 			}
 
 			stateOut, err := ctx.Run(tc.hookName, stateIn)
@@ -124,8 +125,7 @@ func GetSecretByID() error {
 
 	secret, err := goops.GetSecretByID(secretID, false, true)
 	if err != nil {
-		_ = goops.SetUnitStatus(goops.StatusMaintenance, "Secret does not exist")
-		return nil
+		return err
 	}
 
 	secretValue, ok := secret["secret-key"]
@@ -187,6 +187,7 @@ func TestCharmGetSecretByID(t *testing.T) {
 				Secrets: []*goopstest.Secret{
 					mySecret,
 				},
+				Leader: true,
 			}
 
 			stateOut, err := ctx.Run(tc.hookName, stateIn)
@@ -229,7 +230,7 @@ func AddSecret() error {
 		Content: secretContent,
 	})
 	if err != nil {
-		return fmt.Errorf("could not add secret: %w", err)
+		return err
 	}
 
 	return nil
@@ -240,7 +241,9 @@ func TestCharmAddSecret(t *testing.T) {
 		Charm: AddSecret,
 	}
 
-	stateIn := &goopstest.State{}
+	stateIn := &goopstest.State{
+		Leader: true,
+	}
 
 	stateOut, err := ctx.Run("start", stateIn)
 	if err != nil {
@@ -248,7 +251,7 @@ func TestCharmAddSecret(t *testing.T) {
 	}
 
 	if len(stateOut.Secrets) != 1 {
-		t.Errorf("got %d secrets, want 1", len(stateOut.Secrets))
+		t.Fatalf("got %d secrets, want 1", len(stateOut.Secrets))
 	}
 
 	mySecret := stateOut.Secrets[0]
@@ -262,6 +265,29 @@ func TestCharmAddSecret(t *testing.T) {
 
 	if mySecret.Content["ca-certificate"] != "certcontent" {
 		t.Errorf("got Secret[ca-certificate]=%s, want %s", mySecret.Content["ca-certificate"], "certcontent")
+	}
+}
+
+func TestCharmAddSecretNonLeader(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: AddSecret,
+	}
+
+	stateIn := &goopstest.State{
+		Leader: false,
+	}
+
+	_, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr == nil {
+		t.Fatalf("expected an error when not leader, got nil")
+	}
+
+	if ctx.CharmErr.Error() != "failed to add secret: command secret-add failed: ERROR this unit is not the leader" {
+		t.Errorf("got CharmErr=%q, want 'failed to add secret: command secret-add failed: ERROR this unit is not the leader'", ctx.CharmErr.Error())
 	}
 }
 
@@ -280,6 +306,7 @@ func TestCharmRemoveSecret(t *testing.T) {
 	}
 
 	stateIn := &goopstest.State{
+		Leader: true,
 		Secrets: []*goopstest.Secret{
 			{
 				ID: "123",
@@ -298,6 +325,38 @@ func TestCharmRemoveSecret(t *testing.T) {
 
 	if len(stateOut.Secrets) != 0 {
 		t.Errorf("got %d secrets, want 0", len(stateOut.Secrets))
+	}
+}
+
+func TestCharmRemoveSecretNonLeader(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: RemoveSecret,
+	}
+
+	stateIn := &goopstest.State{
+		Leader: false,
+		Secrets: []*goopstest.Secret{
+			{
+				ID: "123",
+				Content: map[string]string{
+					"private-key":    "keycontent",
+					"ca-certificate": "certcontent",
+				},
+			},
+		},
+	}
+
+	stateOut, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if len(stateOut.Secrets) != 1 {
+		t.Fatalf("got %d secrets, want 1", len(stateOut.Secrets))
+	}
+
+	if stateOut.Secrets[0].ID != "123" {
+		t.Errorf("got Secret.ID=%s, want %s", stateOut.Secrets[0].ID, "123")
 	}
 }
 

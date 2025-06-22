@@ -449,6 +449,11 @@ func filterOutLabelArgs(args []string) []string {
 }
 
 func (f *fakeCommandRunner) handleSecretAdd(args []string) {
+	if !f.Leader {
+		f.Err = fmt.Errorf("command secret-add failed: ERROR this unit is not the leader")
+		return
+	}
+
 	label := extractLabelFromArgs(args)
 	filtered := filterOutLabelArgs(args)
 
@@ -463,7 +468,6 @@ func (f *fakeCommandRunner) handleSecretAdd(args []string) {
 func (f *fakeCommandRunner) handleSecretGet(args []string) {
 	var label, id string
 
-	// Extract --label if present
 	for _, arg := range args {
 		if strings.HasPrefix(arg, "--label=") {
 			label = strings.TrimPrefix(arg, "--label=")
@@ -548,6 +552,10 @@ func findSecretByLabel(secrets []*Secret, label string) *Secret {
 }
 
 func (f *fakeCommandRunner) handleSecretRemove(args []string) {
+	if !f.Leader {
+		return
+	}
+
 	for i, secret := range f.Secrets {
 		if strings.Contains(args[0], secret.ID) || strings.Contains(args[0], "--label="+secret.Label) {
 			f.Secrets = append(f.Secrets[:i], f.Secrets[i+1:]...)
