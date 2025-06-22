@@ -82,6 +82,8 @@ func (f *fakeCommandRunner) Run(name string, args ...string) ([]byte, error) {
 		"secret-add":              f.handleSecretAdd,
 		"secret-get":              f.handleSecretGet,
 		"secret-remove":           f.handleSecretRemove,
+		"secret-info-get":         f.handleSecretInfoGet,
+		"secret-ids":              f.handleSecretIDs,
 		"state-get":               f.handleStateGet,
 		"state-set":               f.handleStateSet,
 		"state-delete":            f.handleStateDelete,
@@ -250,6 +252,12 @@ func (f *fakeCommandRunner) handleConfigGet(_ []string) {
 }
 
 func (f *fakeCommandRunner) handleRelationIDs(args []string) {
+	if args[0] == "" {
+		f.Err = fmt.Errorf("command relation-ids failed: ERROR no endpoint name specified")
+
+		return
+	}
+
 	if len(f.Relations) == 0 {
 		f.Output = []byte(`[]`)
 		return
@@ -548,6 +556,101 @@ func (f *fakeCommandRunner) handleSecretRemove(args []string) {
 	}
 }
 
+type SecretInfo struct {
+	Revision    int    `json:"revision"`
+	Label       string `json:"label"`
+	Owner       string `json:"owner"`
+	Description string `json:"description"`
+	Rotation    string `json:"rotation"`
+	Expiry      string `json:"expiry"`
+}
+
+func (f *fakeCommandRunner) handleSecretInfoGet(args []string) {
+	var id, label string
+
+	for _, arg := range args {
+		if strings.HasPrefix(arg, "--label=") {
+			label = strings.TrimPrefix(arg, "--label=")
+		} else if !strings.HasPrefix(arg, "--") {
+			id = arg
+		}
+	}
+
+	var secret *Secret
+
+	switch {
+	case label != "":
+		secret = findSecretByLabel(f.Secrets, label)
+		if secret == nil || !f.Leader {
+			f.Err = fmt.Errorf(`ERROR secret %q not found`, label)
+
+			return
+		}
+	case id != "":
+		secret = findSecretByID(f.Secrets, id)
+		if secret == nil || !f.Leader {
+			f.Err = fmt.Errorf(`ERROR secret %q not found`, id)
+			return
+		}
+	default:
+		f.Err = fmt.Errorf("no --label or ID specified")
+		return
+	}
+
+	secretInfo := map[string]SecretInfo{
+		secret.ID: {
+			Revision:    1,
+			Label:       secret.Label,
+			Owner:       secret.Owner,
+			Description: secret.Description,
+			Rotation:    secret.Rotation,
+			Expiry:      secret.Expiry,
+		},
+	}
+
+	output, err := json.Marshal(secretInfo)
+	if err != nil {
+		f.Err = fmt.Errorf("failed to marshal secret info: %w", err)
+		return
+	}
+
+	f.Output = output
+}
+
+func (f *fakeCommandRunner) handleSecretIDs(_ []string) {
+	if len(f.Secrets) == 0 {
+		f.Output = []byte(`null`)
+		return
+	}
+
+	if !f.Leader {
+		ids := []string{}
+
+		output, err := json.Marshal(ids)
+		if err != nil {
+			f.Err = fmt.Errorf("failed to marshal empty secret IDs: %w", err)
+			return
+		}
+
+		f.Output = output
+
+		return
+	}
+
+	ids := make([]string, len(f.Secrets))
+	for i, secret := range f.Secrets {
+		ids[i] = secret.ID
+	}
+
+	output, err := json.Marshal(ids)
+	if err != nil {
+		f.Err = fmt.Errorf("failed to marshal secret IDs: %w", err)
+		return
+	}
+
+	f.Output = output
+}
+
 func (f *fakeCommandRunner) handleStateGet(args []string) {
 	if len(args) == 0 {
 		f.Err = fmt.Errorf("state-get command requires at least one argument")
@@ -688,7 +791,6 @@ func (f *fakeCommandRunner) handleActionGet(_ []string) {
 }
 
 func (f *fakeCommandRunner) handleApplicationVersionSet(args []string) {
-	fmt.Println("Hello argument:", args)
 	f.ApplicationVersion = args[0]
 }
 
@@ -864,9 +966,13 @@ func (c *Context) RunAction(actionName string, state *State, params map[string]a
 }
 
 type Secret struct {
-	ID      string
-	Label   string
-	Content map[string]string
+	ID          string
+	Label       string
+	Content     map[string]string
+	Owner       string
+	Description string
+	Rotation    string
+	Expiry      string
 }
 
 type UnitID string

@@ -11,6 +11,7 @@ import (
 const (
 	CaCertificateSecretLabel   = "active-ca-certificates" // #nosec G101
 	TLSCertificatesIntegration = "certificates"
+	PeerRelationName           = "example-peers"
 )
 
 type ConfigOptions struct {
@@ -66,6 +67,7 @@ func generateAndStoreRootCertificate() error {
 			Expire:      expiry,
 			Label:       CaCertificateSecretLabel,
 			Rotate:      goops.RotateNever,
+			Owner:       goops.OwnerApplication,
 		})
 		if err != nil {
 			return fmt.Errorf("could not add secret: %w", err)
@@ -225,7 +227,7 @@ func Configure() error {
 	}
 
 	if !isLeader {
-		return fmt.Errorf("unit is not leader")
+		goops.LogInfof("This unit is not the leader")
 	}
 
 	goops.LogInfof("Charm Name: %s", meta.Name)
@@ -235,18 +237,20 @@ func Configure() error {
 		return fmt.Errorf("could not set ports: %w", err)
 	}
 
+	goops.LogInfof("Set unit ports")
+
 	privateAddress, err := goops.GetUnitPrivateAddress()
 	if err != nil {
-		return fmt.Errorf("could not get unit private address: %w", err)
+		_ = goops.SetUnitStatus(goops.StatusWaiting, "Waiting for unit private address")
+		return nil
 	}
 
 	if privateAddress == "" {
-		return fmt.Errorf("unit private address is empty")
+		_ = goops.SetUnitStatus(goops.StatusWaiting, "Waiting for unit private address")
+		return nil
 	}
 
 	goops.LogInfof("Unit private address: %s", privateAddress)
-
-	goops.LogInfof("Set unit ports")
 
 	valid, err := isConfigValid()
 	if err != nil {
@@ -257,14 +261,16 @@ func Configure() error {
 		return fmt.Errorf("config is not valid")
 	}
 
-	err = generateAndStoreRootCertificate()
-	if err != nil {
-		return fmt.Errorf("could not generate CA certificate: %w", err)
-	}
+	if isLeader {
+		err = generateAndStoreRootCertificate()
+		if err != nil {
+			return fmt.Errorf("could not generate CA certificate: %w", err)
+		}
 
-	err = processOutstandingCertificateRequests()
-	if err != nil {
-		return fmt.Errorf("could not process outstanding certificate requests: %w", err)
+		err = processOutstandingCertificateRequests()
+		if err != nil {
+			return fmt.Errorf("could not process outstanding certificate requests: %w", err)
+		}
 	}
 
 	goalState, err := goops.GetGoalState()

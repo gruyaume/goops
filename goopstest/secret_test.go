@@ -331,3 +331,226 @@ func TestCharmRemoveUnexistingSecret(t *testing.T) {
 		t.Errorf("got Secret.ID=%s, want %s", stateOut.Secrets[0].ID, "12345")
 	}
 }
+
+func GetSecretInfoByID() error {
+	secretID := "12345"
+
+	secretInfo, err := goops.GetSecretInfoByID(secretID)
+	if err != nil {
+		return err
+	}
+
+	if len(secretInfo) == 0 {
+		return fmt.Errorf("no secret info found for ID: %s", secretID)
+	}
+
+	_ = goops.SetUnitStatus(goops.StatusActive, "Secret info retrieved successfully")
+
+	return nil
+}
+
+func TestCharmGetSecretInfoByID(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: GetSecretInfoByID,
+	}
+
+	stateIn := &goopstest.State{
+		Secrets: []*goopstest.Secret{
+			{
+				ID: "12345",
+				Content: map[string]string{
+					"private-key":    "keycontent",
+					"ca-certificate": "certcontent",
+				},
+			},
+		},
+		Leader: true,
+	}
+
+	stateOut, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Run returned an error: %v", ctx.CharmErr)
+	}
+
+	if stateOut.UnitStatus != string(goops.StatusActive) {
+		t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, string(goops.StatusActive))
+	}
+}
+
+func TestCharmGetSecretInfoByIDNonLeader(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: GetSecretInfoByID,
+	}
+
+	stateIn := &goopstest.State{
+		Leader: false,
+		Secrets: []*goopstest.Secret{
+			{
+				ID: "12345",
+				Content: map[string]string{
+					"private-key":    "keycontent",
+					"ca-certificate": "certcontent",
+				},
+			},
+		},
+	}
+
+	_, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr == nil {
+		t.Fatalf("expected an error when not leader, got nil")
+	}
+
+	if ctx.CharmErr.Error() != `failed to get secret info: ERROR secret "12345" not found` {
+		t.Errorf("got CharmErr=%q, want 'failed to get secret info: ERROR secret \"12345\" not found'", ctx.CharmErr.Error())
+	}
+}
+
+func GetSecretInfoByLabel() error {
+	secretLabel := "whatever-label"
+
+	secretInfo, err := goops.GetSecretInfoByLabel(secretLabel)
+	if err != nil {
+		return fmt.Errorf("could not get secret info: %w", err)
+	}
+
+	if len(secretInfo) == 0 {
+		return fmt.Errorf("no secret info found for label: %s", secretLabel)
+	}
+
+	_ = goops.SetUnitStatus(goops.StatusActive, "Secret info retrieved successfully")
+
+	return nil
+}
+
+func TestCharmGetSecretInfoByLabel(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: GetSecretInfoByLabel,
+	}
+
+	stateIn := &goopstest.State{
+		Leader: true,
+		Secrets: []*goopstest.Secret{
+			{
+				Label: "whatever-label",
+				Content: map[string]string{
+					"private-key":    "keycontent",
+					"ca-certificate": "certcontent",
+				},
+			},
+		},
+	}
+
+	stateOut, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if stateOut.UnitStatus != string(goops.StatusActive) {
+		t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, string(goops.StatusActive))
+	}
+}
+
+func GetSecretIDs() error {
+	secretIDs, err := goops.GetSecretIDs()
+	if err != nil {
+		return fmt.Errorf("could not get secret IDs: %w", err)
+	}
+
+	if len(secretIDs) != 2 {
+		return fmt.Errorf("expected 2 secret IDs, got %d", len(secretIDs))
+	}
+
+	_ = goops.SetUnitStatus(goops.StatusActive, "Secret IDs retrieved successfully")
+
+	return nil
+}
+
+func TestCharmGetSecretIDs(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: GetSecretIDs,
+	}
+
+	stateIn := &goopstest.State{
+		Leader: true,
+		Secrets: []*goopstest.Secret{
+			{
+				ID: "12345",
+				Content: map[string]string{
+					"private-key":    "keycontent",
+					"ca-certificate": "certcontent",
+				},
+			},
+			{
+				ID: "67890",
+				Content: map[string]string{
+					"private-key":    "another-keycontent",
+					"ca-certificate": "another-certcontent",
+				},
+			},
+		},
+	}
+
+	stateOut, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Run returned an error: %v", ctx.CharmErr)
+	}
+
+	if stateOut.UnitStatus != string(goops.StatusActive) {
+		t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, string(goops.StatusActive))
+	}
+
+	if len(stateOut.Secrets) != 2 {
+		t.Errorf("got %d secrets, want 2", len(stateOut.Secrets))
+	}
+}
+
+func TestCharmGetSecretIDsNonLeader(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: GetSecretIDs,
+	}
+
+	stateIn := &goopstest.State{
+		Leader: false,
+		Secrets: []*goopstest.Secret{
+			{
+				ID: "12345",
+				Content: map[string]string{
+					"private-key":    "keycontent",
+					"ca-certificate": "certcontent",
+				},
+			},
+			{
+				ID: "67890",
+				Content: map[string]string{
+					"private-key":    "another-keycontent",
+					"ca-certificate": "another-certcontent",
+				},
+			},
+		},
+	}
+
+	_, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr == nil {
+		t.Fatalf("expected an error when not leader, got nil")
+	}
+
+	if ctx.CharmErr.Error() != "expected 2 secret IDs, got 0" {
+		t.Errorf("got CharmErr=%q, want 'expected 2 secret IDs, got 0'", ctx.CharmErr.Error())
+	}
+}

@@ -76,6 +76,37 @@ func TestCharmGetRelationIDsNoRelation(t *testing.T) {
 	}
 }
 
+func GetRelationIDsNoName() error {
+	_, err := goops.GetRelationIDs("")
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func TestCharmGetRelationIDsNoName(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: GetRelationIDsNoName,
+	}
+
+	stateIn := &goopstest.State{}
+
+	_, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr == nil {
+		t.Fatal("Expected CharmErr to be set, got nil")
+	}
+
+	expectedErr := "failed to get relation IDs: command relation-ids failed: ERROR no endpoint name specified"
+	if ctx.CharmErr.Error() != expectedErr {
+		t.Errorf("got CharmErr=%q, want %q", ctx.CharmErr.Error(), expectedErr)
+	}
+}
+
 func ListRelationUnits1Result() error {
 	relationUnits, err := goops.ListRelationUnits("certificates:0")
 	if err != nil {
@@ -175,6 +206,36 @@ func TestCharmListRelationUnits(t *testing.T) {
 		if len(stateOut.Relations) != 1 {
 			t.Fatalf("expected 1 relation, got %d", len(stateOut.Relations))
 		}
+	}
+}
+
+func TestListRelationUnitsInActionHook(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: ListRelationUnits1Result,
+	}
+
+	remoteUnitsData := map[goopstest.UnitID]goopstest.DataBag{
+		goopstest.UnitID("provider/0"): {},
+	}
+
+	certRelation := &goopstest.Relation{
+		Endpoint:        "certificates",
+		RemoteAppName:   "provider",
+		RemoteUnitsData: remoteUnitsData,
+	}
+	stateIn := &goopstest.State{
+		Relations: []*goopstest.Relation{
+			certRelation,
+		},
+	}
+
+	stateOut, err := ctx.RunAction("run-action", stateIn, nil)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if len(stateOut.Relations) != 1 {
+		t.Fatalf("expected 1 relation, got %d", len(stateOut.Relations))
 	}
 }
 
