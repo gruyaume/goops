@@ -1,6 +1,7 @@
 package goopstest_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/gruyaume/goops"
@@ -163,10 +164,11 @@ func TestCharmActionFailed(t *testing.T) {
 }
 
 type ExampleActionParams struct {
-	WhateverKey string `json:"whatever-key"`
+	Email     string `json:"email"`
+	AcceptTOS bool   `json:"accept-tos"`
 }
 
-func ActionParameters() error {
+func GetActionParamsAndSetResults() error {
 	actionParams := ExampleActionParams{}
 
 	err := goops.GetActionParams(&actionParams)
@@ -175,8 +177,13 @@ func ActionParameters() error {
 		return nil
 	}
 
-	if actionParams.WhateverKey != "expected-value" {
+	if actionParams.Email != "expected-value" {
 		_ = goops.FailActionf("Action parameter 'whatever-key' not set")
+		return nil
+	}
+
+	if !actionParams.AcceptTOS {
+		_ = goops.FailActionf("You must accept the terms of service to run this action")
 		return nil
 	}
 
@@ -192,13 +199,14 @@ func ActionParameters() error {
 
 func TestCharmActionParameters(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: ActionParameters,
+		Charm: GetActionParamsAndSetResults,
 	}
 
 	stateIn := &goopstest.State{}
 
-	_, err := ctx.RunAction("run-action", stateIn, map[string]string{
-		"whatever-key": "expected-value",
+	_, err := ctx.RunAction("run-action", stateIn, map[string]any{
+		"email":      "expected-value",
+		"accept-tos": true,
 	})
 	if err != nil {
 		t.Fatalf("Run returned an error: %v", err)
@@ -211,7 +219,7 @@ func TestCharmActionParameters(t *testing.T) {
 
 func TestCharmActionParameterNotSet(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: ActionParameters,
+		Charm: GetActionParamsAndSetResults,
 	}
 
 	stateIn := &goopstest.State{}
@@ -231,5 +239,131 @@ func TestCharmActionParameterNotSet(t *testing.T) {
 
 	if ctx.ActionResults != nil {
 		t.Errorf("got ActionResults=%v, want nil", ctx.ActionResults)
+	}
+}
+
+func ActionParams() error {
+	actionParams := ExampleActionParams{}
+
+	err := goops.GetActionParams(&actionParams)
+	if err != nil {
+		return fmt.Errorf("couldn't get action parameters: %w", err)
+	}
+
+	return nil
+}
+
+func TestGetActionParamInNonActionHook(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: ActionParams,
+	}
+
+	stateIn := &goopstest.State{}
+
+	_, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr == nil {
+		t.Fatal("Expected CharmErr to be set, got nil")
+	}
+
+	if ctx.CharmErr.Error() != "couldn't get action parameters: failed to get action parameter: command action-get failed: ERROR not running an action" {
+		t.Errorf("got CharmErr=%q, want 'couldn't get action parameters: failed to get action parameter: command action-get failed: ERROR not running an action'", ctx.CharmErr.Error())
+	}
+}
+
+func ActionFailf() error {
+	err := goops.FailActionf("whatever message")
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func TestActionFailfInNonActionHook(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: ActionFailf,
+	}
+
+	stateIn := &goopstest.State{}
+
+	_, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr == nil {
+		t.Fatal("Expected CharmErr to be set, got nil")
+	}
+
+	if ctx.CharmErr.Error() != "failed to fail action: command action-fail failed: ERROR not running an action" {
+		t.Errorf("got CharmErr=%q, want 'failed to fail action: command action-fail failed: ERROR not running an action'", ctx.CharmErr.Error())
+	}
+}
+
+func ActionLogf() error {
+	err := goops.ActionLogf("This is a log message from the action")
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func TestActionLogfInNonActionHook(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: ActionLogf,
+	}
+
+	stateIn := &goopstest.State{}
+
+	_, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr == nil {
+		t.Fatal("Expected CharmErr to be set, got nil")
+	}
+
+	if ctx.CharmErr.Error() != "failed to log action message: command action-log failed: ERROR not running an action" {
+		t.Errorf("got CharmErr=%q, want 'failed to log action message: command action-log failed: ERROR not running an action'", ctx.CharmErr.Error())
+	}
+}
+
+func SetActionResults() error {
+	results := map[string]string{
+		"key": "value",
+	}
+
+	err := goops.SetActionResults(results)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func TestSetActionResultsInNonActionHook(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: SetActionResults,
+	}
+
+	stateIn := &goopstest.State{}
+
+	_, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr == nil {
+		t.Fatal("Expected CharmErr to be set, got nil")
+	}
+
+	if ctx.CharmErr.Error() != "failed to set action parameters: command action-set failed: ERROR not running an action" {
+		t.Errorf("got CharmErr=%q, want 'failed to set action parameters: command action-set failed: ERROR not running an action'", ctx.CharmErr.Error())
 	}
 }

@@ -47,7 +47,7 @@ type fakeCommandRunner struct {
 	Config             map[string]any
 	Secrets            []*Secret
 	ActionResults      map[string]string
-	ActionParameters   map[string]string
+	ActionParameters   map[string]any
 	ActionError        error
 	ApplicationVersion string
 	Relations          []*Relation
@@ -68,6 +68,7 @@ func (f *fakeCommandRunner) Run(name string, args ...string) ([]byte, error) {
 		"action-fail":             f.handleActionFail,
 		"action-get":              f.handleActionGet,
 		"action-set":              f.handleActionSet,
+		"action-log":              f.handleActionLog,
 		"application-version-set": f.handleApplicationVersionSet,
 		"config-get":              f.handleConfigGet,
 		"is-leader":               f.handleIsLeader,
@@ -642,16 +643,39 @@ func parseKeyValueArgs(args []string) map[string]string {
 }
 
 func (f *fakeCommandRunner) handleActionSet(args []string) {
+	if goops.ReadEnv().ActionName == "" {
+		f.Err = fmt.Errorf("command action-set failed: ERROR not running an action")
+		return
+	}
+
 	f.ActionResults = parseKeyValueArgs(args)
 }
 
+func (f *fakeCommandRunner) handleActionLog(_ []string) {
+	if goops.ReadEnv().ActionName == "" {
+		f.Err = fmt.Errorf("command action-log failed: ERROR not running an action")
+		return
+	}
+}
+
 func (f *fakeCommandRunner) handleActionFail(args []string) {
+	if goops.ReadEnv().ActionName == "" {
+		f.Err = fmt.Errorf("command action-fail failed: ERROR not running an action")
+		return
+	}
+
 	f.ActionError = fmt.Errorf("%s", strings.Join(args, " "))
 }
 
 func (f *fakeCommandRunner) handleActionGet(_ []string) {
+	env := goops.ReadEnv()
+	if env.ActionName == "" {
+		f.Err = fmt.Errorf("command action-get failed: ERROR not running an action")
+		return
+	}
+
 	if f.ActionParameters == nil {
-		f.ActionParameters = make(map[string]string)
+		f.ActionParameters = make(map[string]any)
 	}
 
 	output, err := json.Marshal(f.ActionParameters)
@@ -794,7 +818,7 @@ func (c *Context) Run(hookName string, state *State) (*State, error) {
 	return state, nil
 }
 
-func (c *Context) RunAction(actionName string, state *State, params map[string]string) (*State, error) {
+func (c *Context) RunAction(actionName string, state *State, params map[string]any) (*State, error) {
 	fakeCommandRunner := &fakeCommandRunner{
 		Output:           []byte(``),
 		Err:              nil,
@@ -825,7 +849,7 @@ func (c *Context) RunAction(actionName string, state *State, params map[string]s
 
 	err := c.Charm()
 	if err != nil {
-		return nil, err
+		c.CharmErr = err
 	}
 
 	state.UnitStatus = fakeCommandRunner.UnitStatus
