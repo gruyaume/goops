@@ -330,7 +330,7 @@ func Configure() error {
 		return fmt.Errorf("could not get unit status: %w", err)
 	}
 
-	goops.LogInfof("Current unit status: %s %s", existingStatus.Code, existingStatus.Message)
+	goops.LogInfof("Current unit status: %s %s", existingStatus.Name, existingStatus.Message)
 
 	err = goops.SetUnitStatus(goops.StatusActive, "A happy charm")
 	if err != nil {

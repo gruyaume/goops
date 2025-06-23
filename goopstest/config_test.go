@@ -50,36 +50,36 @@ func ActiveInexistantConfig() error {
 
 func TestCharmConfig(t *testing.T) {
 	tests := []struct {
-		name     string
-		handler  func() error
-		hookName string
-		key      string
-		value    string
-		want     string
+		name               string
+		handler            func() error
+		hookName           string
+		key                string
+		value              string
+		expectedStatusName goopstest.StatusName
 	}{
 		{
-			name:     "ActiveIfExpectedConfig",
-			handler:  ActiveIfExpectedConfig,
-			hookName: "start",
-			key:      "whatever_key",
-			value:    "expected",
-			want:     string(goops.StatusActive),
+			name:               "ActiveIfExpectedConfig",
+			handler:            ActiveIfExpectedConfig,
+			hookName:           "start",
+			key:                "whatever_key",
+			value:              "expected",
+			expectedStatusName: goopstest.StatusActive,
 		},
 		{
-			name:     "BlockedIfNotExpectedConfig",
-			handler:  ActiveIfExpectedConfig,
-			hookName: "start",
-			key:      "whatever_key",
-			value:    "not-expected",
-			want:     string(goops.StatusBlocked),
+			name:               "BlockedIfNotExpectedConfig",
+			handler:            ActiveIfExpectedConfig,
+			hookName:           "start",
+			key:                "whatever_key",
+			value:              "not-expected",
+			expectedStatusName: goopstest.StatusBlocked,
 		},
 		{
-			name:     "ActiveInexistantConfig",
-			handler:  ActiveInexistantConfig,
-			hookName: "start",
-			key:      "a-different-key",
-			value:    "whatever",
-			want:     string(goops.StatusBlocked),
+			name:               "ActiveInexistantConfig",
+			handler:            ActiveInexistantConfig,
+			hookName:           "start",
+			key:                "a-different-key",
+			value:              "whatever",
+			expectedStatusName: goopstest.StatusBlocked,
 		},
 	}
 
@@ -106,8 +106,8 @@ func TestCharmConfig(t *testing.T) {
 				t.Errorf("expected no error, got %v", ctx.CharmErr)
 			}
 
-			if stateOut.UnitStatus != tc.want {
-				t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, tc.want)
+			if stateOut.UnitStatus.Name != tc.expectedStatusName {
+				t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, tc.expectedStatusName)
 			}
 		})
 	}
@@ -131,7 +131,7 @@ func TestActiveIfExpectedConfigInActionHook(t *testing.T) {
 		t.Fatalf("Run returned an error: %v", err)
 	}
 
-	if stateOut.UnitStatus != string(goops.StatusActive) {
-		t.Errorf("Expected UnitStatus %q, got %q", goops.StatusActive, stateOut.UnitStatus)
+	if stateOut.UnitStatus.Name != goopstest.StatusActive {
+		t.Errorf("Expected UnitStatus %q, got %q", goopstest.StatusActive, stateOut.UnitStatus)
 	}
 }

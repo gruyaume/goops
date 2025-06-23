@@ -43,22 +43,22 @@ func ActiveStatusOnInstall() error {
 
 func TestCharmHookName(t *testing.T) {
 	tests := []struct {
-		name     string
-		handler  func() error
-		hookName string
-		want     string
+		name               string
+		handler            func() error
+		hookName           string
+		expectedStatusName goopstest.StatusName
 	}{
 		{
-			name:     "MaintenanceStatusOnStart",
-			handler:  MaintenanceStatusOnStart,
-			hookName: "start",
-			want:     string(goops.StatusMaintenance),
+			name:               "MaintenanceStatusOnStart",
+			handler:            MaintenanceStatusOnStart,
+			hookName:           "start",
+			expectedStatusName: goopstest.StatusMaintenance,
 		},
 		{
-			name:     "ActiveStatusOnInstall",
-			handler:  ActiveStatusOnInstall,
-			hookName: "install",
-			want:     string(goops.StatusActive),
+			name:               "ActiveStatusOnInstall",
+			handler:            ActiveStatusOnInstall,
+			hookName:           "install",
+			expectedStatusName: goopstest.StatusActive,
 		},
 	}
 
@@ -75,8 +75,8 @@ func TestCharmHookName(t *testing.T) {
 				t.Fatalf("Run returned an error: %v", err)
 			}
 
-			if stateOut.UnitStatus != tc.want {
-				t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, tc.want)
+			if stateOut.UnitStatus.Name != tc.expectedStatusName {
+				t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, tc.expectedStatusName)
 			}
 		})
 	}

@@ -35,28 +35,28 @@ func GetSecretByLabel() error {
 
 func TestCharmGetSecretByLabel(t *testing.T) {
 	tests := []struct {
-		name     string
-		handler  func() error
-		hookName string
-		key      string
-		value    string
-		want     string
+		name               string
+		handler            func() error
+		hookName           string
+		key                string
+		value              string
+		expectedStatusName goopstest.StatusName
 	}{
 		{
-			name:     "GetSecretByLabel",
-			handler:  GetSecretByLabel,
-			hookName: "start",
-			key:      "secret-key",
-			value:    "expected-value",
-			want:     string(goops.StatusActive),
+			name:               "GetSecretByLabel",
+			handler:            GetSecretByLabel,
+			hookName:           "start",
+			key:                "secret-key",
+			value:              "expected-value",
+			expectedStatusName: goopstest.StatusActive,
 		},
 		{
-			name:     "GetSecretByLabelUnexpectedValue",
-			handler:  GetSecretByLabel,
-			hookName: "start",
-			key:      "secret-key",
-			value:    "unexpected-value",
-			want:     string(goops.StatusBlocked),
+			name:               "GetSecretByLabelUnexpectedValue",
+			handler:            GetSecretByLabel,
+			hookName:           "start",
+			key:                "secret-key",
+			value:              "unexpected-value",
+			expectedStatusName: goopstest.StatusBlocked,
 		},
 	}
 
@@ -85,8 +85,8 @@ func TestCharmGetSecretByLabel(t *testing.T) {
 				t.Fatalf("Run returned an error: %v", err)
 			}
 
-			if stateOut.UnitStatus != tc.want {
-				t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, tc.want)
+			if stateOut.UnitStatus.Name != tc.expectedStatusName {
+				t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, tc.expectedStatusName)
 			}
 
 			for _, secret := range stateOut.Secrets {
@@ -112,8 +112,8 @@ func TestCharmGetUnexistingSecretByLabel(t *testing.T) {
 		t.Fatalf("Run returned an error: %v", err)
 	}
 
-	if stateOut.UnitStatus != string(goops.StatusMaintenance) {
-		t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, string(goops.StatusMaintenance))
+	if stateOut.UnitStatus.Name != goopstest.StatusMaintenance {
+		t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, goopstest.StatusMaintenance)
 	}
 
 	if len(stateOut.Secrets) != 0 {
@@ -146,28 +146,28 @@ func GetSecretByID() error {
 
 func TestCharmGetSecretByID(t *testing.T) {
 	tests := []struct {
-		name     string
-		handler  func() error
-		hookName string
-		key      string
-		value    string
-		want     string
+		name               string
+		handler            func() error
+		hookName           string
+		key                string
+		value              string
+		expectedStatusName goopstest.StatusName
 	}{
 		{
-			name:     "GetSecretByID",
-			handler:  GetSecretByID,
-			hookName: "start",
-			key:      "secret-key",
-			value:    "expected-value",
-			want:     string(goops.StatusActive),
+			name:               "GetSecretByID",
+			handler:            GetSecretByID,
+			hookName:           "start",
+			key:                "secret-key",
+			value:              "expected-value",
+			expectedStatusName: goopstest.StatusActive,
 		},
 		{
-			name:     "GetSecretByIDUnexpectedValue",
-			handler:  GetSecretByID,
-			hookName: "start",
-			key:      "secret-key",
-			value:    "unexpected-value",
-			want:     string(goops.StatusBlocked),
+			name:               "GetSecretByIDUnexpectedValue",
+			handler:            GetSecretByID,
+			hookName:           "start",
+			key:                "secret-key",
+			value:              "unexpected-value",
+			expectedStatusName: goopstest.StatusBlocked,
 		},
 	}
 
@@ -200,8 +200,8 @@ func TestCharmGetSecretByID(t *testing.T) {
 				t.Fatalf("Run returned an error: %v", ctx.CharmErr)
 			}
 
-			if stateOut.UnitStatus != tc.want {
-				t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, tc.want)
+			if stateOut.UnitStatus.Name != tc.expectedStatusName {
+				t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, tc.expectedStatusName)
 			}
 
 			for _, secret := range stateOut.Secrets {
@@ -518,8 +518,8 @@ func TestCharmGetSecretInfoByID(t *testing.T) {
 		t.Fatalf("Run returned an error: %v", ctx.CharmErr)
 	}
 
-	if stateOut.UnitStatus != string(goops.StatusActive) {
-		t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, string(goops.StatusActive))
+	if stateOut.UnitStatus.Name != goopstest.StatusActive {
+		t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, goopstest.StatusActive)
 	}
 }
 
@@ -583,8 +583,8 @@ func TestCharmGetUnitSecretInfoByNonLeader(t *testing.T) {
 		t.Fatalf("Run returned an error: %v", ctx.CharmErr)
 	}
 
-	if stateOut.UnitStatus != string(goops.StatusActive) {
-		t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, string(goops.StatusActive))
+	if stateOut.UnitStatus.Name != goopstest.StatusActive {
+		t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, goopstest.StatusActive)
 	}
 }
 
@@ -628,8 +628,8 @@ func TestCharmGetSecretInfoByLabel(t *testing.T) {
 		t.Fatalf("Run returned an error: %v", err)
 	}
 
-	if stateOut.UnitStatus != string(goops.StatusActive) {
-		t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, string(goops.StatusActive))
+	if stateOut.UnitStatus.Name != goopstest.StatusActive {
+		t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, goopstest.StatusActive)
 	}
 }
 
@@ -693,8 +693,8 @@ func TestCharmGetUnitSecretInfoByLabelNonLeader(t *testing.T) {
 		t.Fatalf("Run returned an error: %v", ctx.CharmErr)
 	}
 
-	if stateOut.UnitStatus != string(goops.StatusActive) {
-		t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, string(goops.StatusActive))
+	if stateOut.UnitStatus.Name != goopstest.StatusActive {
+		t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, goopstest.StatusActive)
 	}
 }
 
@@ -747,8 +747,8 @@ func TestCharmGetSecretIDs(t *testing.T) {
 		t.Fatalf("Run returned an error: %v", ctx.CharmErr)
 	}
 
-	if stateOut.UnitStatus != string(goops.StatusActive) {
-		t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, string(goops.StatusActive))
+	if stateOut.UnitStatus.Name != goopstest.StatusActive {
+		t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, goopstest.StatusActive)
 	}
 
 	if len(stateOut.Secrets) != 2 {
@@ -836,8 +836,8 @@ func TestCharmGrantSecretToRelation(t *testing.T) {
 		t.Fatalf("Run returned an error: %v", ctx.CharmErr)
 	}
 
-	if stateOut.UnitStatus != string(goops.StatusActive) {
-		t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, string(goops.StatusActive))
+	if stateOut.UnitStatus.Name != goopstest.StatusActive {
+		t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, goopstest.StatusActive)
 	}
 }
 
@@ -883,8 +883,8 @@ func TestCharmGrantSecretToUnit(t *testing.T) {
 		t.Fatalf("Run returned an error: %v", ctx.CharmErr)
 	}
 
-	if stateOut.UnitStatus != string(goops.StatusActive) {
-		t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, string(goops.StatusActive))
+	if stateOut.UnitStatus.Name != goopstest.StatusActive {
+		t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, goopstest.StatusActive)
 	}
 }
 
@@ -966,8 +966,8 @@ func TestCharmSetSecret(t *testing.T) {
 		t.Fatalf("Run returned an error: %v", ctx.CharmErr)
 	}
 
-	if stateOut.UnitStatus != string(goops.StatusActive) {
-		t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, string(goops.StatusActive))
+	if stateOut.UnitStatus.Name != goopstest.StatusActive {
+		t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, goopstest.StatusActive)
 	}
 
 	if len(stateOut.Secrets) != 1 {
@@ -1080,8 +1080,8 @@ func TestCharmRevokeSecret(t *testing.T) {
 		t.Fatalf("Run returned an error: %v", ctx.CharmErr)
 	}
 
-	if stateOut.UnitStatus != string(goops.StatusActive) {
-		t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, string(goops.StatusActive))
+	if stateOut.UnitStatus.Name != goopstest.StatusActive {
+		t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, goopstest.StatusActive)
 	}
 
 	if len(stateOut.Secrets) != 1 {

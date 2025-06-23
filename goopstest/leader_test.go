@@ -51,25 +51,25 @@ func MaintenanceStatusIfNotLeader() error {
 
 func TestCharmLeader(t *testing.T) {
 	tests := []struct {
-		name     string
-		handler  func() error
-		hookName string
-		leader   bool
-		want     string
+		name               string
+		handler            func() error
+		hookName           string
+		leader             bool
+		expectedStatusName goopstest.StatusName
 	}{
 		{
-			name:     "MaintenanceStatusIfLeader",
-			handler:  MaintenanceStatusIfLeader,
-			hookName: "start",
-			leader:   true,
-			want:     string(goops.StatusMaintenance),
+			name:               "MaintenanceStatusIfLeader",
+			handler:            MaintenanceStatusIfLeader,
+			hookName:           "start",
+			leader:             true,
+			expectedStatusName: goopstest.StatusMaintenance,
 		},
 		{
-			name:     "MaintenanceStatusIfNotLeader",
-			handler:  MaintenanceStatusIfNotLeader,
-			hookName: "start",
-			leader:   false,
-			want:     string(goops.StatusMaintenance),
+			name:               "MaintenanceStatusIfNotLeader",
+			handler:            MaintenanceStatusIfNotLeader,
+			hookName:           "start",
+			leader:             false,
+			expectedStatusName: goopstest.StatusMaintenance,
 		},
 	}
 
@@ -88,8 +88,8 @@ func TestCharmLeader(t *testing.T) {
 				t.Fatalf("Run returned an error: %v", err)
 			}
 
-			if stateOut.UnitStatus != tc.want {
-				t.Errorf("got Status=%v, want %v", stateOut.UnitStatus, tc.want)
+			if stateOut.UnitStatus.Name != tc.expectedStatusName {
+				t.Errorf("got Status=%v, want %v", stateOut.UnitStatus, tc.expectedStatusName)
 			}
 
 			if stateOut.Leader != tc.leader {

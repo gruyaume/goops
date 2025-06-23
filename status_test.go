@@ -83,8 +83,8 @@ func TestGetUnitStatus_Success(t *testing.T) {
 		t.Fatalf("GetUnitStatus returned an error: %v", err)
 	}
 
-	if status.Code != goops.StatusActive {
-		t.Errorf("Expected status %q, got %q", goops.StatusActive, status.Code)
+	if status.Name != goops.StatusActive {
+		t.Errorf("Expected status %q, got %q", goops.StatusActive, status.Name)
 	}
 
 	if status.Message != "Unit is active" {
@@ -121,8 +121,8 @@ func TestGetAppStatus_Success(t *testing.T) {
 		t.Fatalf("GetAppStatus returned an error: %v", err)
 	}
 
-	if status.Code != goops.StatusActive {
-		t.Errorf("Expected status %q, got %q", goops.StatusActive, status.Code)
+	if status.Name != goops.StatusActive {
+		t.Errorf("Expected status %q, got %q", goops.StatusActive, status.Name)
 	}
 
 	if status.Message != "Application is active" {

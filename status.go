@@ -5,13 +5,13 @@ import (
 	"fmt"
 )
 
-type StatusCode string
+type StatusName string
 
 const (
-	StatusActive      StatusCode = "active"
-	StatusBlocked     StatusCode = "blocked"
-	StatusWaiting     StatusCode = "waiting"
-	StatusMaintenance StatusCode = "maintenance"
+	StatusActive      StatusName = "active"
+	StatusBlocked     StatusName = "blocked"
+	StatusWaiting     StatusName = "waiting"
+	StatusMaintenance StatusName = "maintenance"
 )
 
 const (
@@ -20,11 +20,11 @@ const (
 )
 
 type Status struct {
-	Code    StatusCode `json:"status"`
+	Name    StatusName `json:"status"`
 	Message string     `json:"message"`
 }
 
-func SetUnitStatus(status StatusCode, message ...string) error {
+func SetUnitStatus(status StatusName, message ...string) error {
 	commandRunner := GetCommandRunner()
 
 	var args []string
@@ -43,7 +43,7 @@ func SetUnitStatus(status StatusCode, message ...string) error {
 	return nil
 }
 
-func SetAppStatus(status StatusCode, message ...string) error {
+func SetAppStatus(status StatusName, message ...string) error {
 	commandRunner := GetCommandRunner()
 
 	var args []string
