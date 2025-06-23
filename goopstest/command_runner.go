@@ -5,36 +5,10 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gruyaume/goops"
-	"gopkg.in/yaml.v3"
 )
-
-type Context struct {
-	Charm         func() error
-	Metadata      goops.Metadata
-	AppName       string
-	UnitID        int
-	JujuVersion   string
-	ActionResults map[string]string
-	ActionError   error
-	JujuLog       []JujuLogLine
-	CharmErr      error
-}
-
-type LogLevel string
-
-const (
-	LogLevelInfo    LogLevel = "INFO"
-	LogLevelWarning LogLevel = "WARNING"
-	LogLevelError   LogLevel = "ERROR"
-	LogLevelDebug   LogLevel = "DEBUG"
-)
-
-type JujuLogLine struct {
-	Level   LogLevel
-	Message string
-}
 
 type fakeCommandRunner struct {
 	Command            string
@@ -82,6 +56,11 @@ func (f *fakeCommandRunner) Run(name string, args ...string) ([]byte, error) {
 		"secret-add":              f.handleSecretAdd,
 		"secret-get":              f.handleSecretGet,
 		"secret-remove":           f.handleSecretRemove,
+		"secret-info-get":         f.handleSecretInfoGet,
+		"secret-ids":              f.handleSecretIDs,
+		"secret-grant":            f.handleSecretGrant,
+		"secret-set":              f.handleSecretSet,
+		"secret-revoke":           f.handleSecretRevoke,
 		"state-get":               f.handleStateGet,
 		"state-set":               f.handleStateSet,
 		"state-delete":            f.handleStateDelete,
@@ -250,6 +229,12 @@ func (f *fakeCommandRunner) handleConfigGet(_ []string) {
 }
 
 func (f *fakeCommandRunner) handleRelationIDs(args []string) {
+	if args[0] == "" {
+		f.Err = fmt.Errorf("command relation-ids failed: ERROR no endpoint name specified")
+
+		return
+	}
+
 	if len(f.Relations) == 0 {
 		f.Output = []byte(`[]`)
 		return
@@ -441,21 +426,41 @@ func filterOutLabelArgs(args []string) []string {
 }
 
 func (f *fakeCommandRunner) handleSecretAdd(args []string) {
-	label := extractLabelFromArgs(args)
+	label, owner, description, rotation, expiry := extractSecretArgs(args)
 	filtered := filterOutLabelArgs(args)
+
+	if !f.Leader && owner != "unit" {
+		f.Err = fmt.Errorf("command secret-add failed: ERROR this unit is not the leader")
+		return
+	}
+
+	var expiryTime time.Time
+
+	var err error
+
+	if expiry != "" {
+		expiryTime, err = time.Parse(time.RFC3339, expiry)
+		if err != nil {
+			f.Err = fmt.Errorf("invalid expiry format: %w", err)
+			return
+		}
+	}
 
 	content := parseKeyValueArgs(filtered)
 
 	f.Secrets = append(f.Secrets, &Secret{
-		Label:   label,
-		Content: content,
+		Label:       label,
+		Content:     content,
+		Owner:       owner,
+		Description: description,
+		Rotate:      rotation,
+		Expire:      expiryTime,
 	})
 }
 
 func (f *fakeCommandRunner) handleSecretGet(args []string) {
 	var label, id string
 
-	// Extract --label if present
 	for _, arg := range args {
 		if strings.HasPrefix(arg, "--label=") {
 			label = strings.TrimPrefix(arg, "--label=")
@@ -517,15 +522,23 @@ func findSecretByID(secrets []*Secret, id string) *Secret {
 	return nil
 }
 
-// extractLabelFromArgs returns the label from args if present.
-func extractLabelFromArgs(args []string) string {
+func extractSecretArgs(args []string) (label, owner, desc, rotate, expire string) {
 	for _, arg := range args {
-		if strings.HasPrefix(arg, "--label=") {
-			return strings.TrimPrefix(arg, "--label=")
+		switch {
+		case strings.HasPrefix(arg, "--label="):
+			label = strings.TrimPrefix(arg, "--label=")
+		case strings.HasPrefix(arg, "--owner="):
+			owner = strings.TrimPrefix(arg, "--owner=")
+		case strings.HasPrefix(arg, "--description="):
+			desc = strings.TrimPrefix(arg, "--description=")
+		case strings.HasPrefix(arg, "--rotate="):
+			rotate = strings.TrimPrefix(arg, "--rotate=")
+		case strings.HasPrefix(arg, "--expire="):
+			expire = strings.TrimPrefix(arg, "--expire=")
 		}
 	}
 
-	return ""
+	return
 }
 
 // findSecretByLabel returns the pointer to the secret with the given label.
@@ -540,12 +553,227 @@ func findSecretByLabel(secrets []*Secret, label string) *Secret {
 }
 
 func (f *fakeCommandRunner) handleSecretRemove(args []string) {
+	if !f.Leader {
+		return
+	}
+
 	for i, secret := range f.Secrets {
 		if strings.Contains(args[0], secret.ID) || strings.Contains(args[0], "--label="+secret.Label) {
 			f.Secrets = append(f.Secrets[:i], f.Secrets[i+1:]...)
 			break
 		}
 	}
+}
+
+type SecretInfo struct {
+	Revision    int    `json:"revision"`
+	Label       string `json:"label"`
+	Owner       string `json:"owner"`
+	Description string `json:"description"`
+	Rotation    string `json:"rotation"`
+	Expiry      string `json:"expiry"`
+}
+
+func (f *fakeCommandRunner) handleSecretInfoGet(args []string) {
+	var id, label string
+
+	for _, arg := range args {
+		if strings.HasPrefix(arg, "--label=") {
+			label = strings.TrimPrefix(arg, "--label=")
+		} else if !strings.HasPrefix(arg, "--") {
+			id = arg
+		}
+	}
+
+	var secret *Secret
+
+	switch {
+	case label != "":
+		secret = findSecretByLabel(f.Secrets, label)
+
+		if secret == nil {
+			f.Err = fmt.Errorf(`ERROR secret %q not found`, label)
+
+			return
+		}
+
+		if !f.Leader && secret.Owner != "unit" {
+			f.Err = fmt.Errorf(`ERROR secret %q not found`, label)
+			return
+		}
+	case id != "":
+		secret = findSecretByID(f.Secrets, id)
+		if secret == nil {
+			f.Err = fmt.Errorf(`ERROR secret %q not found`, id)
+			return
+		}
+
+		if !f.Leader && secret.Owner != "unit" {
+			f.Err = fmt.Errorf(`ERROR secret %q not found`, id)
+			return
+		}
+	default:
+		f.Err = fmt.Errorf("no --label or ID specified")
+		return
+	}
+
+	secretInfo := map[string]SecretInfo{
+		secret.ID: {
+			Revision:    1,
+			Label:       secret.Label,
+			Owner:       secret.Owner,
+			Description: secret.Description,
+			Rotation:    secret.Rotate,
+			Expiry:      secret.Expire.Format(time.RFC3339),
+		},
+	}
+
+	output, err := json.Marshal(secretInfo)
+	if err != nil {
+		f.Err = fmt.Errorf("failed to marshal secret info: %w", err)
+		return
+	}
+
+	f.Output = output
+}
+
+func (f *fakeCommandRunner) handleSecretIDs(_ []string) {
+	if len(f.Secrets) == 0 {
+		f.Output = []byte(`null`)
+		return
+	}
+
+	ids := []string{}
+
+	for _, secret := range f.Secrets {
+		if !f.Leader && secret.Owner != "unit" {
+			continue
+		}
+
+		ids = append(ids, secret.ID)
+	}
+
+	output, err := json.Marshal(ids)
+	if err != nil {
+		f.Err = fmt.Errorf("failed to marshal secret IDs: %w", err)
+		return
+	}
+
+	f.Output = output
+}
+
+func (f *fakeCommandRunner) handleSecretGrant(args []string) {
+	if len(args) == 0 {
+		f.Err = fmt.Errorf("secret-grant command requires at least one argument")
+		return
+	}
+
+	secretID := args[0]
+
+	if !f.Leader {
+		f.Err = fmt.Errorf(`ERROR secret "%s" not found`, secretID)
+		return
+	}
+}
+
+func (f *fakeCommandRunner) handleSecretSet(args []string) {
+	if len(args) == 0 {
+		f.Err = fmt.Errorf("secret-set command requires at least one argument")
+		return
+	}
+
+	if !f.Leader {
+		f.Output = []byte(`null`)
+		return
+	}
+
+	id := args[0]
+	args = args[1:]
+
+	meta, remaining := parseSecretMetadata(args)
+
+	content := make(map[string]string)
+
+	for _, arg := range remaining {
+		parts := strings.SplitN(arg, "=", 2)
+		if len(parts) != 2 || parts[0] == "" {
+			f.Err = fmt.Errorf("invalid secret-set argument: %s", arg)
+			return
+		}
+
+		content[parts[0]] = parts[1]
+	}
+
+	for _, secret := range f.Secrets {
+		if secret.ID != id {
+			continue
+		}
+
+		secret.Content = content
+		if meta["label"] != "" {
+			secret.Label = meta["label"]
+		}
+
+		if meta["owner"] != "" {
+			secret.Owner = meta["owner"]
+		}
+
+		if meta["description"] != "" {
+			secret.Description = meta["description"]
+		}
+
+		if meta["rotation"] != "" {
+			secret.Rotate = meta["rotation"]
+		}
+
+		if meta["expiry"] != "" {
+			expiryTime, err := time.Parse(time.RFC3339, meta["expiry"])
+			if err != nil {
+				f.Err = fmt.Errorf("invalid expiry format: %w", err)
+				return
+			}
+
+			secret.Expire = expiryTime
+		}
+
+		return
+	}
+
+	f.Err = fmt.Errorf("secret with ID %q not found", id)
+}
+
+func (f *fakeCommandRunner) handleSecretRevoke(args []string) {}
+
+func parseSecretMetadata(args []string) (map[string]string, []string) {
+	meta := map[string]string{
+		"label":       "",
+		"owner":       "",
+		"description": "",
+		"rotation":    "",
+		"expiry":      "",
+	}
+
+	remaining := make([]string, 0, len(args))
+
+	for _, arg := range args {
+		matched := false
+
+		for key := range meta {
+			prefix := "--" + key + "="
+			if strings.HasPrefix(arg, prefix) {
+				meta[key] = strings.TrimPrefix(arg, prefix)
+				matched = true
+
+				break
+			}
+		}
+
+		if !matched {
+			remaining = append(remaining, arg)
+		}
+	}
+
+	return meta, remaining
 }
 
 func (f *fakeCommandRunner) handleStateGet(args []string) {
@@ -689,233 +917,4 @@ func (f *fakeCommandRunner) handleActionGet(_ []string) {
 
 func (f *fakeCommandRunner) handleApplicationVersionSet(args []string) {
 	f.ApplicationVersion = args[0]
-}
-
-type fakeEnvGetter struct {
-	HookName    string
-	ActionName  string
-	Model       *Model
-	AppName     string
-	UnitID      int
-	JujuVersion string
-	Metadata    goops.Metadata
-}
-
-func (f *fakeEnvGetter) Get(key string) string {
-	switch key {
-	case "JUJU_HOOK_NAME":
-		return f.HookName
-	case "JUJU_ACTION_NAME":
-		return f.ActionName
-	case "JUJU_MODEL_NAME":
-		return f.Model.Name
-	case "JUJU_MODEL_UUID":
-		return f.Model.UUID
-	case "JUJU_UNIT_NAME":
-		return fmt.Sprintf("%s/%d", f.AppName, f.UnitID)
-	case "JUJU_VERSION":
-		return f.JujuVersion
-	}
-
-	return ""
-}
-
-func (f *fakeEnvGetter) ReadFile(name string) ([]byte, error) {
-	if strings.HasSuffix(name, "metadata.yaml") {
-		data, err := yaml.Marshal(f.Metadata)
-		if err != nil {
-			return nil, fmt.Errorf("failed to marshal metadata: %w", err)
-		}
-
-		return data, nil
-	}
-
-	return nil, fmt.Errorf("file %s not found", name)
-}
-
-// For each relation, we set the ID to: <name>:<number>
-func setRelationIDs(relations []*Relation) {
-	for i, relation := range relations {
-		if relation.ID == "" {
-			relation.ID = fmt.Sprintf("%s:%d", relation.Endpoint, i)
-		}
-	}
-}
-
-// For each relation, we set the remoteUnitsData so that it contains at leader 1 unit
-func setUnitIDs(relations []*Relation) {
-	for _, relation := range relations {
-		if relation.RemoteUnitsData == nil {
-			relation.RemoteUnitsData = make(map[UnitID]DataBag)
-		}
-
-		if len(relation.RemoteUnitsData) == 0 {
-			relation.RemoteUnitsData[UnitID(relation.RemoteAppName+"/0")] = DataBag{}
-		}
-	}
-}
-
-func (c *Context) Run(hookName string, state *State) (*State, error) {
-	if c.Charm == nil {
-		return nil, fmt.Errorf("charm function is not set in the context")
-	}
-
-	setRelationIDs(state.Relations)
-	setUnitIDs(state.Relations)
-
-	if state.Model == nil {
-		state.Model = &Model{
-			Name: "test-model",
-			UUID: "12345678-1234-5678-1234-567812345678",
-		}
-	}
-
-	fakeCommand := &fakeCommandRunner{
-		Output:      []byte(``),
-		Err:         nil,
-		Leader:      state.Leader,
-		Config:      state.Config,
-		Secrets:     state.Secrets,
-		Relations:   state.Relations,
-		Ports:       state.Ports,
-		StoredState: state.StoredState,
-		AppName:     c.AppName,
-		UnitID:      c.UnitID,
-	}
-
-	fakeEnv := &fakeEnvGetter{
-		HookName:    hookName,
-		Model:       state.Model,
-		AppName:     c.AppName,
-		UnitID:      c.UnitID,
-		JujuVersion: c.JujuVersion,
-		Metadata:    c.Metadata,
-	}
-
-	fakePebble := &fakePebbleGetter{
-		Containers: state.Containers,
-	}
-
-	goops.SetPebbleGetter(fakePebble)
-	goops.SetCommandRunner(fakeCommand)
-	goops.SetEnvGetter(fakeEnv)
-
-	err := c.Charm()
-	if err != nil {
-		c.CharmErr = err
-	}
-
-	state.UnitStatus = fakeCommand.UnitStatus
-	state.AppStatus = fakeCommand.AppStatus
-	state.Secrets = fakeCommand.Secrets
-	state.ApplicationVersion = fakeCommand.ApplicationVersion
-	state.Ports = fakeCommand.Ports
-	state.StoredState = fakeCommand.StoredState
-	state.Containers = fakePebble.Containers
-
-	c.JujuLog = fakeCommand.JujuLog
-
-	return state, nil
-}
-
-func (c *Context) RunAction(actionName string, state *State, params map[string]any) (*State, error) {
-	fakeCommandRunner := &fakeCommandRunner{
-		Output:           []byte(``),
-		Err:              nil,
-		Leader:           state.Leader,
-		Config:           state.Config,
-		Secrets:          state.Secrets,
-		ActionParameters: params,
-		StoredState:      state.StoredState,
-	}
-
-	if state.Model == nil {
-		state.Model = &Model{
-			Name: "test-model",
-			UUID: "12345678-1234-5678-1234-567812345678",
-		}
-	}
-
-	fakeEnvGetter := &fakeEnvGetter{
-		ActionName:  actionName,
-		Model:       state.Model,
-		AppName:     c.AppName,
-		UnitID:      c.UnitID,
-		JujuVersion: c.JujuVersion,
-	}
-
-	goops.SetCommandRunner(fakeCommandRunner)
-	goops.SetEnvGetter(fakeEnvGetter)
-
-	err := c.Charm()
-	if err != nil {
-		c.CharmErr = err
-	}
-
-	state.UnitStatus = fakeCommandRunner.UnitStatus
-	state.AppStatus = fakeCommandRunner.AppStatus
-	state.Secrets = fakeCommandRunner.Secrets
-	c.ActionResults = fakeCommandRunner.ActionResults
-	c.ActionError = fakeCommandRunner.ActionError
-
-	return state, nil
-}
-
-type Secret struct {
-	ID      string
-	Label   string
-	Content map[string]string
-}
-
-type UnitID string
-
-type DataBag map[string]string
-
-type Relation struct {
-	Endpoint        string
-	Interface       string
-	ID              string
-	RemoteAppName   string
-	LocalAppData    DataBag
-	LocalUnitData   DataBag
-	RemoteAppData   DataBag
-	RemoteUnitsData map[UnitID]DataBag
-}
-
-type Port struct {
-	Port     int
-	Protocol string
-}
-
-type Model struct {
-	Name string
-	UUID string
-}
-
-type StoredState map[string]string
-
-type Mount struct {
-	Location string
-	Source   string
-}
-
-type Exec struct {
-	Command    []string
-	ReturnCode int
-	Stdout     string
-	Stderr     string
-}
-
-type State struct {
-	Leader             bool
-	UnitStatus         string
-	AppStatus          string
-	Config             map[string]any
-	Secrets            []*Secret
-	ApplicationVersion string
-	Relations          []*Relation
-	Ports              []*Port
-	Model              *Model
-	StoredState        StoredState
-	Containers         []*Container
 }

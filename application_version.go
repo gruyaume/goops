@@ -6,6 +6,8 @@ const (
 	applicationVersionSetCommand = "application-version-set"
 )
 
+// SetAppVersion sets the application version.
+// The version set will be displayed in “juju status” output for the application.
 func SetAppVersion(version string) error {
 	commandRunner := GetCommandRunner()
 

@@ -77,6 +77,7 @@ func GetAppRelationData(id string, unitID string) (map[string]string, error) {
 	return relationContent, nil
 }
 
+// ListRelationUnits lists all units in a relation by its ID.
 func ListRelationUnits(id string) ([]string, error) {
 	commandRunner := GetCommandRunner()
 

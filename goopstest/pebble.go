@@ -385,21 +385,3 @@ type LogTarget struct {
 	Services []string          `yaml:"services"`
 	Labels   map[string]string `yaml:"labels"`
 }
-
-type Layer struct {
-	Summary     string                `yaml:"summary"`
-	Description string                `yaml:"description"`
-	Services    map[string]Service    `yaml:"services"`
-	LogTargets  map[string]*LogTarget `yaml:"log-targets"`
-}
-
-type Container struct {
-	Name            string
-	CanConnect      bool
-	Layers          map[string]*Layer
-	ServiceStatuses map[string]client.ServiceStatus
-	Mounts          map[string]Mount
-	Execs           []Exec
-	Notices         []client.Notice
-	CheckInfos      []client.CheckInfo
-}

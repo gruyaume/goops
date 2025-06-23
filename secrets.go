@@ -39,19 +39,27 @@ type SetSecretOptions struct {
 	Description string
 	Expire      time.Time
 	Label       string
-	Owner       string
+	Owner       SecretOwner
 	Rotate      SecretRotate
 }
+
+type SecretOwner string
+
+const (
+	OwnerApplication SecretOwner = "application"
+	OwnerUnit        SecretOwner = "unit"
+)
 
 type AddSecretOptions struct {
 	Content     map[string]string
 	Description string
 	Expire      time.Time
 	Label       string
-	Owner       string
+	Owner       SecretOwner
 	Rotate      SecretRotate
 }
 
+// AddSecret adds a new secret with the provided options.
 func AddSecret(opts *AddSecretOptions) (string, error) {
 	commandRunner := GetCommandRunner()
 
@@ -73,7 +81,7 @@ func AddSecret(opts *AddSecretOptions) (string, error) {
 	}
 
 	if opts.Owner != "" {
-		args = append(args, "--owner="+opts.Owner)
+		args = append(args, "--owner="+string(opts.Owner))
 	}
 
 	if opts.Rotate != "" {
@@ -92,6 +100,7 @@ func AddSecret(opts *AddSecretOptions) (string, error) {
 	return string(output), nil
 }
 
+// GetSecretByID retrieves the secret content by its ID.
 func GetSecretByID(id string, peek bool, refresh bool) (map[string]string, error) {
 	commandRunner := GetCommandRunner()
 
@@ -123,6 +132,7 @@ func GetSecretByID(id string, peek bool, refresh bool) (map[string]string, error
 	return secretContent, nil
 }
 
+// GetSecretByLabel retrieves the secret content by its label.
 func GetSecretByLabel(label string, peek bool, refresh bool) (map[string]string, error) {
 	commandRunner := GetCommandRunner()
 
@@ -155,6 +165,8 @@ func GetSecretByLabel(label string, peek bool, refresh bool) (map[string]string,
 	return secretContent, nil
 }
 
+// GrantSecretToRelation grants a secret to a specific relation.
+// All units of the related application are granted access
 func GrantSecretToRelation(id string, relation string) error {
 	commandRunner := GetCommandRunner()
 
@@ -168,6 +180,7 @@ func GrantSecretToRelation(id string, relation string) error {
 	return nil
 }
 
+// GrantSecretToUnit grants a secret to a specific unit in a relation.
 func GrantSecretToUnit(id string, relation string, unit string) error {
 	commandRunner := GetCommandRunner()
 
@@ -181,6 +194,7 @@ func GrantSecretToUnit(id string, relation string, unit string) error {
 	return nil
 }
 
+// GetSecretIDs retrieves the IDs for secrets owned by the application.
 func GetSecretIDs() ([]string, error) {
 	commandRunner := GetCommandRunner()
 
@@ -199,6 +213,7 @@ func GetSecretIDs() ([]string, error) {
 	return secretIDs, nil
 }
 
+// GetSecretInfoByID retrieves a secret metadata info by its ID.
 func GetSecretInfoByID(id string) (map[string]SecretInfo, error) {
 	commandRunner := GetCommandRunner()
 
@@ -227,6 +242,7 @@ func GetSecretInfoByID(id string) (map[string]SecretInfo, error) {
 	return secretInfo, nil
 }
 
+// GetSecretInfoByLabel retrieves a secret metadata info by its label.
 func GetSecretInfoByLabel(label string) (map[string]SecretInfo, error) {
 	commandRunner := GetCommandRunner()
 
@@ -255,6 +271,7 @@ func GetSecretInfoByLabel(label string) (map[string]SecretInfo, error) {
 	return secretInfo, nil
 }
 
+// RemoveSecret removes a secret by its ID.
 func RemoveSecret(id string) error {
 	commandRunner := GetCommandRunner()
 
@@ -268,13 +285,7 @@ func RemoveSecret(id string) error {
 	return nil
 }
 
-type RevokeSecretOptions struct {
-	ID       string
-	Unit     string
-	App      string
-	Relation string
-}
-
+// RevokeSecret revokes a secret by its ID.
 func RevokeSecret(id string) error {
 	commandRunner := GetCommandRunner()
 
@@ -288,6 +299,7 @@ func RevokeSecret(id string) error {
 	return nil
 }
 
+// RevokeSecretFromRelation revokes a secret from a specific relation.
 func RevokeSecretFromRelation(id string, relation string) error {
 	commandRunner := GetCommandRunner()
 
@@ -303,6 +315,7 @@ func RevokeSecretFromRelation(id string, relation string) error {
 	return nil
 }
 
+// RevokeSecretFromApp revokes a secret from a specific application.
 func RevokeSecretFromApp(id string, app string) error {
 	commandRunner := GetCommandRunner()
 
@@ -318,6 +331,7 @@ func RevokeSecretFromApp(id string, app string) error {
 	return nil
 }
 
+// RevokeSecretFromApp revokes a secret from a specific application.
 func RevokeSecretFromUnit(id string, unit string) error {
 	commandRunner := GetCommandRunner()
 
@@ -333,6 +347,7 @@ func RevokeSecretFromUnit(id string, unit string) error {
 	return nil
 }
 
+// SetSecret updates an existing secret with new content and options.
 func SetSecret(opts *SetSecretOptions) error {
 	commandRunner := GetCommandRunner()
 
@@ -340,11 +355,8 @@ func SetSecret(opts *SetSecretOptions) error {
 		return fmt.Errorf("secret ID cannot be empty")
 	}
 
-	if len(opts.Content) == 0 {
-		return fmt.Errorf("content cannot be empty")
-	}
+	args := []string{opts.ID}
 
-	var args []string
 	for key, value := range opts.Content {
 		args = append(args, key+"="+value)
 	}
@@ -358,7 +370,7 @@ func SetSecret(opts *SetSecretOptions) error {
 	}
 
 	if opts.Owner != "" {
-		args = append(args, "--owner="+opts.Owner)
+		args = append(args, "--owner="+string(opts.Owner))
 	}
 
 	if opts.Rotate != "" {

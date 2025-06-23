@@ -344,27 +344,27 @@ func TestSecretSet_Success(t *testing.T) {
 		t.Fatalf("couldn't set secret: %v", err)
 	}
 
-	if len(fakeRunner.Args) != 5 {
-		t.Fatalf("Expected 5 arguments, got %d", len(fakeRunner.Args))
+	if len(fakeRunner.Args) != 6 {
+		t.Fatalf("Expected 6 arguments, got %d", len(fakeRunner.Args))
 	}
 
-	if fakeRunner.Args[0] != "username=user1" && fakeRunner.Args[1] != "username=user1" {
+	if fakeRunner.Args[1] != "username=user1" && fakeRunner.Args[2] != "username=user1" {
 		t.Errorf("Expected ID arg %q", "username=user1")
 	}
 
-	if fakeRunner.Args[0] != "password=pass1" && fakeRunner.Args[1] != "password=pass1" {
+	if fakeRunner.Args[1] != "password=pass1" && fakeRunner.Args[2] != "password=pass1" {
 		t.Errorf("Expected ID arg %q", "password=pass1")
 	}
 
-	if fakeRunner.Args[2] != "--label=my-label" {
-		t.Errorf("Expected ID arg %q, got %q", "--label=my-label", fakeRunner.Args[2])
+	if fakeRunner.Args[3] != "--label=my-label" {
+		t.Errorf("Expected ID arg %q, got %q", "--label=my-label", fakeRunner.Args[3])
 	}
 
-	if fakeRunner.Args[3] != "--rotate=never" {
-		t.Errorf("Expected ID arg %q, got %q", "--rotate=never", fakeRunner.Args[3])
+	if fakeRunner.Args[4] != "--rotate=never" {
+		t.Errorf("Expected ID arg %q, got %q", "--rotate=never", fakeRunner.Args[4])
 	}
 
-	if fakeRunner.Args[4] != "--expire="+expiry.Format(time.RFC3339) {
-		t.Errorf("Expected ID arg %q, got %q", "--expire="+expiry.Format(time.RFC3339), fakeRunner.Args[4])
+	if fakeRunner.Args[5] != "--expire="+expiry.Format(time.RFC3339) {
+		t.Errorf("Expected ID arg %q, got %q", "--expire="+expiry.Format(time.RFC3339), fakeRunner.Args[5])
 	}
 }
