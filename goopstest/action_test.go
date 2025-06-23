@@ -28,22 +28,22 @@ func MaintenanceStatusOnAction() error {
 
 func TestCharmActionName(t *testing.T) {
 	tests := []struct {
-		name       string
-		handler    func() error
-		actionName string
-		want       string
+		name               string
+		handler            func() error
+		actionName         string
+		expectedStatusName goopstest.StatusName
 	}{
 		{
-			name:       "MaintenanceStatusOnAction",
-			handler:    MaintenanceStatusOnAction,
-			actionName: "run-action",
-			want:       string(goops.StatusMaintenance),
+			name:               "MaintenanceStatusOnAction",
+			handler:            MaintenanceStatusOnAction,
+			actionName:         "run-action",
+			expectedStatusName: goopstest.StatusMaintenance,
 		},
 		{
-			name:       "ActiveStatusOnOtherActions",
-			handler:    MaintenanceStatusOnAction,
-			actionName: "something-else",
-			want:       string(goops.StatusActive),
+			name:               "ActiveStatusOnOtherActions",
+			handler:            MaintenanceStatusOnAction,
+			actionName:         "something-else",
+			expectedStatusName: goopstest.StatusActive,
 		},
 	}
 
@@ -60,8 +60,8 @@ func TestCharmActionName(t *testing.T) {
 				t.Fatalf("Run returned an error: %v", err)
 			}
 
-			if stateOut.UnitStatus != tc.want {
-				t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, tc.want)
+			if stateOut.UnitStatus.Name != tc.expectedStatusName {
+				t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, tc.expectedStatusName)
 			}
 		})
 	}

@@ -73,10 +73,26 @@ type Container struct {
 	CheckInfos      []client.CheckInfo
 }
 
+type StatusName string
+
+const (
+	StatusUnknown     StatusName = "unknown"
+	StatusError       StatusName = "error"
+	StatusActive      StatusName = "active"
+	StatusBlocked     StatusName = "blocked"
+	StatusMaintenance StatusName = "maintenance"
+	StatusWaiting     StatusName = "waiting"
+)
+
+type Status struct {
+	Name    StatusName
+	Message string
+}
+
 type State struct {
 	Leader             bool
-	UnitStatus         string
-	AppStatus          string
+	UnitStatus         Status
+	AppStatus          Status
 	Config             map[string]any
 	Secrets            []*Secret
 	ApplicationVersion string

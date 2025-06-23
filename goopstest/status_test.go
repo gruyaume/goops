@@ -45,34 +45,35 @@ func UnitMaintenanceStatus() error {
 
 func TestCharmUnitStatus(t *testing.T) {
 	tests := []struct {
-		name     string
-		handler  func() error
-		hookName string
-		want     string
+		name                  string
+		handler               func() error
+		hookName              string
+		expectedStatusName    goopstest.StatusName
+		expectedStatusMessage string
 	}{
 		{
-			name:     "UnitActiveStatus",
-			handler:  UnitActiveStatus,
-			hookName: "start",
-			want:     string(goops.StatusActive),
+			name:               "UnitActiveStatus",
+			handler:            UnitActiveStatus,
+			hookName:           "start",
+			expectedStatusName: goopstest.StatusActive,
 		},
 		{
-			name:     "UnitBlockedStatus",
-			handler:  UnitBlockedStatus,
-			hookName: "start",
-			want:     string(goops.StatusBlocked),
+			name:               "UnitBlockedStatus",
+			handler:            UnitBlockedStatus,
+			hookName:           "start",
+			expectedStatusName: goopstest.StatusBlocked,
 		},
 		{
-			name:     "UnitWaitingStatus",
-			handler:  UnitWaitingStatus,
-			hookName: "start",
-			want:     string(goops.StatusWaiting),
+			name:               "UnitWaitingStatus",
+			handler:            UnitWaitingStatus,
+			hookName:           "start",
+			expectedStatusName: goopstest.StatusWaiting,
 		},
 		{
-			name:     "UnitMaintenanceStatus",
-			handler:  UnitMaintenanceStatus,
-			hookName: "start",
-			want:     string(goops.StatusMaintenance),
+			name:               "UnitMaintenanceStatus",
+			handler:            UnitMaintenanceStatus,
+			hookName:           "start",
+			expectedStatusName: goopstest.StatusMaintenance,
 		},
 	}
 
@@ -89,8 +90,8 @@ func TestCharmUnitStatus(t *testing.T) {
 				t.Fatalf("Run returned an error: %v", err)
 			}
 
-			if stateOut.UnitStatus != tc.want {
-				t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, tc.want)
+			if stateOut.UnitStatus.Name != tc.expectedStatusName {
+				t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, tc.expectedStatusName)
 			}
 		})
 	}
@@ -102,7 +103,9 @@ func TestCharmUnitStatusPreset(t *testing.T) {
 	}
 
 	stateIn := &goopstest.State{
-		UnitStatus: string(goops.StatusActive),
+		UnitStatus: goopstest.Status{
+			Name: goopstest.StatusActive,
+		},
 	}
 
 	stateOut, err := ctx.Run("start", stateIn)
@@ -110,8 +113,12 @@ func TestCharmUnitStatusPreset(t *testing.T) {
 		t.Fatalf("Run returned an error: %v", err)
 	}
 
-	if stateOut.UnitStatus != string(goops.StatusMaintenance) {
-		t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, string(goops.StatusMaintenance))
+	if stateOut.UnitStatus.Name != goopstest.StatusMaintenance {
+		t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, goopstest.StatusMaintenance)
+	}
+
+	if stateOut.UnitStatus.Message != "Performing maintenance" {
+		t.Errorf("got UnitStatus.Message=%q, want %q", stateOut.UnitStatus.Message, "Performing maintenance")
 	}
 }
 
@@ -153,34 +160,34 @@ func AppMaintenanceStatus() error {
 
 func TestCharmAppStatus(t *testing.T) {
 	tests := []struct {
-		name     string
-		handler  func() error
-		hookName string
-		want     string
+		name               string
+		handler            func() error
+		hookName           string
+		expectedStatusName goopstest.StatusName
 	}{
 		{
-			name:     "AppActiveStatus",
-			handler:  AppActiveStatus,
-			hookName: "start",
-			want:     string(goops.StatusActive),
+			name:               "AppActiveStatus",
+			handler:            AppActiveStatus,
+			hookName:           "start",
+			expectedStatusName: goopstest.StatusActive,
 		},
 		{
-			name:     "AppBlockedStatus",
-			handler:  AppBlockedStatus,
-			hookName: "start",
-			want:     string(goops.StatusBlocked),
+			name:               "AppBlockedStatus",
+			handler:            AppBlockedStatus,
+			hookName:           "start",
+			expectedStatusName: goopstest.StatusBlocked,
 		},
 		{
-			name:     "AppWaitingStatus",
-			handler:  AppWaitingStatus,
-			hookName: "start",
-			want:     string(goops.StatusWaiting),
+			name:               "AppWaitingStatus",
+			handler:            AppWaitingStatus,
+			hookName:           "start",
+			expectedStatusName: goopstest.StatusWaiting,
 		},
 		{
-			name:     "AppMaintenanceStatus",
-			handler:  AppMaintenanceStatus,
-			hookName: "start",
-			want:     string(goops.StatusMaintenance),
+			name:               "AppMaintenanceStatus",
+			handler:            AppMaintenanceStatus,
+			hookName:           "start",
+			expectedStatusName: goopstest.StatusMaintenance,
 		},
 	}
 
@@ -197,8 +204,8 @@ func TestCharmAppStatus(t *testing.T) {
 				t.Fatalf("Run returned an error: %v", err)
 			}
 
-			if stateOut.AppStatus != tc.want {
-				t.Errorf("got AppStatus=%q, want %q", stateOut.AppStatus, tc.want)
+			if stateOut.AppStatus.Name != tc.expectedStatusName {
+				t.Errorf("got AppStatus=%q, want %q", stateOut.AppStatus, tc.expectedStatusName)
 			}
 		})
 	}
@@ -210,7 +217,9 @@ func TestCharmAppStatusPreset(t *testing.T) {
 	}
 
 	stateIn := &goopstest.State{
-		AppStatus: string(goops.StatusActive),
+		AppStatus: goopstest.Status{
+			Name: goopstest.StatusActive,
+		},
 	}
 
 	stateOut, err := ctx.Run("start", stateIn)
@@ -218,7 +227,11 @@ func TestCharmAppStatusPreset(t *testing.T) {
 		t.Fatalf("Run returned an error: %v", err)
 	}
 
-	if stateOut.AppStatus != string(goops.StatusMaintenance) {
-		t.Errorf("got AppStatus=%q, want %q", stateOut.AppStatus, string(goops.StatusMaintenance))
+	if stateOut.AppStatus.Name != goopstest.StatusMaintenance {
+		t.Errorf("got AppStatus=%q, want %q", stateOut.AppStatus, goopstest.StatusMaintenance)
+	}
+
+	if stateOut.AppStatus.Message != "Performing maintenance" {
+		t.Errorf("got AppStatus.Message=%q, want %q", stateOut.AppStatus.Message, "Performing maintenance")
 	}
 }
