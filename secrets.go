@@ -39,7 +39,7 @@ type SetSecretOptions struct {
 	Description string
 	Expire      time.Time
 	Label       string
-	Owner       string
+	Owner       SecretOwner
 	Rotate      SecretRotate
 }
 
@@ -355,11 +355,8 @@ func SetSecret(opts *SetSecretOptions) error {
 		return fmt.Errorf("secret ID cannot be empty")
 	}
 
-	if len(opts.Content) == 0 {
-		return fmt.Errorf("content cannot be empty")
-	}
+	args := []string{opts.ID}
 
-	var args []string
 	for key, value := range opts.Content {
 		args = append(args, key+"="+value)
 	}
@@ -373,7 +370,7 @@ func SetSecret(opts *SetSecretOptions) error {
 	}
 
 	if opts.Owner != "" {
-		args = append(args, "--owner="+opts.Owner)
+		args = append(args, "--owner="+string(opts.Owner))
 	}
 
 	if opts.Rotate != "" {

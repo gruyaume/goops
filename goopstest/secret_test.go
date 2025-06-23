@@ -738,3 +738,125 @@ func TestCharmGrantSecretNonLeader(t *testing.T) {
 		t.Errorf("got CharmErr=%q, want 'failed to grant secret: ERROR secret \"12345\" not found'", ctx.CharmErr.Error())
 	}
 }
+
+func SecretSet() error {
+	err := goops.SetSecret(&goops.SetSecretOptions{
+		ID:    "12345",
+		Label: "my-new-label",
+		Content: map[string]string{
+			"new-key": "new-value",
+		},
+		Description: "A new description for my secret",
+	})
+	if err != nil {
+		return fmt.Errorf("failed to set secret: %w", err)
+	}
+
+	_ = goops.SetUnitStatus(goops.StatusActive, "Secret set successfully")
+
+	return nil
+}
+
+func TestCharmSecretSet(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: SecretSet,
+	}
+
+	stateIn := &goopstest.State{
+		Leader: true,
+		Secrets: []*goopstest.Secret{
+			{
+				ID:    "12345",
+				Label: "my-initial-label",
+				Content: map[string]string{
+					"my-initial-key": "my-initial-value",
+				},
+				Description: "Old description",
+			},
+		},
+	}
+
+	stateOut, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Run returned an error: %v", ctx.CharmErr)
+	}
+
+	if stateOut.UnitStatus != string(goops.StatusActive) {
+		t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, string(goops.StatusActive))
+	}
+
+	if len(stateOut.Secrets) != 1 {
+		t.Fatalf("expected 1 secret, got %d", len(stateOut.Secrets))
+	}
+
+	mySecret := stateOut.Secrets[0]
+	if mySecret.Label != "my-new-label" {
+		t.Errorf("got Secret.Label=%s, want %s", mySecret.Label, "my-new-label")
+	}
+
+	if mySecret.Content["new-key"] != "new-value" {
+		t.Errorf("got Secret[new-key]=%s, want %s", mySecret.Content["new-key"], "new-value")
+	}
+
+	if _, ok := mySecret.Content["my-initial-key"]; ok {
+		t.Errorf("got Secret[my-initial-key] should not exist, but found %s", mySecret.Content["my-initial-key"])
+	}
+
+	if mySecret.Description != "A new description for my secret" {
+		t.Errorf("got Secret.Description=%s, want %s", mySecret.Description, "A new description for my secret")
+	}
+
+	if mySecret.ID != "12345" {
+		t.Errorf("got Secret.ID=%s, want %s", mySecret.ID, "12345")
+	}
+}
+
+func TestCharmSecretSetNonLeader(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: SecretSet,
+	}
+
+	stateIn := &goopstest.State{
+		Leader: false,
+		Secrets: []*goopstest.Secret{
+			{
+				ID:    "12345",
+				Label: "my-initial-label",
+				Content: map[string]string{
+					"my-initial-key": "my-initial-value",
+				},
+				Description: "Old description",
+			},
+		},
+	}
+
+	stateOut, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if len(stateOut.Secrets) != 1 {
+		t.Fatalf("expected 1 secret, got %d", len(stateOut.Secrets))
+	}
+
+	mySecret := stateOut.Secrets[0]
+	if mySecret.Label != "my-initial-label" {
+		t.Errorf("got Secret.Label=%s, want %s", mySecret.Label, "my-initial-label")
+	}
+
+	if mySecret.Content["my-initial-key"] != "my-initial-value" {
+		t.Errorf("got Secret[my-initial-key]=%s, want %s", mySecret.Content["my-initial-key"], "my-initial-value")
+	}
+
+	if mySecret.Description != "Old description" {
+		t.Errorf("got Secret.Description=%s, want %s", mySecret.Description, "Old description")
+	}
+
+	if mySecret.ID != "12345" {
+		t.Errorf("got Secret.ID=%s, want %s", mySecret.ID, "12345")
+	}
+}

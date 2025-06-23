@@ -85,6 +85,7 @@ func (f *fakeCommandRunner) Run(name string, args ...string) ([]byte, error) {
 		"secret-info-get":         f.handleSecretInfoGet,
 		"secret-ids":              f.handleSecretIDs,
 		"secret-grant":            f.handleSecretGrant,
+		"secret-set":              f.handleSecretSet,
 		"state-get":               f.handleStateGet,
 		"state-set":               f.handleStateSet,
 		"state-delete":            f.handleStateDelete,
@@ -672,6 +673,98 @@ func (f *fakeCommandRunner) handleSecretGrant(args []string) {
 		f.Err = fmt.Errorf(`ERROR secret "%s" not found`, secretID)
 		return
 	}
+}
+
+func (f *fakeCommandRunner) handleSecretSet(args []string) {
+	if len(args) == 0 {
+		f.Err = fmt.Errorf("secret-set command requires at least one argument")
+		return
+	}
+
+	if !f.Leader {
+		f.Output = []byte(`null`)
+		return
+	}
+
+	id := args[0]
+	args = args[1:]
+
+	meta, remaining := parseSecretMetadata(args)
+
+	content := make(map[string]string)
+
+	for _, arg := range remaining {
+		parts := strings.SplitN(arg, "=", 2)
+		if len(parts) != 2 || parts[0] == "" {
+			f.Err = fmt.Errorf("invalid secret-set argument: %s", arg)
+			return
+		}
+
+		content[parts[0]] = parts[1]
+	}
+
+	for _, secret := range f.Secrets {
+		if secret.ID != id {
+			continue
+		}
+
+		secret.Content = content
+		if meta["label"] != "" {
+			secret.Label = meta["label"]
+		}
+
+		if meta["owner"] != "" {
+			secret.Owner = meta["owner"]
+		}
+
+		if meta["description"] != "" {
+			secret.Description = meta["description"]
+		}
+
+		if meta["rotation"] != "" {
+			secret.Rotation = meta["rotation"]
+		}
+
+		if meta["expiry"] != "" {
+			secret.Expiry = meta["expiry"]
+		}
+
+		return
+	}
+
+	f.Err = fmt.Errorf("secret with ID %q not found", id)
+}
+
+func parseSecretMetadata(args []string) (map[string]string, []string) {
+	meta := map[string]string{
+		"label":       "",
+		"owner":       "",
+		"description": "",
+		"rotation":    "",
+		"expiry":      "",
+	}
+
+	remaining := make([]string, 0, len(args))
+
+	for _, arg := range args {
+		matched := false
+
+		for key := range meta {
+			prefix := "--" + key + "="
+			if strings.HasPrefix(arg, prefix) {
+				meta[key] = strings.TrimPrefix(arg, prefix)
+				matched = true
+
+				break
+			}
+		}
+
+		if !matched {
+			remaining = append(remaining, arg)
+		}
+	}
+
+	return meta, remaining
 }
 
 func (f *fakeCommandRunner) handleStateGet(args []string) {
