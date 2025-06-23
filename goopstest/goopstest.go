@@ -86,6 +86,7 @@ func (f *fakeCommandRunner) Run(name string, args ...string) ([]byte, error) {
 		"secret-ids":              f.handleSecretIDs,
 		"secret-grant":            f.handleSecretGrant,
 		"secret-set":              f.handleSecretSet,
+		"secret-revoke":           f.handleSecretRevoke,
 		"state-get":               f.handleStateGet,
 		"state-set":               f.handleStateSet,
 		"state-delete":            f.handleStateDelete,
@@ -734,6 +735,8 @@ func (f *fakeCommandRunner) handleSecretSet(args []string) {
 
 	f.Err = fmt.Errorf("secret with ID %q not found", id)
 }
+
+func (f *fakeCommandRunner) handleSecretRevoke(args []string) {}
 
 func parseSecretMetadata(args []string) (map[string]string, []string) {
 	meta := map[string]string{

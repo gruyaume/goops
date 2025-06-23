@@ -739,7 +739,7 @@ func TestCharmGrantSecretNonLeader(t *testing.T) {
 	}
 }
 
-func SecretSet() error {
+func SetSecret() error {
 	err := goops.SetSecret(&goops.SetSecretOptions{
 		ID:    "12345",
 		Label: "my-new-label",
@@ -757,9 +757,9 @@ func SecretSet() error {
 	return nil
 }
 
-func TestCharmSecretSet(t *testing.T) {
+func TestCharmSetSecret(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: SecretSet,
+		Charm: SetSecret,
 	}
 
 	stateIn := &goopstest.State{
@@ -815,9 +815,9 @@ func TestCharmSecretSet(t *testing.T) {
 	}
 }
 
-func TestCharmSecretSetNonLeader(t *testing.T) {
+func TestCharmSetSecretNonLeader(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: SecretSet,
+		Charm: SetSecret,
 	}
 
 	stateIn := &goopstest.State{
@@ -858,5 +858,52 @@ func TestCharmSecretSetNonLeader(t *testing.T) {
 
 	if mySecret.ID != "12345" {
 		t.Errorf("got Secret.ID=%s, want %s", mySecret.ID, "12345")
+	}
+}
+
+func RevokeSecret() error {
+	err := goops.RevokeSecret("12345")
+	if err != nil {
+		return fmt.Errorf("failed to revoke secret: %w", err)
+	}
+
+	_ = goops.SetUnitStatus(goops.StatusActive, "Secret revoked successfully")
+
+	return nil
+}
+
+func TestCharmRevokeSecret(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: RevokeSecret,
+	}
+
+	stateIn := &goopstest.State{
+		Leader: true,
+		Secrets: []*goopstest.Secret{
+			{
+				ID: "12345",
+				Content: map[string]string{
+					"private-key":    "keycontent",
+					"ca-certificate": "certcontent",
+				},
+			},
+		},
+	}
+
+	stateOut, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Run returned an error: %v", ctx.CharmErr)
+	}
+
+	if stateOut.UnitStatus != string(goops.StatusActive) {
+		t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, string(goops.StatusActive))
+	}
+
+	if len(stateOut.Secrets) != 1 {
+		t.Fatalf("expected 1 secret, got %d", len(stateOut.Secrets))
 	}
 }
