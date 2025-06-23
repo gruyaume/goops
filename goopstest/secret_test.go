@@ -3,6 +3,7 @@ package goopstest_test
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/gruyaume/goops"
 	"github.com/gruyaume/goops/goopstest"
@@ -214,7 +215,7 @@ func TestCharmGetSecretByID(t *testing.T) {
 	}
 }
 
-func AddSecret() error {
+func AddAppSecret() error {
 	secretLabel := "whatever-label"
 
 	caKeyPEM := `keycontent`
@@ -236,9 +237,9 @@ func AddSecret() error {
 	return nil
 }
 
-func TestCharmAddSecret(t *testing.T) {
+func TestCharmAddAppSecret(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: AddSecret,
+		Charm: AddAppSecret,
 	}
 
 	stateIn := &goopstest.State{
@@ -248,6 +249,10 @@ func TestCharmAddSecret(t *testing.T) {
 	stateOut, err := ctx.Run("start", stateIn)
 	if err != nil {
 		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Run returned an error: %v", ctx.CharmErr)
 	}
 
 	if len(stateOut.Secrets) != 1 {
@@ -268,9 +273,9 @@ func TestCharmAddSecret(t *testing.T) {
 	}
 }
 
-func TestCharmAddSecretNonLeader(t *testing.T) {
+func TestCharmAddAppSecretNonLeader(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: AddSecret,
+		Charm: AddAppSecret,
 	}
 
 	stateIn := &goopstest.State{
@@ -288,6 +293,84 @@ func TestCharmAddSecretNonLeader(t *testing.T) {
 
 	if ctx.CharmErr.Error() != "failed to add secret: command secret-add failed: ERROR this unit is not the leader" {
 		t.Errorf("got CharmErr=%q, want 'failed to add secret: command secret-add failed: ERROR this unit is not the leader'", ctx.CharmErr.Error())
+	}
+}
+
+func AddUnitSecret() error {
+	secretLabel := "whatever-label"
+
+	caKeyPEM := `keycontent`
+	caCertPEM := `certcontent`
+
+	secretContent := map[string]string{
+		"private-key":    caKeyPEM,
+		"ca-certificate": caCertPEM,
+	}
+
+	_, err := goops.AddSecret(&goops.AddSecretOptions{
+		Label:       secretLabel,
+		Content:     secretContent,
+		Owner:       goops.OwnerUnit,
+		Rotate:      goops.RotateHourly,
+		Description: "A secret for the unit",
+		Expire:      time.Now().AddDate(1, 0, 0), // 1 year expiry
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func TestCharmAddUnitSecretNonLeader(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: AddUnitSecret,
+	}
+
+	stateIn := &goopstest.State{
+		Leader: false,
+	}
+
+	stateOut, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Run returned an error: %v", ctx.CharmErr)
+	}
+
+	if len(stateOut.Secrets) != 1 {
+		t.Fatalf("got %d secrets, want 1", len(stateOut.Secrets))
+	}
+
+	if stateOut.Secrets[0].Label != "whatever-label" {
+		t.Errorf("got Secret.Label=%s, want %s", stateOut.Secrets[0].Label, "whatever-label")
+	}
+
+	if stateOut.Secrets[0].Content["private-key"] != "keycontent" {
+		t.Errorf("got Secret[private-key]=%s, want %s", stateOut.Secrets[0].Content["private-key"], "keycontent")
+	}
+
+	if stateOut.Secrets[0].Content["ca-certificate"] != "certcontent" {
+		t.Errorf("got Secret[ca-certificate]=%s, want %s", stateOut.Secrets[0].Content["ca-certificate"], "certcontent")
+	}
+
+	if stateOut.Secrets[0].Owner != "unit" {
+		t.Errorf("got Secret.Owner=%s, want %s", stateOut.Secrets[0].Owner, "unit")
+	}
+
+	if stateOut.Secrets[0].Description != "A secret for the unit" {
+		t.Errorf("got Secret.Description=%s, want `A secret for the unit`", stateOut.Secrets[0].Description)
+	}
+
+	if stateOut.Secrets[0].Rotate != "hourly" {
+		t.Errorf("got Secret.Rotate=%s, want %s", stateOut.Secrets[0].Rotate, "hourly")
+	}
+
+	expire := stateOut.Secrets[0].Expire
+	if expire.Before(time.Now().AddDate(1, 0, 0).Add(-time.Minute)) || expire.After(time.Now().AddDate(1, 0, 0).Add(time.Minute)) {
+		t.Errorf("got Secret.Expire=%s, want around 1 year from now", expire)
 	}
 }
 
@@ -526,6 +609,9 @@ func GetSecretIDs() error {
 	if len(secretIDs) != 2 {
 		return fmt.Errorf("expected 2 secret IDs, got %d", len(secretIDs))
 	}
+
+	fmt.Println("Found secret IDs:", secretIDs)
+	fmt.Println("Number of secret IDs retrieved:", len(secretIDs))
 
 	_ = goops.SetUnitStatus(goops.StatusActive, "Secret IDs retrieved successfully")
 

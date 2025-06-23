@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gruyaume/goops"
 	"gopkg.in/yaml.v3"
@@ -452,19 +453,39 @@ func filterOutLabelArgs(args []string) []string {
 }
 
 func (f *fakeCommandRunner) handleSecretAdd(args []string) {
-	if !f.Leader {
+	label := extractLabelFromArgs(args)
+	owner := extractOwnerFromArgs(args)
+	description := extractDescriptionFromArgs(args)
+	rotation := extractRotationFromArgs(args)
+	expiry := extractExpiryFromArgs(args)
+	filtered := filterOutLabelArgs(args)
+
+	if !f.Leader && owner != "unit" {
 		f.Err = fmt.Errorf("command secret-add failed: ERROR this unit is not the leader")
 		return
 	}
 
-	label := extractLabelFromArgs(args)
-	filtered := filterOutLabelArgs(args)
+	var expiryTime time.Time
+
+	var err error
+
+	if expiry != "" {
+		expiryTime, err = time.Parse(time.RFC3339, expiry)
+		if err != nil {
+			f.Err = fmt.Errorf("invalid expiry format: %w", err)
+			return
+		}
+	}
 
 	content := parseKeyValueArgs(filtered)
 
 	f.Secrets = append(f.Secrets, &Secret{
-		Label:   label,
-		Content: content,
+		Label:       label,
+		Content:     content,
+		Owner:       owner,
+		Description: description,
+		Rotate:      rotation,
+		Expire:      expiryTime,
 	})
 }
 
@@ -543,6 +564,50 @@ func extractLabelFromArgs(args []string) string {
 	return ""
 }
 
+// extractOwnerFromArgs returns the owner from args if present.
+func extractOwnerFromArgs(args []string) string {
+	for _, arg := range args {
+		if strings.HasPrefix(arg, "--owner=") {
+			return strings.TrimPrefix(arg, "--owner=")
+		}
+	}
+
+	return ""
+}
+
+// extractDescriptionFromArgs returns the description from args if present.
+func extractDescriptionFromArgs(args []string) string {
+	for _, arg := range args {
+		if strings.HasPrefix(arg, "--description=") {
+			return strings.TrimPrefix(arg, "--description=")
+		}
+	}
+
+	return ""
+}
+
+// extractRotationFromArgs returns the rotation from args if present.
+func extractRotationFromArgs(args []string) string {
+	for _, arg := range args {
+		if strings.HasPrefix(arg, "--rotate=") {
+			return strings.TrimPrefix(arg, "--rotate=")
+		}
+	}
+
+	return ""
+}
+
+// extractExpiryFromArgs returns the expiry from args if present.
+func extractExpiryFromArgs(args []string) string {
+	for _, arg := range args {
+		if strings.HasPrefix(arg, "--expire=") {
+			return strings.TrimPrefix(arg, "--expire=")
+		}
+	}
+
+	return ""
+}
+
 // findSecretByLabel returns the pointer to the secret with the given label.
 func findSecretByLabel(secrets []*Secret, label string) *Secret {
 	for _, secret := range secrets {
@@ -614,8 +679,8 @@ func (f *fakeCommandRunner) handleSecretInfoGet(args []string) {
 			Label:       secret.Label,
 			Owner:       secret.Owner,
 			Description: secret.Description,
-			Rotation:    secret.Rotation,
-			Expiry:      secret.Expiry,
+			Rotation:    secret.Rotate,
+			Expiry:      secret.Expire.Format(time.RFC3339),
 		},
 	}
 
@@ -634,23 +699,15 @@ func (f *fakeCommandRunner) handleSecretIDs(_ []string) {
 		return
 	}
 
-	if !f.Leader {
-		ids := []string{}
+	ids := []string{}
 
-		output, err := json.Marshal(ids)
-		if err != nil {
-			f.Err = fmt.Errorf("failed to marshal empty secret IDs: %w", err)
-			return
+	for _, secret := range f.Secrets {
+		if !f.Leader && secret.Owner != "unit" {
+			fmt.Println("Skipping secret with ID", secret.ID, "because this unit is not the leader")
+			continue
 		}
 
-		f.Output = output
-
-		return
-	}
-
-	ids := make([]string, len(f.Secrets))
-	for i, secret := range f.Secrets {
-		ids[i] = secret.ID
+		ids = append(ids, secret.ID)
 	}
 
 	output, err := json.Marshal(ids)
@@ -723,11 +780,17 @@ func (f *fakeCommandRunner) handleSecretSet(args []string) {
 		}
 
 		if meta["rotation"] != "" {
-			secret.Rotation = meta["rotation"]
+			secret.Rotate = meta["rotation"]
 		}
 
 		if meta["expiry"] != "" {
-			secret.Expiry = meta["expiry"]
+			expiryTime, err := time.Parse(time.RFC3339, meta["expiry"])
+			if err != nil {
+				f.Err = fmt.Errorf("invalid expiry format: %w", err)
+				return
+			}
+
+			secret.Expire = expiryTime
 		}
 
 		return
@@ -1090,8 +1153,8 @@ type Secret struct {
 	Content     map[string]string
 	Owner       string
 	Description string
-	Rotation    string
-	Expiry      string
+	Rotate      string
+	Expire      time.Time
 }
 
 type UnitID string
