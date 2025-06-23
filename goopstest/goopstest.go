@@ -453,11 +453,7 @@ func filterOutLabelArgs(args []string) []string {
 }
 
 func (f *fakeCommandRunner) handleSecretAdd(args []string) {
-	label := extractLabelFromArgs(args)
-	owner := extractOwnerFromArgs(args)
-	description := extractDescriptionFromArgs(args)
-	rotation := extractRotationFromArgs(args)
-	expiry := extractExpiryFromArgs(args)
+	label, owner, description, rotation, expiry := extractSecretArgs(args)
 	filtered := filterOutLabelArgs(args)
 
 	if !f.Leader && owner != "unit" {
@@ -553,59 +549,23 @@ func findSecretByID(secrets []*Secret, id string) *Secret {
 	return nil
 }
 
-// extractLabelFromArgs returns the label from args if present.
-func extractLabelFromArgs(args []string) string {
+func extractSecretArgs(args []string) (label, owner, desc, rotate, expire string) {
 	for _, arg := range args {
-		if strings.HasPrefix(arg, "--label=") {
-			return strings.TrimPrefix(arg, "--label=")
+		switch {
+		case strings.HasPrefix(arg, "--label="):
+			label = strings.TrimPrefix(arg, "--label=")
+		case strings.HasPrefix(arg, "--owner="):
+			owner = strings.TrimPrefix(arg, "--owner=")
+		case strings.HasPrefix(arg, "--description="):
+			desc = strings.TrimPrefix(arg, "--description=")
+		case strings.HasPrefix(arg, "--rotate="):
+			rotate = strings.TrimPrefix(arg, "--rotate=")
+		case strings.HasPrefix(arg, "--expire="):
+			expire = strings.TrimPrefix(arg, "--expire=")
 		}
 	}
 
-	return ""
-}
-
-// extractOwnerFromArgs returns the owner from args if present.
-func extractOwnerFromArgs(args []string) string {
-	for _, arg := range args {
-		if strings.HasPrefix(arg, "--owner=") {
-			return strings.TrimPrefix(arg, "--owner=")
-		}
-	}
-
-	return ""
-}
-
-// extractDescriptionFromArgs returns the description from args if present.
-func extractDescriptionFromArgs(args []string) string {
-	for _, arg := range args {
-		if strings.HasPrefix(arg, "--description=") {
-			return strings.TrimPrefix(arg, "--description=")
-		}
-	}
-
-	return ""
-}
-
-// extractRotationFromArgs returns the rotation from args if present.
-func extractRotationFromArgs(args []string) string {
-	for _, arg := range args {
-		if strings.HasPrefix(arg, "--rotate=") {
-			return strings.TrimPrefix(arg, "--rotate=")
-		}
-	}
-
-	return ""
-}
-
-// extractExpiryFromArgs returns the expiry from args if present.
-func extractExpiryFromArgs(args []string) string {
-	for _, arg := range args {
-		if strings.HasPrefix(arg, "--expire=") {
-			return strings.TrimPrefix(arg, "--expire=")
-		}
-	}
-
-	return ""
+	return
 }
 
 // findSecretByLabel returns the pointer to the secret with the given label.
@@ -657,14 +617,25 @@ func (f *fakeCommandRunner) handleSecretInfoGet(args []string) {
 	switch {
 	case label != "":
 		secret = findSecretByLabel(f.Secrets, label)
-		if secret == nil || !f.Leader {
+
+		if secret == nil {
 			f.Err = fmt.Errorf(`ERROR secret %q not found`, label)
 
 			return
 		}
+
+		if !f.Leader && secret.Owner != "unit" {
+			f.Err = fmt.Errorf(`ERROR secret %q not found`, label)
+			return
+		}
 	case id != "":
 		secret = findSecretByID(f.Secrets, id)
-		if secret == nil || !f.Leader {
+		if secret == nil {
+			f.Err = fmt.Errorf(`ERROR secret %q not found`, id)
+			return
+		}
+
+		if !f.Leader && secret.Owner != "unit" {
 			f.Err = fmt.Errorf(`ERROR secret %q not found`, id)
 			return
 		}
@@ -703,7 +674,6 @@ func (f *fakeCommandRunner) handleSecretIDs(_ []string) {
 
 	for _, secret := range f.Secrets {
 		if !f.Leader && secret.Owner != "unit" {
-			fmt.Println("Skipping secret with ID", secret.ID, "because this unit is not the leader")
 			continue
 		}
 

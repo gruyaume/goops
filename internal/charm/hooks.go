@@ -11,7 +11,6 @@ import (
 const (
 	CaCertificateSecretLabel   = "active-ca-certificates" // #nosec G101
 	TLSCertificatesIntegration = "certificates"
-	PeerRelationName           = "example-peers"
 )
 
 type ConfigOptions struct {
