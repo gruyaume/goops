@@ -168,6 +168,12 @@ func (f *fakeCommandRunner) handleOpenPort(args []string) {
 		return
 	}
 
+	for _, p := range f.Ports {
+		if p.Port == port && p.Protocol == protocol {
+			return
+		}
+	}
+
 	f.Ports = append(f.Ports, &Port{
 		Port:     port,
 		Protocol: protocol,
@@ -201,8 +207,6 @@ func (f *fakeCommandRunner) handleClosePort(args []string) {
 			return
 		}
 	}
-
-	f.Err = fmt.Errorf("port %d/%s not found", port, protocol)
 }
 
 func (f *fakeCommandRunner) handleConfigGet(_ []string) {

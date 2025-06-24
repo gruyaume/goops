@@ -11,11 +11,21 @@ const (
 	openedPortsCommand = "opened-ports"
 )
 
+type Protocol string
+
+const (
+	ProtocolTCP  Protocol = "tcp"
+	ProtocolUDP  Protocol = "udp"
+	ProtocolICMP Protocol = "icmp"
+)
+
 type Port struct {
 	Port     int
-	Protocol string // allowed values: tcp, udp
+	Protocol Protocol
 }
 
+// SetPorts sets the desired ports for the unit.
+// It opens ports that are desired but not currently opened, and closes ports that are currently opened but not desired.
 func SetPorts(ports []*Port) error {
 	openedPorts, err := OpenedPorts()
 	if err != nil {
@@ -57,18 +67,27 @@ func SetPorts(ports []*Port) error {
 	return nil
 }
 
-func OpenPort(port int, protocol string) error {
+// OpenPort registers a request to open the specified port.
+// The port must be between 0 and 65535, and the protocol must be one of tcp, udp, or icmp.
+// If the protocol is icmp, the port argument is ignored.
+func OpenPort(port int, protocol Protocol) error {
 	commandRunner := GetCommandRunner()
 
 	if port < 0 || port > 65535 {
 		return fmt.Errorf("port %d is out of range", port)
 	}
 
-	if protocol != "tcp" && protocol != "udp" {
-		return fmt.Errorf("protocol %s is not supported", protocol)
+	arg := fmt.Sprintf("%d/%s", port, protocol)
+
+	switch protocol {
+	case ProtocolTCP, ProtocolUDP:
+	case ProtocolICMP:
+		arg = "icmp"
+	default:
+		return fmt.Errorf("invalid protocol: %s, must be one of tcp, udp, or icmp", protocol)
 	}
 
-	args := []string{fmt.Sprintf("%d/%s", port, protocol)}
+	args := []string{arg}
 
 	_, err := commandRunner.Run(openPortCommand, args...)
 	if err != nil {
@@ -78,18 +97,27 @@ func OpenPort(port int, protocol string) error {
 	return nil
 }
 
-func ClosePort(port int, protocol string) error {
+// ClosePort registers a request to close the specified port.
+// The port must be between 0 and 65535, and the protocol must be one of tcp, udp, or icmp.
+// If the protocol is icmp, the port argument is ignored.
+func ClosePort(port int, protocol Protocol) error {
 	commandRunner := GetCommandRunner()
 
 	if port < 0 || port > 65535 {
 		return fmt.Errorf("port %d is out of range", port)
 	}
 
-	if protocol != "tcp" && protocol != "udp" {
-		return fmt.Errorf("protocol %s is not supported", protocol)
+	arg := fmt.Sprintf("%d/%s", port, protocol)
+
+	switch protocol {
+	case ProtocolTCP, ProtocolUDP:
+	case ProtocolICMP:
+		arg = "icmp"
+	default:
+		return fmt.Errorf("invalid protocol: %s, must be one of tcp, udp, or icmp", protocol)
 	}
 
-	args := []string{fmt.Sprintf("%d/%s", port, protocol)}
+	args := []string{arg}
 
 	_, err := commandRunner.Run(closePortCommand, args...)
 	if err != nil {
@@ -99,6 +127,7 @@ func ClosePort(port int, protocol string) error {
 	return nil
 }
 
+// List all ports opened by the unit.
 func OpenedPorts() ([]*Port, error) {
 	commandRunner := GetCommandRunner()
 
