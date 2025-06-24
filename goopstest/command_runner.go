@@ -28,7 +28,7 @@ type fakeCommandRunner struct {
 	Ports              []*Port
 	StoredState        StoredState
 	AppName            string
-	UnitID             int
+	UnitID             string
 	JujuLog            []JujuLogLine
 	Model              *Model
 }
@@ -279,6 +279,17 @@ func parseRelationGetArgs(args []string) (isApp bool, relationID string, unitID 
 	return isApp, relationID, unitID, nil
 }
 
+func getAppNameFromUnitID(unitID string) string {
+	if strings.Contains(unitID, "/") {
+		parts := strings.Split(unitID, "/")
+		if len(parts) == 2 {
+			return parts[0]
+		}
+	}
+
+	return ""
+}
+
 func (f *fakeCommandRunner) handleRelationGet(args []string) {
 	isApp, relationID, unitID, err := parseRelationGetArgs(args)
 	if err != nil {
@@ -288,11 +299,23 @@ func (f *fakeCommandRunner) handleRelationGet(args []string) {
 
 	relation := f.findRelationByID(relationID)
 	if relation == nil {
-		f.Err = fmt.Errorf("relation %s not found", relationID)
+		f.Err = fmt.Errorf("command relation-get failed: ERROR invalid value %q for option -r: relation not found", relationID)
 		return
 	}
 
-	isLocal := unitID == f.AppName+"/"+strconv.Itoa(f.UnitID)
+	argAppName := getAppNameFromUnitID(unitID)
+	ctxAppName := getAppNameFromUnitID(f.UnitID)
+
+	var isLocal bool
+
+	if argAppName == ctxAppName {
+		isLocal = true
+	}
+
+	if isApp && isLocal && !f.Leader {
+		f.Err = fmt.Errorf("command relation-get failed: ERROR permission denied")
+		return
+	}
 
 	data, err := f.selectRelationData(relation, isApp, isLocal, unitID)
 	if err != nil {
@@ -306,7 +329,7 @@ func (f *fakeCommandRunner) handleRelationGet(args []string) {
 	}
 }
 
-func (f *fakeCommandRunner) selectRelationData(rel *Relation, isApp, isLocal bool, unitID string) (any, error) {
+func (f *fakeCommandRunner) selectRelationData(rel *Relation, isApp bool, isLocal bool, unitID string) (any, error) {
 	if isApp {
 		if isLocal {
 			return safeCopy(rel.LocalAppData), nil
@@ -316,6 +339,10 @@ func (f *fakeCommandRunner) selectRelationData(rel *Relation, isApp, isLocal boo
 	}
 
 	if isLocal {
+		if f.UnitID != unitID {
+			return nil, nil
+		}
+
 		if rel.LocalUnitData == nil {
 			return nil, fmt.Errorf("local unit data not found for relation %s", rel.ID)
 		}
@@ -325,7 +352,7 @@ func (f *fakeCommandRunner) selectRelationData(rel *Relation, isApp, isLocal boo
 
 	unitData, ok := rel.RemoteUnitsData[UnitID(unitID)]
 	if !ok {
-		return nil, fmt.Errorf("unit ID %s not found in relation %s", unitID, rel.ID)
+		return nil, fmt.Errorf("command relation-get failed: ERROR cannot read settings for unit %q in relation %q: unit %q: settings not found", unitID, rel.ID, unitID)
 	}
 
 	return unitData, nil

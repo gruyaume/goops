@@ -74,7 +74,7 @@ func TestGetUnitName(t *testing.T) {
 	ctx := goopstest.Context{
 		Charm:   GetUnitName,
 		AppName: "blou",
-		UnitID:  0,
+		UnitID:  "blou/0",
 	}
 
 	stateIn := &goopstest.State{}

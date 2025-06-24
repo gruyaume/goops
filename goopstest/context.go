@@ -24,7 +24,7 @@ type Context struct {
 	Charm         func() error
 	Metadata      goops.Metadata
 	AppName       string
-	UnitID        int
+	UnitID        string
 	JujuVersion   string
 	ActionResults map[string]string
 	ActionError   error
