@@ -319,35 +319,52 @@ func (f *fakeCommandRunner) handleRelationGet(args []string) {
 	}
 
 	relation := f.findRelationByID(relationID)
-	if relation == nil {
+	peerRelation := f.findPeerRelationByID(relationID)
+
+	if relation == nil && peerRelation == nil {
 		f.Err = fmt.Errorf("command relation-get failed: ERROR invalid value %q for option -r: relation not found", relationID)
 		return
 	}
 
-	argAppName := getAppNameFromUnitID(unitID)
-	ctxAppName := getAppNameFromUnitID(f.UnitID)
+	if relation != nil {
+		argAppName := getAppNameFromUnitID(unitID)
+		ctxAppName := getAppNameFromUnitID(f.UnitID)
 
-	isLocal := argAppName == ctxAppName
+		isLocal := argAppName == ctxAppName
 
-	if !isLocal && argAppName != relation.RemoteAppName {
-		f.Err = fmt.Errorf("command relation-get failed: ERROR permission denied")
-		return
+		if !isLocal && argAppName != relation.RemoteAppName {
+			f.Err = fmt.Errorf("command relation-get failed: ERROR permission denied")
+			return
+		}
+
+		if isApp && isLocal && !f.Leader {
+			f.Err = fmt.Errorf("command relation-get failed: ERROR permission denied")
+			return
+		}
+
+		data, err := f.selectRelationData(relation, isApp, isLocal, unitID)
+		if err != nil {
+			f.Err = err
+			return
+		}
+
+		f.Output, err = json.Marshal(data)
+		if err != nil {
+			f.Err = fmt.Errorf("failed to marshal relation data: %w", err)
+		}
 	}
 
-	if isApp && isLocal && !f.Leader {
-		f.Err = fmt.Errorf("command relation-get failed: ERROR permission denied")
-		return
-	}
+	if peerRelation != nil {
+		data, err := f.selectPeerRelationData(peerRelation, isApp, unitID)
+		if err != nil {
+			f.Err = err
+			return
+		}
 
-	data, err := f.selectRelationData(relation, isApp, isLocal, unitID)
-	if err != nil {
-		f.Err = err
-		return
-	}
-
-	f.Output, err = json.Marshal(data)
-	if err != nil {
-		f.Err = fmt.Errorf("failed to marshal relation data: %w", err)
+		f.Output, err = json.Marshal(data)
+		if err != nil {
+			f.Err = fmt.Errorf("failed to marshal relation data: %w", err)
+		}
 	}
 }
 
@@ -375,6 +392,23 @@ func (f *fakeCommandRunner) selectRelationData(rel *Relation, isApp bool, isLoca
 	unitData, ok := rel.RemoteUnitsData[UnitID(unitID)]
 	if !ok {
 		return nil, fmt.Errorf("command relation-get failed: ERROR cannot read settings for unit %q in relation %q: unit %q: settings not found", unitID, rel.ID, unitID)
+	}
+
+	return unitData, nil
+}
+
+func (f *fakeCommandRunner) selectPeerRelationData(rel *PeerRelation, isApp bool, unitID string) (any, error) {
+	if isApp {
+		return safeCopy(rel.LocalAppData), nil
+	}
+
+	if f.UnitID == unitID {
+		return safeCopy(rel.LocalUnitData), nil
+	}
+
+	unitData, ok := rel.PeersData[UnitID(unitID)]
+	if !ok {
+		return nil, fmt.Errorf("command relation-get failed: ERROR cannot read settings for unit %q in peer relation %q: unit %q: settings not found", unitID, rel.ID, unitID)
 	}
 
 	return unitData, nil

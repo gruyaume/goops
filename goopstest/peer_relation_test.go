@@ -179,3 +179,198 @@ func TestGetPeerRelationModelUUID(t *testing.T) {
 		t.Errorf("expected 1 peer relation, got %d", len(stateOut.PeerRelations))
 	}
 }
+
+func GetUnitPeerRelationData() error {
+	data, err := goops.GetUnitRelationData("example-peer:0", "example/0")
+	if err != nil {
+		return fmt.Errorf("could not get unit relation data: %w", err)
+	}
+
+	if len(data) == 0 {
+		return fmt.Errorf("expected unit relation data, got none")
+	}
+
+	if data["key"] != "value" {
+		return fmt.Errorf("expected unit relation data 'key=value', got '%s=%s'", "key", data["key"])
+	}
+
+	return nil
+}
+
+// For peer relations, each unit can read its own databag
+func TestGetSelfUnitPeerRelationData(t *testing.T) {
+	tests := []struct {
+		leader bool
+	}{
+		{leader: true},
+		{leader: false},
+	}
+	for _, tc := range tests {
+		t.Run(fmt.Sprintf("Leader=%v", tc.leader), func(t *testing.T) {
+			ctx := goopstest.Context{
+				Charm:   GetUnitPeerRelationData,
+				AppName: "example",
+				UnitID:  "example/0",
+			}
+
+			stateIn := &goopstest.State{
+				Leader: tc.leader,
+				PeerRelations: []*goopstest.PeerRelation{
+					{
+						ID: "example-peer:0",
+						LocalUnitData: goopstest.DataBag{
+							"key": "value",
+						},
+					},
+				},
+			}
+
+			stateOut, err := ctx.Run("start", stateIn)
+			if err != nil {
+				t.Fatalf("Run returned an error: %v", err)
+			}
+
+			if ctx.CharmErr != nil {
+				t.Errorf("expected no error, got %v", ctx.CharmErr)
+			}
+
+			if len(stateOut.PeerRelations) != 1 {
+				t.Errorf("expected 1 peer relation, got %d", len(stateOut.PeerRelations))
+			}
+		})
+	}
+}
+
+// For peer relations, each unit can read the other unit's databag
+func TestGetOtherUnitPeerRelationData(t *testing.T) {
+	tests := []struct {
+		leader bool
+	}{
+		{leader: true},
+		{leader: false},
+	}
+	for _, tc := range tests {
+		t.Run(fmt.Sprintf("Leader=%v", tc.leader), func(t *testing.T) {
+			ctx := goopstest.Context{
+				Charm:   GetUnitPeerRelationData,
+				AppName: "example",
+				UnitID:  "example/1",
+			}
+
+			stateIn := &goopstest.State{
+				Leader: tc.leader,
+				PeerRelations: []*goopstest.PeerRelation{
+					{
+						ID:            "example-peer:0",
+						LocalUnitData: goopstest.DataBag{},
+						PeersData: map[goopstest.UnitID]goopstest.DataBag{
+							"example/0": {
+								"key": "value",
+							},
+						},
+					},
+				},
+			}
+
+			stateOut, err := ctx.Run("start", stateIn)
+			if err != nil {
+				t.Fatalf("Run returned an error: %v", err)
+			}
+
+			if ctx.CharmErr != nil {
+				t.Errorf("expected no error, got %v", ctx.CharmErr)
+			}
+
+			if len(stateOut.PeerRelations) != 1 {
+				t.Errorf("expected 1 peer relation, got %d", len(stateOut.PeerRelations))
+			}
+		})
+	}
+}
+
+func GetAppPeerRelationData() error {
+	data, err := goops.GetAppRelationData("example-peer:0", "example-peer/0")
+	if err != nil {
+		return err
+	}
+
+	if len(data) == 0 {
+		return fmt.Errorf("expected app relation data, got none")
+	}
+
+	if data["app_key"] != "app_value" {
+		return fmt.Errorf("expected app relation data 'app_key=app_value', got '%s=%s'", "app_key", data["app_key"])
+	}
+
+	return nil
+}
+
+// Each unit can read the application's databag
+func TestGetAppPeerRelationData(t *testing.T) {
+	tests := []struct {
+		leader bool
+	}{
+		{leader: true},
+		{leader: false},
+	}
+	for _, tc := range tests {
+		t.Run(fmt.Sprintf("Leader=%v", tc.leader), func(t *testing.T) {
+			ctx := goopstest.Context{
+				Charm:   GetAppPeerRelationData,
+				AppName: "example-peer",
+				UnitID:  "example-peer/0",
+			}
+
+			stateIn := &goopstest.State{
+				Leader: tc.leader,
+				PeerRelations: []*goopstest.PeerRelation{
+					{
+						ID: "example-peer:0",
+						LocalAppData: goopstest.DataBag{
+							"app_key": "app_value",
+						},
+					},
+				},
+			}
+
+			stateOut, err := ctx.Run("start", stateIn)
+			if err != nil {
+				t.Fatalf("Run returned an error: %v", err)
+			}
+
+			if ctx.CharmErr != nil {
+				t.Errorf("expected no error, got %v", ctx.CharmErr)
+			}
+
+			if len(stateOut.PeerRelations) != 1 {
+				t.Errorf("expected 1 peer relation, got %d", len(stateOut.PeerRelations))
+			}
+		})
+	}
+}
+
+func TestGetAppPeerRelationDataNoRelation(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm:   GetAppPeerRelationData,
+		AppName: "example-peer",
+		UnitID:  "example-peer/0",
+	}
+
+	stateIn := &goopstest.State{
+		PeerRelations: []*goopstest.PeerRelation{},
+	}
+
+	_, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr == nil {
+		t.Errorf("expected charm error to be set, got nil")
+	}
+
+	expectedErr := "failed to get relation data: command relation-get failed: ERROR invalid value \"example-peer:0\" for option -r: relation not found"
+	if ctx.CharmErr.Error() != expectedErr {
+		t.Errorf("got CharmErr=%q, want '%s'", ctx.CharmErr.Error(), expectedErr)
+	}
+}
