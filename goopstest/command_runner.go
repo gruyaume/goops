@@ -414,6 +414,17 @@ func (f *fakeCommandRunner) handleRelationSet(args []string) {
 		return
 	}
 
+	relation := f.findRelationByID(relationID)
+	if relation == nil {
+		f.Err = fmt.Errorf("command relation-set failed: ERROR invalid value %q for option -r: relation not found", relationID)
+		return
+	}
+
+	if isApp && !f.Leader {
+		f.Err = fmt.Errorf("command relation-set failed: ERROR cannot write relation settings")
+		return
+	}
+
 	for _, relation := range f.Relations {
 		if relation.ID != relationID {
 			continue

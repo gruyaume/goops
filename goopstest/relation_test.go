@@ -488,7 +488,7 @@ func TestCharmGetLocalUnitRelationData(t *testing.T) {
 	}
 }
 
-// Each unit can only read its own databag. Reading another local unit's data should return nothing.
+// In regular relations, each unit can only read its own databag. Reading another local unit's data should return nothing.
 func TestGetOtherLocalUnitRelationData(t *testing.T) {
 	ctx := goopstest.Context{
 		Charm:   GetLocalUnitRelationData,
@@ -655,7 +655,7 @@ func TestCharmGetLocalAppRelationData(t *testing.T) {
 	}
 }
 
-// Only leader units can read to the local application databag;
+// In regular relations, only the leader unit can read to the local application databag
 func TestCharmGetLocalAppRelationDataNonLeader(t *testing.T) {
 	ctx := goopstest.Context{
 		Charm:   GetLocalAppRelationData,
@@ -759,6 +759,7 @@ func TestCharmSetAppRelationData(t *testing.T) {
 		Endpoint: "certificates",
 	}
 	stateIn := &goopstest.State{
+		Leader: true,
 		Relations: []*goopstest.Relation{
 			certRelation,
 		},
@@ -767,6 +768,10 @@ func TestCharmSetAppRelationData(t *testing.T) {
 	stateOut, err := ctx.Run("start", stateIn)
 	if err != nil {
 		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("expected no CharmErr, got %v", ctx.CharmErr)
 	}
 
 	if len(stateOut.Relations) != 1 {
@@ -780,6 +785,64 @@ func TestCharmSetAppRelationData(t *testing.T) {
 
 	if appData["certificate_signing_requests"] != "csr-data" {
 		t.Fatalf("expected 'csr-data', got '%s'", appData["certificate_signing_requests"])
+	}
+}
+
+func TestCharmSetAppRelationDataNoRelation(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: SetAppRelationData,
+	}
+
+	stateIn := &goopstest.State{
+		Leader:    true,
+		Relations: []*goopstest.Relation{},
+	}
+
+	_, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr == nil {
+		t.Fatal("Expected CharmErr to be set, got nil")
+	}
+
+	expectedErr := "failed to set relation data: command relation-set failed: ERROR invalid value \"certificates:0\" for option -r: relation not found"
+	if ctx.CharmErr.Error() != expectedErr {
+		t.Errorf("got CharmErr=%q, want %q", ctx.CharmErr.Error(), expectedErr)
+	}
+}
+
+// In regular relations, only the leader unit can write to the app databag
+func TestCharmSetAppRelationDataNonLeader(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm:   SetAppRelationData,
+		AppName: "requirer",
+		UnitID:  "requirer/0",
+	}
+
+	certRelation := &goopstest.Relation{
+		Endpoint: "certificates",
+	}
+	stateIn := &goopstest.State{
+		Leader: false,
+		Relations: []*goopstest.Relation{
+			certRelation,
+		},
+	}
+
+	_, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr == nil {
+		t.Fatal("Expected CharmErr to be set, got nil")
+	}
+
+	expectedErr := "failed to set relation data: command relation-set failed: ERROR cannot write relation settings"
+	if ctx.CharmErr.Error() != expectedErr {
+		t.Errorf("got CharmErr=%q, want %q", ctx.CharmErr.Error(), expectedErr)
 	}
 }
 
@@ -865,6 +928,7 @@ func TestCharmSetAppRelationData2(t *testing.T) {
 		Endpoint: "metrics",
 	}
 	stateIn := &goopstest.State{
+		Leader: true,
 		Relations: []*goopstest.Relation{
 			certRelation,
 		},
