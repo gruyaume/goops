@@ -107,6 +107,36 @@ func TestCharmGetRelationIDsNoName(t *testing.T) {
 	}
 }
 
+func GetRelationIDsNoResult() error {
+	relationIDs, err := goops.GetRelationIDs("nonexistent")
+	if err != nil {
+		return err
+	}
+
+	if len(relationIDs) != 0 {
+		return fmt.Errorf("expected no relation IDs, got %d", len(relationIDs))
+	}
+
+	return nil
+}
+
+func TestCharmGetRelationIDsNoResult(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: GetRelationIDsNoResult,
+	}
+
+	stateIn := &goopstest.State{}
+
+	_, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Fatal("Expected no charm error, got one")
+	}
+}
+
 func ListRelationUnits1Result() error {
 	relationUnits, err := goops.ListRelationUnits("certificates:0")
 	if err != nil {
@@ -206,6 +236,30 @@ func TestCharmListRelationUnits(t *testing.T) {
 		if len(stateOut.Relations) != 1 {
 			t.Fatalf("expected 1 relation, got %d", len(stateOut.Relations))
 		}
+	}
+}
+
+func TestListRelationUnitsResultNotFound(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: ListRelationUnits1Result,
+	}
+
+	stateIn := &goopstest.State{
+		Relations: []*goopstest.Relation{},
+	}
+
+	_, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr == nil {
+		t.Fatal("Expected CharmErr to be set, got nil")
+	}
+
+	expectedErr := "failed to list relation data: command relation-list failed: ERROR invalid value \"certificates:0\" for option -r: relation not found"
+	if ctx.CharmErr.Error() != expectedErr {
+		t.Errorf("got CharmErr=%q, want %q", ctx.CharmErr.Error(), expectedErr)
 	}
 }
 

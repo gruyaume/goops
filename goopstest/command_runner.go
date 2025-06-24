@@ -367,6 +367,8 @@ func (f *fakeCommandRunner) handleRelationList(args []string) {
 			return
 		}
 	}
+
+	f.Err = fmt.Errorf("command relation-list failed: ERROR invalid value \"%s\" for option -r: relation not found", relationID)
 }
 
 func parseRelationSetArgs(args []string) (isApp bool, relationID string, data map[string]string, err error) {

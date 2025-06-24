@@ -13,6 +13,14 @@ const (
 	relationModelGetCommand = "relation-model-get"
 )
 
+// GetRelationIDs retrieves the IDs of all relations for a given endpoint.
+// The output is useful as input to:
+// - ListRelationUnits
+// - GetAppRelationData
+// - GetUnitRelationData
+// - SetUnitRelationData
+// - SetAppRelationData
+// - GetRelationModel
 func GetRelationIDs(name string) ([]string, error) {
 	commandRunner := GetCommandRunner()
 
@@ -33,6 +41,10 @@ func GetRelationIDs(name string) ([]string, error) {
 	return relationIDs, nil
 }
 
+// GetUnitRelationData retrieves the relation data for a specific unit in a relation by its ID.
+// unitID can either be:
+// - The remote unit ID which can be retrieved via goops.ListRelationUnits()
+// - The local unit ID which you can retrieve via goops.ReadEnv()
 func GetUnitRelationData(id string, unitID string) (map[string]string, error) {
 	commandRunner := GetCommandRunner()
 
@@ -55,6 +67,10 @@ func GetUnitRelationData(id string, unitID string) (map[string]string, error) {
 	return relationContent, nil
 }
 
+// GetUnitRelationData retrieves the relation data for a specific app in a relation by its ID.
+// unitID can either be:
+// - The remote unit ID which can be retrieved via goops.ListRelationUnits()
+// - The local unit ID which you can retrieve via goops.ReadEnv()
 func GetAppRelationData(id string, unitID string) (map[string]string, error) {
 	commandRunner := GetCommandRunner()
 
@@ -77,7 +93,7 @@ func GetAppRelationData(id string, unitID string) (map[string]string, error) {
 	return relationContent, nil
 }
 
-// ListRelationUnits lists all units in a relation by its ID.
+// ListRelationUnits lists all remote units in a relation by its ID.
 func ListRelationUnits(id string) ([]string, error) {
 	commandRunner := GetCommandRunner()
 
@@ -98,6 +114,7 @@ func ListRelationUnits(id string) ([]string, error) {
 	return relationList, nil
 }
 
+// GetRelationApp retrieves the remote application name for a relation by its ID.
 func GetRelationApp(id string) (string, error) {
 	commandRunner := GetCommandRunner()
 
@@ -118,6 +135,7 @@ func GetRelationApp(id string) (string, error) {
 	return relationApp, nil
 }
 
+// SetUnitRelationData sets the local unit relation data in a relation by its ID.
 func SetUnitRelationData(id string, data map[string]string) error {
 	commandRunner := GetCommandRunner()
 
@@ -139,6 +157,7 @@ func SetUnitRelationData(id string, data map[string]string) error {
 	return nil
 }
 
+// SetAppRelationData sets the local application relation data in a relation by its ID.
 func SetAppRelationData(id string, data map[string]string) error {
 	commandRunner := GetCommandRunner()
 
@@ -166,7 +185,8 @@ type RelationModel struct {
 	UUID string `json:"uuid"`
 }
 
-func GetRelationModel(id string) (string, error) {
+// GetRelationModel retrieves the relation model UUID for a relation by its ID.
+func GetRelationModelUUID(id string) (string, error) {
 	commandRunner := GetCommandRunner()
 
 	args := []string{"-r=" + id, "--format=json"}
