@@ -12,6 +12,7 @@ const (
 	StatusBlocked     StatusName = "blocked"
 	StatusWaiting     StatusName = "waiting"
 	StatusMaintenance StatusName = "maintenance"
+	StatusUnknown     StatusName = "unknown"
 )
 
 const (
@@ -19,11 +20,12 @@ const (
 	statusSetCommand = "status-set"
 )
 
-type Status struct {
+type UnitStatus struct {
 	Name    StatusName `json:"status"`
 	Message string     `json:"message"`
 }
 
+// SetUnitStatus sets the unit status.
 func SetUnitStatus(status StatusName, message ...string) error {
 	commandRunner := GetCommandRunner()
 
@@ -43,6 +45,8 @@ func SetUnitStatus(status StatusName, message ...string) error {
 	return nil
 }
 
+// SetAppStatus sets the application status.
+// Only the leader unit can set the application status.
 func SetAppStatus(status StatusName, message ...string) error {
 	commandRunner := GetCommandRunner()
 
@@ -62,7 +66,8 @@ func SetAppStatus(status StatusName, message ...string) error {
 	return nil
 }
 
-func GetUnitStatus() (*Status, error) {
+// GetUnitStatus returns the unit status information.
+func GetUnitStatus() (*UnitStatus, error) {
 	commandRunner := GetCommandRunner()
 
 	args := []string{"--include-data", "--format=json"}
@@ -72,7 +77,7 @@ func GetUnitStatus() (*Status, error) {
 		return nil, fmt.Errorf("failed to get status: %w", err)
 	}
 
-	var status Status
+	var status UnitStatus
 
 	err = json.Unmarshal(output, &status)
 	if err != nil {
@@ -82,7 +87,19 @@ func GetUnitStatus() (*Status, error) {
 	return &status, nil
 }
 
-func GetAppStatus() (*Status, error) {
+type AppStatus struct {
+	Name    StatusName            `json:"status"`
+	Message string                `json:"message"`
+	Units   map[string]UnitStatus `json:"units"`
+}
+
+type appStatusReturn struct {
+	AppStatus AppStatus `json:"application-status"`
+}
+
+// GetAppStatus returns the application status information.
+// Only the leader unit can retrieve the application status.
+func GetAppStatus() (*AppStatus, error) {
 	commandRunner := GetCommandRunner()
 
 	args := []string{"--application", "--include-data", "--format=json"}
@@ -92,12 +109,12 @@ func GetAppStatus() (*Status, error) {
 		return nil, fmt.Errorf("failed to get application status: %w", err)
 	}
 
-	var status Status
+	var status appStatusReturn
 
 	err = json.Unmarshal(output, &status)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse application status: %w", err)
 	}
 
-	return &status, nil
+	return &status.AppStatus, nil
 }

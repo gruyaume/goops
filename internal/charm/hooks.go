@@ -229,8 +229,43 @@ func validateGoalState() error {
 		return fmt.Errorf("goal state units is nil")
 	}
 
-	if goalState.Units["example/0"] == nil {
+	expected := goops.GoalStateStatusContents{}
+	if goalState.Units["example/0"] == expected {
 		return fmt.Errorf("goal state unit is nil")
+	}
+
+	return nil
+}
+
+func validateAppStatus() error {
+	isLeader, err := goops.IsLeader()
+	if err != nil {
+		return fmt.Errorf("could not check if unit is leader: %w", err)
+	}
+
+	if !isLeader {
+		goops.LogInfof("This unit is not the leader, skipping application status update")
+		return nil
+	}
+
+	goops.LogInfof("This unit is the leader, setting application status")
+
+	existingAppStatus, err := goops.GetAppStatus()
+	if err != nil {
+		return fmt.Errorf("could not get application status: %w", err)
+	}
+
+	goops.LogInfof("Current application status: %s %s", existingAppStatus.Name, existingAppStatus.Message)
+
+	if existingAppStatus.Name != goops.StatusActive {
+		err = goops.SetAppStatus(goops.StatusActive, "Application is active")
+		if err != nil {
+			return fmt.Errorf("could not set application status: %w", err)
+		}
+
+		goops.LogInfof("Application status set to active")
+	} else {
+		goops.LogInfof("Application status is already active, no need to set it")
 	}
 
 	return nil
@@ -262,12 +297,10 @@ func Configure() error {
 
 	privateAddress, err := goops.GetUnitPrivateAddress()
 	if err != nil {
-		_ = goops.SetUnitStatus(goops.StatusWaiting, "Waiting for unit private address")
 		return nil
 	}
 
 	if privateAddress == "" {
-		_ = goops.SetUnitStatus(goops.StatusWaiting, "Waiting for unit private address")
 		return nil
 	}
 
@@ -335,30 +368,17 @@ func Configure() error {
 		return fmt.Errorf("could not set application version using goops: %w", err)
 	}
 
-	peerRelation, err := goops.GetRelationIDs(PeerRelationName)
-	if err != nil {
-		_ = goops.SetUnitStatus(goops.StatusWaiting, "Waiting for peer relation")
-		return nil
-	}
-
-	if len(peerRelation) == 0 {
-		goops.LogDebugf("No peer relation found, waiting for it to be created")
-		return nil
-	}
-
-	existingStatus, err := goops.GetUnitStatus()
+	existingUnitStatus, err := goops.GetUnitStatus()
 	if err != nil {
 		return fmt.Errorf("could not get unit status: %w", err)
 	}
 
-	goops.LogInfof("Current unit status: %s %s", existingStatus.Name, existingStatus.Message)
-
-	err = goops.SetUnitStatus(goops.StatusActive, "A happy charm")
+	err = validateAppStatus()
 	if err != nil {
-		return fmt.Errorf("could not set unit status: %w", err)
+		return fmt.Errorf("could not validate application status: %w", err)
 	}
 
-	goops.LogInfof("Status set to active")
+	goops.LogInfof("Current unit status: %s %s", existingUnitStatus.Name, existingUnitStatus.Message)
 
 	return nil
 }

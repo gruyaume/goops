@@ -48,6 +48,12 @@ func (c *Context) Run(hookName string, state *State) (*State, error) {
 		}
 	}
 
+	if state.UnitStatus == nil {
+		state.UnitStatus = &Status{
+			Name: StatusUnknown,
+		}
+	}
+
 	fakeCommand := &fakeCommandRunner{
 		Output:        []byte(``),
 		Err:           nil,
@@ -61,6 +67,8 @@ func (c *Context) Run(hookName string, state *State) (*State, error) {
 		AppName:       c.AppName,
 		UnitID:        c.UnitID,
 		Model:         state.Model,
+		UnitStatus:    state.UnitStatus,
+		AppStatus:     state.AppStatus,
 	}
 
 	fakeEnv := &fakeEnvGetter{
@@ -113,6 +121,8 @@ func (c *Context) RunAction(actionName string, state *State, params map[string]a
 		AppName:          c.AppName,
 		UnitID:           c.UnitID,
 		Model:            state.Model,
+		UnitStatus:       state.UnitStatus,
+		AppStatus:        state.AppStatus,
 	}
 
 	if state.Model == nil {

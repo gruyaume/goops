@@ -15,13 +15,13 @@ func TestGoalState_Success(t *testing.T) {
 	goops.SetCommandRunner(fakeRunner)
 
 	expectedGoalState := goops.GoalState{
-		Units: map[string]*goops.UnitStatus{
+		Units: goops.UnitsGoalStateContents{
 			"example/0": {
 				Status: "active",
 				Since:  "2025-04-03 20:05:33Z",
 			},
 		},
-		Relations: map[string]map[string]*goops.RelationStatus{
+		Relations: map[string]goops.UnitsGoalStateContents{
 			"certificates": {
 				"tls-certificates-requirer": {
 					Status: "joined",

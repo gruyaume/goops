@@ -6,19 +6,16 @@ const (
 	goalStateCommand = "goal-state"
 )
 
-type UnitStatus struct {
+type GoalStateStatusContents struct {
 	Status string `json:"status"`
-	Since  string `json:"since"`
+	Since  string `json:"since,omitempty"`
 }
 
-type RelationStatus struct {
-	Status string `json:"status"`
-	Since  string `json:"since"`
-}
+type UnitsGoalStateContents map[string]GoalStateStatusContents
 
 type GoalState struct {
-	Units     map[string]*UnitStatus                `json:"units"`
-	Relations map[string]map[string]*RelationStatus `json:"relations"`
+	Units     UnitsGoalStateContents            `json:"units"`
+	Relations map[string]UnitsGoalStateContents `json:"relations"`
 }
 
 func GetGoalState() (*GoalState, error) {

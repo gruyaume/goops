@@ -58,6 +58,32 @@ func TestOpenPortUDP_Success(t *testing.T) {
 	}
 }
 
+func TestOpenPortICMP_Success(t *testing.T) {
+	fakeRunner := &FakeRunner{
+		Output: []byte(``),
+		Err:    nil,
+	}
+
+	goops.SetCommandRunner(fakeRunner)
+
+	err := goops.OpenPort(0, "icmp")
+	if err != nil {
+		t.Fatalf("OpenPort returned an error: %v", err)
+	}
+
+	if fakeRunner.Command != "open-port" {
+		t.Errorf("Expected command %q, got %q", "open-port", fakeRunner.Command)
+	}
+
+	if len(fakeRunner.Args) != 1 {
+		t.Fatalf("Expected 1 argument, got %d", len(fakeRunner.Args))
+	}
+
+	if fakeRunner.Args[0] != "icmp" {
+		t.Errorf("Expected argument %q, got %q", "icmp", fakeRunner.Args[0])
+	}
+}
+
 func TestOpenPortInvalidPort_Failure(t *testing.T) {
 	fakeRunner := &FakeRunner{
 		Output: []byte(``),

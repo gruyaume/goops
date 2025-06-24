@@ -110,7 +110,7 @@ func TestGetUnitStatus_Success(t *testing.T) {
 
 func TestGetAppStatus_Success(t *testing.T) {
 	fakeRunner := &FakeRunner{
-		Output: []byte(`{"status": "active", "message": "Application is active"}`),
+		Output: []byte(`{"application-status":{"message":"Application is active","status":"active","status-data":{},"units":{"example/0":{"message":"","status":"unknown","status-data":{}},"example/1":{"message":"Application is active","status":"active","status-data":{}}}}}`),
 		Err:    nil,
 	}
 
@@ -127,6 +127,14 @@ func TestGetAppStatus_Success(t *testing.T) {
 
 	if status.Message != "Application is active" {
 		t.Errorf("Expected message %q, got %q", "Application is active", status.Message)
+	}
+
+	if status.Units["example/0"].Name != goops.StatusUnknown {
+		t.Errorf("Expected unit status %q, got %q", goops.StatusUnknown, status.Units["example/0"].Name)
+	}
+
+	if status.Units["example/1"].Name != goops.StatusActive {
+		t.Errorf("Expected unit status %q, got %q", goops.StatusActive, status.Units["example/1"].Name)
 	}
 
 	if fakeRunner.Command != "status-get" {
