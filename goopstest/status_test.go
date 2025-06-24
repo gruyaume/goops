@@ -159,7 +159,7 @@ func SetAppStatusMaintenance() error {
 	return nil
 }
 
-func TestCharmSetAppStatus(t *testing.T) {
+func TestSetAppStatusLeader(t *testing.T) {
 	tests := []struct {
 		name               string
 		handler            func() error
@@ -198,7 +198,9 @@ func TestCharmSetAppStatus(t *testing.T) {
 				Charm: tc.handler,
 			}
 
-			stateIn := &goopstest.State{}
+			stateIn := &goopstest.State{
+				Leader: true, // Assume we are the leader for setting app status
+			}
 
 			stateOut, err := ctx.Run(tc.hookName, stateIn)
 			if err != nil {
@@ -218,6 +220,7 @@ func TestCharmAppStatusPreset(t *testing.T) {
 	}
 
 	stateIn := &goopstest.State{
+		Leader: true,
 		AppStatus: &goopstest.Status{
 			Name: goopstest.StatusActive,
 		},
@@ -403,5 +406,29 @@ func TestGetAppStatusNonLeader(t *testing.T) {
 
 	if stateOut.AppStatus.Message != "My expected message" {
 		t.Errorf("got AppStatus.Message=%q, want %q", stateOut.AppStatus.Message, "My expected message")
+	}
+}
+
+func TestSetAppStatusNonLeader(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: SetAppStatusActive,
+	}
+
+	stateIn := &goopstest.State{
+		Leader: false,
+	}
+
+	_, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr == nil {
+		t.Fatalf("expected CharmErr to be set, got nil")
+	}
+
+	expectedErr := "failed to set status: command status-set failed: ERROR setting application status: this unit is not the leader"
+	if ctx.CharmErr.Error() != expectedErr {
+		t.Errorf("got CharmErr=%q, want %q", ctx.CharmErr.Error(), expectedErr)
 	}
 }

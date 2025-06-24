@@ -110,7 +110,7 @@ func TestGetUnitStatus_Success(t *testing.T) {
 
 func TestGetAppStatus_Success(t *testing.T) {
 	fakeRunner := &FakeRunner{
-		Output: []byte(`{"status": "active", "message": "Application is active"}`),
+		Output: []byte(`{"application-status":{"message":"Application is active","status":"active","status-data":{},"units":{"example/0":{"message":"","status":"unknown","status-data":{}},"example/1":{"message":"Application is active","status":"active","status-data":{}}}}}`),
 		Err:    nil,
 	}
 

@@ -80,6 +80,15 @@ func (f *fakeCommandRunner) Run(name string, args ...string) ([]byte, error) {
 	return nil, fmt.Errorf("unknown command: %s", name)
 }
 
+type AppStatus struct {
+	Name    StatusName `json:"status"`
+	Message string     `json:"message"`
+}
+
+type appStatusReturn struct {
+	AppStatus AppStatus `json:"application-status"`
+}
+
 func (f *fakeCommandRunner) handleStatusGet(args []string) {
 	if args[0] == "--application" {
 		if !f.Leader {
@@ -87,7 +96,12 @@ func (f *fakeCommandRunner) handleStatusGet(args []string) {
 			return
 		}
 
-		appStatus := f.AppStatus
+		appStatus := appStatusReturn{
+			AppStatus: AppStatus{
+				Name:    f.AppStatus.Name,
+				Message: f.AppStatus.Message,
+			},
+		}
 
 		f.Output, f.Err = json.Marshal(appStatus)
 	} else {
@@ -99,6 +113,11 @@ func (f *fakeCommandRunner) handleStatusGet(args []string) {
 
 func (f *fakeCommandRunner) handleStatusSet(args []string) {
 	if args[0] == "--application" {
+		if !f.Leader {
+			f.Err = fmt.Errorf("command status-set failed: ERROR setting application status: this unit is not the leader")
+			return
+		}
+
 		if len(args) < 2 {
 			f.Err = fmt.Errorf("status-set command requires an application status after --application")
 			return
