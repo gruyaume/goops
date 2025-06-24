@@ -87,3 +87,50 @@ func TestGetRelationIDsNoPeers(t *testing.T) {
 		t.Errorf("got CharmErr=%q, want 'expected 1 peer relation ID, got 0'", ctx.CharmErr.Error())
 	}
 }
+
+func ListPeerRelationUnits() error {
+	peerUnits, err := goops.ListRelationUnits("example-peer:0")
+	if err != nil {
+		return fmt.Errorf("could not list peer relation units: %w", err)
+	}
+
+	if len(peerUnits) != 1 {
+		return fmt.Errorf("expected at least one peer unit, got none")
+	}
+
+	if peerUnits[0] != "example/1" {
+		return fmt.Errorf("expected peer unit ID 'example/1', got '%s'", peerUnits[0])
+	}
+
+	return nil
+}
+
+func TestListPeerRelationUnits(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm:   ListPeerRelationUnits,
+		AppName: "example",
+		UnitID:  "example/0",
+	}
+
+	stateIn := &goopstest.State{
+		PeerRelations: []*goopstest.PeerRelation{
+			{
+				ID:        "example-peer:0",
+				PeersData: map[goopstest.UnitID]goopstest.DataBag{"example/1": {}},
+			},
+		},
+	}
+
+	stateOut, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Errorf("expected no error, got %v", ctx.CharmErr)
+	}
+
+	if len(stateOut.PeerRelations) != 1 {
+		t.Errorf("expected 1 peer relation, got %d", len(stateOut.PeerRelations))
+	}
+}

@@ -393,6 +393,25 @@ func (f *fakeCommandRunner) handleRelationList(args []string) {
 		}
 	}
 
+	for _, peerRelation := range f.PeerRelations {
+		if peerRelation.ID == relationID {
+			unitIDs := make([]string, 0, len(peerRelation.PeersData))
+			for unitID := range peerRelation.PeersData {
+				unitIDs = append(unitIDs, string(unitID))
+			}
+
+			output, err := json.Marshal(unitIDs)
+			if err != nil {
+				f.Err = fmt.Errorf("failed to marshal peer relation units: %w", err)
+				return
+			}
+
+			f.Output = output
+
+			return
+		}
+	}
+
 	f.Err = fmt.Errorf("command relation-list failed: ERROR invalid value %q for option -r: relation not found", relationID)
 }
 
