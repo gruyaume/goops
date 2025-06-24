@@ -11,6 +11,7 @@ import (
 const (
 	CaCertificateSecretLabel   = "active-ca-certificates" // #nosec G101
 	TLSCertificatesIntegration = "certificates"
+	PeerRelationName           = "example-peers"
 )
 
 type ConfigOptions struct {
@@ -214,6 +215,27 @@ func validateState() error {
 	return nil
 }
 
+func validateGoalState() error {
+	goalState, err := goops.GetGoalState()
+	if err != nil {
+		return fmt.Errorf("could not get goal state: %w", err)
+	}
+
+	if goalState == nil {
+		return fmt.Errorf("goal state is nil")
+	}
+
+	if goalState.Units == nil {
+		return fmt.Errorf("goal state units is nil")
+	}
+
+	if goalState.Units["example/0"] == nil {
+		return fmt.Errorf("goal state unit is nil")
+	}
+
+	return nil
+}
+
 func Configure() error {
 	meta, err := goops.ReadMetadata()
 	if err != nil {
@@ -272,21 +294,9 @@ func Configure() error {
 		}
 	}
 
-	goalState, err := goops.GetGoalState()
+	err = validateGoalState()
 	if err != nil {
-		return fmt.Errorf("could not get goal state: %w", err)
-	}
-
-	if goalState == nil {
-		return fmt.Errorf("goal state is nil")
-	}
-
-	if goalState.Units == nil {
-		return fmt.Errorf("goal state units is nil")
-	}
-
-	if goalState.Units["example/0"] == nil {
-		return fmt.Errorf("goal state unit is nil")
+		return fmt.Errorf("could not validate goal state: %w", err)
 	}
 
 	_, err = goops.GetCredential()
@@ -323,6 +333,17 @@ func Configure() error {
 	err = goops.SetAppVersion("1.0.0")
 	if err != nil {
 		return fmt.Errorf("could not set application version using goops: %w", err)
+	}
+
+	peerRelation, err := goops.GetRelationIDs(PeerRelationName)
+	if err != nil {
+		_ = goops.SetUnitStatus(goops.StatusWaiting, "Waiting for peer relation")
+		return nil
+	}
+
+	if len(peerRelation) == 0 {
+		goops.LogDebugf("No peer relation found, waiting for it to be created")
+		return nil
 	}
 
 	existingStatus, err := goops.GetUnitStatus()

@@ -523,6 +523,40 @@ func TestGetOtherLocalUnitRelationData(t *testing.T) {
 	}
 }
 
+func TestGetOtherUnexistantLocalUnitRelationData(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm:   GetLocalUnitRelationData,
+		AppName: "banana",
+		UnitID:  "banana/1", // This unit should not be able to read data from unit 0
+	}
+
+	certRelation := &goopstest.Relation{
+		Endpoint: "certificates",
+		LocalUnitData: map[string]string{
+			"certificate_signing_requests": "csr-data",
+		},
+	}
+	stateIn := &goopstest.State{
+		Relations: []*goopstest.Relation{
+			certRelation,
+		},
+	}
+
+	_, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr == nil {
+		t.Fatal("Expected CharmErr to be set, got nil")
+	}
+
+	expectedErr := "failed to get relation data: command relation-get failed: ERROR permission denied"
+	if ctx.CharmErr.Error() != expectedErr {
+		t.Errorf("got CharmErr=%q, want %q", ctx.CharmErr.Error(), expectedErr)
+	}
+}
+
 func GetRemoteAppRelationData() error {
 	relationData, err := goops.GetAppRelationData("certificates:0", "provider/0")
 	if err != nil {

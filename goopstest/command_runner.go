@@ -25,6 +25,7 @@ type fakeCommandRunner struct {
 	ActionError        error
 	ApplicationVersion string
 	Relations          []*Relation
+	PeerRelations      []*PeerRelation
 	Ports              []*Port
 	StoredState        StoredState
 	AppName            string
@@ -226,12 +227,22 @@ func (f *fakeCommandRunner) handleRelationIDs(args []string) {
 		return
 	}
 
-	if len(f.Relations) == 0 {
+	if len(f.Relations) == 0 && len(f.PeerRelations) == 0 {
 		f.Output = []byte(`[]`)
 		return
 	}
 
 	for _, relation := range f.Relations {
+		if len(args) > 0 && args[0] == relation.Endpoint {
+			if relation.ID != "" {
+				f.Output = []byte(fmt.Sprintf(`["%s"]`, relation.ID))
+			} else {
+				f.Output = []byte(`[]`)
+			}
+		}
+	}
+
+	for _, relation := range f.PeerRelations {
 		if len(args) > 0 && args[0] == relation.Endpoint {
 			if relation.ID != "" {
 				f.Output = []byte(fmt.Sprintf(`["%s"]`, relation.ID))
@@ -306,10 +317,11 @@ func (f *fakeCommandRunner) handleRelationGet(args []string) {
 	argAppName := getAppNameFromUnitID(unitID)
 	ctxAppName := getAppNameFromUnitID(f.UnitID)
 
-	var isLocal bool
+	isLocal := argAppName == ctxAppName
 
-	if argAppName == ctxAppName {
-		isLocal = true
+	if !isLocal && argAppName != relation.RemoteAppName {
+		f.Err = fmt.Errorf("command relation-get failed: ERROR permission denied")
+		return
 	}
 
 	if isApp && isLocal && !f.Leader {

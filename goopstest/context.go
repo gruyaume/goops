@@ -38,6 +38,7 @@ func (c *Context) Run(hookName string, state *State) (*State, error) {
 	}
 
 	setRelationIDs(state.Relations)
+	setPeerRelationIDs(state.PeerRelations)
 	setUnitIDs(state.Relations)
 
 	if state.Model == nil {
@@ -48,17 +49,18 @@ func (c *Context) Run(hookName string, state *State) (*State, error) {
 	}
 
 	fakeCommand := &fakeCommandRunner{
-		Output:      []byte(``),
-		Err:         nil,
-		Leader:      state.Leader,
-		Config:      state.Config,
-		Secrets:     state.Secrets,
-		Relations:   state.Relations,
-		Ports:       state.Ports,
-		StoredState: state.StoredState,
-		AppName:     c.AppName,
-		UnitID:      c.UnitID,
-		Model:       state.Model,
+		Output:        []byte(``),
+		Err:           nil,
+		Leader:        state.Leader,
+		Config:        state.Config,
+		Secrets:       state.Secrets,
+		Relations:     state.Relations,
+		PeerRelations: state.PeerRelations,
+		Ports:         state.Ports,
+		StoredState:   state.StoredState,
+		AppName:       c.AppName,
+		UnitID:        c.UnitID,
+		Model:         state.Model,
 	}
 
 	fakeEnv := &fakeEnvGetter{
@@ -103,8 +105,14 @@ func (c *Context) RunAction(actionName string, state *State, params map[string]a
 		Leader:           state.Leader,
 		Config:           state.Config,
 		Secrets:          state.Secrets,
+		Relations:        state.Relations,
+		PeerRelations:    state.PeerRelations,
 		ActionParameters: params,
+		Ports:            state.Ports,
 		StoredState:      state.StoredState,
+		AppName:          c.AppName,
+		UnitID:           c.UnitID,
+		Model:            state.Model,
 	}
 
 	if state.Model == nil {
@@ -156,6 +164,15 @@ func setUnitIDs(relations []*Relation) {
 // For each relation, we set the ID to: <name>:<number>
 func setRelationIDs(relations []*Relation) {
 	for i, relation := range relations {
+		if relation.ID == "" {
+			relation.ID = fmt.Sprintf("%s:%d", relation.Endpoint, i)
+		}
+	}
+}
+
+// For each peer relation, we set the ID to: <name>:<number>
+func setPeerRelationIDs(peerRelations []*PeerRelation) {
+	for i, relation := range peerRelations {
 		if relation.ID == "" {
 			relation.ID = fmt.Sprintf("%s:%d", relation.Endpoint, i)
 		}
