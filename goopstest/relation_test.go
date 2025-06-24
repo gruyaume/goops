@@ -775,3 +775,98 @@ func TestCharmRelationEndToEnd(t *testing.T) {
 		t.Fatalf("expected 1 relation, got %d", len(stateOut.Relations))
 	}
 }
+
+func RelationModelGetUUID() error {
+	modelUUID, err := goops.GetRelationModelUUID("certificates:0")
+	if err != nil {
+		return err
+	}
+
+	if modelUUID != "a4e65ff5-2358-4595-8ace-cc820c120e24" {
+		return fmt.Errorf("expected model UUID 'a4e65ff5-2358-4595-8ace-cc820c120e24', got '%s'", modelUUID)
+	}
+
+	return nil
+}
+
+func TestCharmRelationModelGetUUID(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: RelationModelGetUUID,
+	}
+
+	certRelation := &goopstest.Relation{
+		Endpoint: "certificates",
+	}
+	stateIn := &goopstest.State{
+		Relations: []*goopstest.Relation{
+			certRelation,
+		},
+		Model: &goopstest.Model{
+			UUID: "a4e65ff5-2358-4595-8ace-cc820c120e24",
+		},
+	}
+
+	_, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("expected no CharmErr, got %v", ctx.CharmErr)
+	}
+}
+
+func TestCharmRelationModelGetUUIDWithRemoteModelUUID(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: RelationModelGetUUID,
+	}
+
+	certRelation := &goopstest.Relation{
+		Endpoint:        "certificates",
+		RemoteModelUUID: "a4e65ff5-2358-4595-8ace-cc820c120e24",
+	}
+	stateIn := &goopstest.State{
+		Relations: []*goopstest.Relation{
+			certRelation,
+		},
+		Model: &goopstest.Model{
+			UUID: "a-different-uuid",
+		},
+	}
+
+	_, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("expected no CharmErr, got %v", ctx.CharmErr)
+	}
+}
+
+func TestCharmRelationModelGetUUIDNoRelation(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: RelationModelGetUUID,
+	}
+
+	stateIn := &goopstest.State{
+		Relations: []*goopstest.Relation{},
+		Model: &goopstest.Model{
+			UUID: "a4e65ff5-2358-4595-8ace-cc820c120e24",
+		},
+	}
+
+	_, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr == nil {
+		t.Fatalf("expected CharmErr to be set, got nil")
+	}
+
+	expectedError := "failed to get relation model data: command relation-model-get failed: ERROR invalid value \"certificates:0\" for option -r: relation not found"
+	if ctx.CharmErr.Error() != expectedError {
+		t.Errorf("got CharmErr=%q, want %q", ctx.CharmErr.Error(), expectedError)
+	}
+}

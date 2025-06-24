@@ -58,6 +58,7 @@ func (c *Context) Run(hookName string, state *State) (*State, error) {
 		StoredState: state.StoredState,
 		AppName:     c.AppName,
 		UnitID:      c.UnitID,
+		Model:       state.Model,
 	}
 
 	fakeEnv := &fakeEnvGetter{
