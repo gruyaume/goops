@@ -25,6 +25,7 @@ type Status struct {
 	Message string     `json:"message"`
 }
 
+// SetUnitStatus sets the unit status.
 func SetUnitStatus(status StatusName, message ...string) error {
 	commandRunner := GetCommandRunner()
 
@@ -44,6 +45,8 @@ func SetUnitStatus(status StatusName, message ...string) error {
 	return nil
 }
 
+// SetAppStatus sets the application status.
+// Only the leader unit can set the application status.
 func SetAppStatus(status StatusName, message ...string) error {
 	commandRunner := GetCommandRunner()
 
@@ -63,6 +66,7 @@ func SetAppStatus(status StatusName, message ...string) error {
 	return nil
 }
 
+// GetUnitStatus returns the unit status information.
 func GetUnitStatus() (*Status, error) {
 	commandRunner := GetCommandRunner()
 
@@ -83,6 +87,8 @@ func GetUnitStatus() (*Status, error) {
 	return &status, nil
 }
 
+// GetAppStatus returns the application status information.
+// Only the leader unit can retrieve the application status.
 func GetAppStatus() (*Status, error) {
 	commandRunner := GetCommandRunner()
 
