@@ -15,8 +15,8 @@ type fakeCommandRunner struct {
 	Args               []string
 	Output             []byte
 	Err                error
-	UnitStatus         Status
-	AppStatus          Status
+	UnitStatus         *Status
+	AppStatus          *Status
 	Leader             bool
 	Config             map[string]any
 	Secrets            []*Secret
@@ -67,6 +67,7 @@ func (f *fakeCommandRunner) Run(name string, args ...string) ([]byte, error) {
 		"state-get":               f.handleStateGet,
 		"state-set":               f.handleStateSet,
 		"state-delete":            f.handleStateDelete,
+		"status-get":              f.handleStatusGet,
 		"status-set":              f.handleStatusSet,
 		"juju-log":                f.handleJujuLog,
 	}
@@ -79,6 +80,23 @@ func (f *fakeCommandRunner) Run(name string, args ...string) ([]byte, error) {
 	return nil, fmt.Errorf("unknown command: %s", name)
 }
 
+func (f *fakeCommandRunner) handleStatusGet(args []string) {
+	if args[0] == "--application" {
+		if !f.Leader {
+			f.Err = fmt.Errorf("command status-get failed: ERROR finding application status: this unit is not the leader")
+			return
+		}
+
+		appStatus := f.AppStatus
+
+		f.Output, f.Err = json.Marshal(appStatus)
+	} else {
+		unitStatus := f.UnitStatus
+
+		f.Output, f.Err = json.Marshal(unitStatus)
+	}
+}
+
 func (f *fakeCommandRunner) handleStatusSet(args []string) {
 	if args[0] == "--application" {
 		if len(args) < 2 {
@@ -86,12 +104,12 @@ func (f *fakeCommandRunner) handleStatusSet(args []string) {
 			return
 		}
 
-		f.AppStatus = Status{
+		f.AppStatus = &Status{
 			Name:    StatusName(args[1]),
 			Message: strings.Join(args[2:], " "),
 		}
 	} else {
-		f.UnitStatus = Status{
+		f.UnitStatus = &Status{
 			Name:    StatusName(args[0]),
 			Message: strings.Join(args[1:], " "),
 		}

@@ -262,12 +262,10 @@ func Configure() error {
 
 	privateAddress, err := goops.GetUnitPrivateAddress()
 	if err != nil {
-		_ = goops.SetUnitStatus(goops.StatusWaiting, "Waiting for unit private address")
 		return nil
 	}
 
 	if privateAddress == "" {
-		_ = goops.SetUnitStatus(goops.StatusWaiting, "Waiting for unit private address")
 		return nil
 	}
 
@@ -337,7 +335,6 @@ func Configure() error {
 
 	peerRelation, err := goops.GetRelationIDs(PeerRelationName)
 	if err != nil {
-		_ = goops.SetUnitStatus(goops.StatusWaiting, "Waiting for peer relation")
 		return nil
 	}
 
@@ -352,11 +349,6 @@ func Configure() error {
 	}
 
 	goops.LogInfof("Current unit status: %s %s", existingStatus.Name, existingStatus.Message)
-
-	err = goops.SetUnitStatus(goops.StatusActive, "A happy charm")
-	if err != nil {
-		return fmt.Errorf("could not set unit status: %w", err)
-	}
 
 	goops.LogInfof("Status set to active")
 

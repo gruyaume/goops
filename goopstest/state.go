@@ -95,14 +95,14 @@ const (
 )
 
 type Status struct {
-	Name    StatusName
-	Message string
+	Name    StatusName `json:"status"`
+	Message string     `json:"message"`
 }
 
 type State struct {
 	Leader             bool
-	UnitStatus         Status
-	AppStatus          Status
+	UnitStatus         *Status
+	AppStatus          *Status
 	Config             map[string]any
 	Secrets            []*Secret
 	ApplicationVersion string

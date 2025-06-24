@@ -12,6 +12,7 @@ const (
 	StatusBlocked     StatusName = "blocked"
 	StatusWaiting     StatusName = "waiting"
 	StatusMaintenance StatusName = "maintenance"
+	StatusUnknown     StatusName = "unknown"
 )
 
 const (

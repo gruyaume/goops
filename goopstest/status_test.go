@@ -1,13 +1,14 @@
 package goopstest_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/gruyaume/goops"
 	"github.com/gruyaume/goops/goopstest"
 )
 
-func UnitActiveStatus() error {
+func SetUnitStatusActive() error {
 	err := goops.SetUnitStatus(goops.StatusActive, "Charm is active")
 	if err != nil {
 		return err
@@ -16,7 +17,7 @@ func UnitActiveStatus() error {
 	return nil
 }
 
-func UnitBlockedStatus() error {
+func SetUnitStatusBlocked() error {
 	err := goops.SetUnitStatus(goops.StatusBlocked, "This is a test message")
 	if err != nil {
 		return err
@@ -25,7 +26,7 @@ func UnitBlockedStatus() error {
 	return nil
 }
 
-func UnitWaitingStatus() error {
+func SetUnitStatusWaiting() error {
 	err := goops.SetUnitStatus(goops.StatusWaiting, "Waiting for something")
 	if err != nil {
 		return err
@@ -34,7 +35,7 @@ func UnitWaitingStatus() error {
 	return nil
 }
 
-func UnitMaintenanceStatus() error {
+func SetUnitStatusMaintenance() error {
 	err := goops.SetUnitStatus(goops.StatusMaintenance, "Performing maintenance")
 	if err != nil {
 		return err
@@ -43,7 +44,7 @@ func UnitMaintenanceStatus() error {
 	return nil
 }
 
-func TestCharmUnitStatus(t *testing.T) {
+func TestCharmSetUnitStatus(t *testing.T) {
 	tests := []struct {
 		name                  string
 		handler               func() error
@@ -52,26 +53,26 @@ func TestCharmUnitStatus(t *testing.T) {
 		expectedStatusMessage string
 	}{
 		{
-			name:               "UnitActiveStatus",
-			handler:            UnitActiveStatus,
+			name:               "SetUnitStatusActive",
+			handler:            SetUnitStatusActive,
 			hookName:           "start",
 			expectedStatusName: goopstest.StatusActive,
 		},
 		{
-			name:               "UnitBlockedStatus",
-			handler:            UnitBlockedStatus,
+			name:               "SetUnitStatusBlocked",
+			handler:            SetUnitStatusBlocked,
 			hookName:           "start",
 			expectedStatusName: goopstest.StatusBlocked,
 		},
 		{
-			name:               "UnitWaitingStatus",
-			handler:            UnitWaitingStatus,
+			name:               "SetUnitStatusWaiting",
+			handler:            SetUnitStatusWaiting,
 			hookName:           "start",
 			expectedStatusName: goopstest.StatusWaiting,
 		},
 		{
-			name:               "UnitMaintenanceStatus",
-			handler:            UnitMaintenanceStatus,
+			name:               "SetUnitStatusMaintenance",
+			handler:            SetUnitStatusMaintenance,
 			hookName:           "start",
 			expectedStatusName: goopstest.StatusMaintenance,
 		},
@@ -97,13 +98,13 @@ func TestCharmUnitStatus(t *testing.T) {
 	}
 }
 
-func TestCharmUnitStatusPreset(t *testing.T) {
+func TestCharmSetUnitStatusPreset(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: UnitMaintenanceStatus,
+		Charm: SetUnitStatusMaintenance,
 	}
 
 	stateIn := &goopstest.State{
-		UnitStatus: goopstest.Status{
+		UnitStatus: &goopstest.Status{
 			Name: goopstest.StatusActive,
 		},
 	}
@@ -122,7 +123,7 @@ func TestCharmUnitStatusPreset(t *testing.T) {
 	}
 }
 
-func AppActiveStatus() error {
+func SetAppStatusActive() error {
 	err := goops.SetAppStatus(goops.StatusActive, "Charm is active")
 	if err != nil {
 		return err
@@ -131,7 +132,7 @@ func AppActiveStatus() error {
 	return nil
 }
 
-func AppBlockedStatus() error {
+func SetAppStatusBlocked() error {
 	err := goops.SetAppStatus(goops.StatusBlocked, "This is a test message")
 	if err != nil {
 		return err
@@ -140,7 +141,7 @@ func AppBlockedStatus() error {
 	return nil
 }
 
-func AppWaitingStatus() error {
+func SetAppStatusWaiting() error {
 	err := goops.SetAppStatus(goops.StatusWaiting, "Waiting for something")
 	if err != nil {
 		return err
@@ -149,7 +150,7 @@ func AppWaitingStatus() error {
 	return nil
 }
 
-func AppMaintenanceStatus() error {
+func SetAppStatusMaintenance() error {
 	err := goops.SetAppStatus(goops.StatusMaintenance, "Performing maintenance")
 	if err != nil {
 		return err
@@ -158,7 +159,7 @@ func AppMaintenanceStatus() error {
 	return nil
 }
 
-func TestCharmAppStatus(t *testing.T) {
+func TestCharmSetAppStatus(t *testing.T) {
 	tests := []struct {
 		name               string
 		handler            func() error
@@ -166,26 +167,26 @@ func TestCharmAppStatus(t *testing.T) {
 		expectedStatusName goopstest.StatusName
 	}{
 		{
-			name:               "AppActiveStatus",
-			handler:            AppActiveStatus,
+			name:               "SetAppStatusActive",
+			handler:            SetAppStatusActive,
 			hookName:           "start",
 			expectedStatusName: goopstest.StatusActive,
 		},
 		{
-			name:               "AppBlockedStatus",
-			handler:            AppBlockedStatus,
+			name:               "SetAppStatusBlocked",
+			handler:            SetAppStatusBlocked,
 			hookName:           "start",
 			expectedStatusName: goopstest.StatusBlocked,
 		},
 		{
-			name:               "AppWaitingStatus",
-			handler:            AppWaitingStatus,
+			name:               "SetAppStatusWaiting",
+			handler:            SetAppStatusWaiting,
 			hookName:           "start",
 			expectedStatusName: goopstest.StatusWaiting,
 		},
 		{
-			name:               "AppMaintenanceStatus",
-			handler:            AppMaintenanceStatus,
+			name:               "SetAppStatusMaintenance",
+			handler:            SetAppStatusMaintenance,
 			hookName:           "start",
 			expectedStatusName: goopstest.StatusMaintenance,
 		},
@@ -213,11 +214,11 @@ func TestCharmAppStatus(t *testing.T) {
 
 func TestCharmAppStatusPreset(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: AppMaintenanceStatus,
+		Charm: SetAppStatusMaintenance,
 	}
 
 	stateIn := &goopstest.State{
-		AppStatus: goopstest.Status{
+		AppStatus: &goopstest.Status{
 			Name: goopstest.StatusActive,
 		},
 	}
@@ -233,5 +234,174 @@ func TestCharmAppStatusPreset(t *testing.T) {
 
 	if stateOut.AppStatus.Message != "Performing maintenance" {
 		t.Errorf("got AppStatus.Message=%q, want %q", stateOut.AppStatus.Message, "Performing maintenance")
+	}
+}
+
+func GetUnitStatus() error {
+	status, err := goops.GetUnitStatus()
+	if err != nil {
+		return err
+	}
+
+	if status.Name != goops.StatusActive {
+		return fmt.Errorf("expected active status, got %q", status.Name)
+	}
+
+	if status.Message != "My expected message" {
+		return fmt.Errorf("unexpected message: got %q, want %q", status.Message, "My expected message")
+	}
+
+	return nil
+}
+
+func TestGetUnitStatus(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: GetUnitStatus,
+	}
+
+	stateIn := &goopstest.State{
+		UnitStatus: &goopstest.Status{
+			Name:    goopstest.StatusActive,
+			Message: "My expected message",
+		},
+	}
+
+	stateOut, err := ctx.Run("install", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("expected no error, got %v", ctx.CharmErr)
+	}
+
+	if stateOut.UnitStatus.Name != goopstest.StatusActive {
+		t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, goopstest.StatusActive)
+	}
+
+	if stateOut.UnitStatus.Message != "My expected message" {
+		t.Errorf("got UnitStatus.Message=%q, want %q", stateOut.UnitStatus.Message, "My expected message")
+	}
+}
+
+func GetUnitStatusUnknown() error {
+	status, err := goops.GetUnitStatus()
+	if err != nil {
+		return err
+	}
+
+	if status.Name != goops.StatusUnknown {
+		return fmt.Errorf("expected unknown status, got %q", status.Name)
+	}
+
+	return nil
+}
+
+func TestGetUnitStatusNotSet(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: GetUnitStatusUnknown,
+	}
+
+	stateIn := &goopstest.State{}
+
+	stateOut, err := ctx.Run("install", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("expected no error, got %v", ctx.CharmErr)
+	}
+
+	if stateOut.UnitStatus.Name != goopstest.StatusUnknown {
+		t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, goopstest.StatusUnknown)
+	}
+
+	if stateOut.UnitStatus.Message != "" {
+		t.Errorf("got UnitStatus.Message=%q, want empty string", stateOut.UnitStatus.Message)
+	}
+}
+
+func GetAppStatus() error {
+	status, err := goops.GetAppStatus()
+	if err != nil {
+		return err
+	}
+
+	if status.Name != goops.StatusActive {
+		return fmt.Errorf("expected active status, got %q", status.Name)
+	}
+
+	if status.Message != "My expected message" {
+		return fmt.Errorf("unexpected message: got %q, want %q", status.Message, "My expected message")
+	}
+
+	return nil
+}
+
+func TestGetAppStatusLeader(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: GetAppStatus,
+	}
+
+	stateIn := &goopstest.State{
+		Leader: true,
+		AppStatus: &goopstest.Status{
+			Name:    goopstest.StatusActive,
+			Message: "My expected message",
+		},
+	}
+
+	stateOut, err := ctx.Run("install", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("expected no error, got %v", ctx.CharmErr)
+	}
+
+	if stateOut.AppStatus.Name != goopstest.StatusActive {
+		t.Errorf("got AppStatus=%q, want %q", stateOut.AppStatus, goopstest.StatusActive)
+	}
+
+	if stateOut.AppStatus.Message != "My expected message" {
+		t.Errorf("got AppStatus.Message=%q, want %q", stateOut.AppStatus.Message, "My expected message")
+	}
+}
+
+func TestGetAppStatusNonLeader(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: GetAppStatus,
+	}
+
+	stateIn := &goopstest.State{
+		Leader: false,
+		AppStatus: &goopstest.Status{
+			Name:    goopstest.StatusActive,
+			Message: "My expected message",
+		},
+	}
+
+	stateOut, err := ctx.Run("install", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr == nil {
+		t.Fatalf("expected CharmErr to be set, got nil")
+	}
+
+	expectedErr := "failed to get application status: command status-get failed: ERROR finding application status: this unit is not the leader"
+	if ctx.CharmErr.Error() != expectedErr {
+		t.Errorf("got CharmErr=%q, want %q", ctx.CharmErr.Error(), expectedErr)
+	}
+
+	if stateOut.AppStatus.Name != goopstest.StatusActive {
+		t.Errorf("got AppStatus=%q, want %q", stateOut.AppStatus, goopstest.StatusActive)
+	}
+
+	if stateOut.AppStatus.Message != "My expected message" {
+		t.Errorf("got AppStatus.Message=%q, want %q", stateOut.AppStatus.Message, "My expected message")
 	}
 }
