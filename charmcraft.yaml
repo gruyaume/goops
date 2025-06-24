@@ -28,6 +28,10 @@ config:
         Changing this value will trigger generation of a new CA certificate,
         revoking all previously issued certificates.
 
+peers:
+  example-peers:
+    interface: example-peer
+
 provides:
   certificates:
     interface: tls-certificates

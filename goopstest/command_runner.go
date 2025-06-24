@@ -25,6 +25,7 @@ type fakeCommandRunner struct {
 	ActionError        error
 	ApplicationVersion string
 	Relations          []*Relation
+	PeerRelations      []*PeerRelation
 	Ports              []*Port
 	StoredState        StoredState
 	AppName            string
@@ -226,12 +227,22 @@ func (f *fakeCommandRunner) handleRelationIDs(args []string) {
 		return
 	}
 
-	if len(f.Relations) == 0 {
+	if len(f.Relations) == 0 && len(f.PeerRelations) == 0 {
 		f.Output = []byte(`[]`)
 		return
 	}
 
 	for _, relation := range f.Relations {
+		if len(args) > 0 && args[0] == relation.Endpoint {
+			if relation.ID != "" {
+				f.Output = []byte(fmt.Sprintf(`["%s"]`, relation.ID))
+			} else {
+				f.Output = []byte(`[]`)
+			}
+		}
+	}
+
+	for _, relation := range f.PeerRelations {
 		if len(args) > 0 && args[0] == relation.Endpoint {
 			if relation.ID != "" {
 				f.Output = []byte(fmt.Sprintf(`["%s"]`, relation.ID))
@@ -254,6 +265,16 @@ func (f *fakeCommandRunner) findRelationByID(id string) *Relation {
 	for i := range f.Relations {
 		if f.Relations[i].ID == id {
 			return f.Relations[i]
+		}
+	}
+
+	return nil
+}
+
+func (f *fakeCommandRunner) findPeerRelationByID(id string) *PeerRelation {
+	for i := range f.PeerRelations {
+		if f.PeerRelations[i].ID == id {
+			return f.PeerRelations[i]
 		}
 	}
 
@@ -298,34 +319,52 @@ func (f *fakeCommandRunner) handleRelationGet(args []string) {
 	}
 
 	relation := f.findRelationByID(relationID)
-	if relation == nil {
+	peerRelation := f.findPeerRelationByID(relationID)
+
+	if relation == nil && peerRelation == nil {
 		f.Err = fmt.Errorf("command relation-get failed: ERROR invalid value %q for option -r: relation not found", relationID)
 		return
 	}
 
-	argAppName := getAppNameFromUnitID(unitID)
-	ctxAppName := getAppNameFromUnitID(f.UnitID)
+	if relation != nil {
+		argAppName := getAppNameFromUnitID(unitID)
+		ctxAppName := getAppNameFromUnitID(f.UnitID)
 
-	var isLocal bool
+		isLocal := argAppName == ctxAppName
 
-	if argAppName == ctxAppName {
-		isLocal = true
+		if !isLocal && argAppName != relation.RemoteAppName {
+			f.Err = fmt.Errorf("command relation-get failed: ERROR permission denied")
+			return
+		}
+
+		if isApp && isLocal && !f.Leader {
+			f.Err = fmt.Errorf("command relation-get failed: ERROR permission denied")
+			return
+		}
+
+		data, err := f.selectRelationData(relation, isApp, isLocal, unitID)
+		if err != nil {
+			f.Err = err
+			return
+		}
+
+		f.Output, err = json.Marshal(data)
+		if err != nil {
+			f.Err = fmt.Errorf("failed to marshal relation data: %w", err)
+		}
 	}
 
-	if isApp && isLocal && !f.Leader {
-		f.Err = fmt.Errorf("command relation-get failed: ERROR permission denied")
-		return
-	}
+	if peerRelation != nil {
+		data, err := f.selectPeerRelationData(peerRelation, isApp, unitID)
+		if err != nil {
+			f.Err = err
+			return
+		}
 
-	data, err := f.selectRelationData(relation, isApp, isLocal, unitID)
-	if err != nil {
-		f.Err = err
-		return
-	}
-
-	f.Output, err = json.Marshal(data)
-	if err != nil {
-		f.Err = fmt.Errorf("failed to marshal relation data: %w", err)
+		f.Output, err = json.Marshal(data)
+		if err != nil {
+			f.Err = fmt.Errorf("failed to marshal relation data: %w", err)
+		}
 	}
 }
 
@@ -358,6 +397,23 @@ func (f *fakeCommandRunner) selectRelationData(rel *Relation, isApp bool, isLoca
 	return unitData, nil
 }
 
+func (f *fakeCommandRunner) selectPeerRelationData(rel *PeerRelation, isApp bool, unitID string) (any, error) {
+	if isApp {
+		return safeCopy(rel.LocalAppData), nil
+	}
+
+	if f.UnitID == unitID {
+		return safeCopy(rel.LocalUnitData), nil
+	}
+
+	unitData, ok := rel.PeersData[UnitID(unitID)]
+	if !ok {
+		return nil, fmt.Errorf("command relation-get failed: ERROR cannot read settings for unit %q in peer relation %q: unit %q: settings not found", unitID, rel.ID, unitID)
+	}
+
+	return unitData, nil
+}
+
 func (f *fakeCommandRunner) handleRelationList(args []string) {
 	meta, _ := splitPrefixedArgs(args, "-")
 	relationID := meta["r"]
@@ -372,6 +428,25 @@ func (f *fakeCommandRunner) handleRelationList(args []string) {
 			output, err := json.Marshal(unitIDs)
 			if err != nil {
 				f.Err = fmt.Errorf("failed to marshal relation units: %w", err)
+				return
+			}
+
+			f.Output = output
+
+			return
+		}
+	}
+
+	for _, peerRelation := range f.PeerRelations {
+		if peerRelation.ID == relationID {
+			unitIDs := make([]string, 0, len(peerRelation.PeersData))
+			for unitID := range peerRelation.PeersData {
+				unitIDs = append(unitIDs, string(unitID))
+			}
+
+			output, err := json.Marshal(unitIDs)
+			if err != nil {
+				f.Err = fmt.Errorf("failed to marshal peer relation units: %w", err)
 				return
 			}
 
@@ -415,7 +490,9 @@ func (f *fakeCommandRunner) handleRelationSet(args []string) {
 	}
 
 	relation := f.findRelationByID(relationID)
-	if relation == nil {
+	peerRelation := f.findPeerRelationByID(relationID)
+
+	if relation == nil && peerRelation == nil {
 		f.Err = fmt.Errorf("command relation-set failed: ERROR invalid value %q for option -r: relation not found", relationID)
 		return
 	}
@@ -425,16 +502,7 @@ func (f *fakeCommandRunner) handleRelationSet(args []string) {
 		return
 	}
 
-	for _, relation := range f.Relations {
-		if relation.ID != relationID {
-			continue
-		}
-
-		target := &relation.LocalUnitData
-		if isApp {
-			target = &relation.LocalAppData
-		}
-
+	updateDataBag := func(target *DataBag) {
 		if *target == nil {
 			*target = make(DataBag)
 		}
@@ -442,6 +510,24 @@ func (f *fakeCommandRunner) handleRelationSet(args []string) {
 		for k, v := range data {
 			(*target)[k] = v
 		}
+	}
+
+	if relation != nil {
+		target := &relation.LocalUnitData
+		if isApp {
+			target = &relation.LocalAppData
+		}
+
+		updateDataBag(target)
+	}
+
+	if peerRelation != nil {
+		target := &peerRelation.LocalUnitData
+		if isApp {
+			target = &peerRelation.LocalAppData
+		}
+
+		updateDataBag(target)
 	}
 }
 
@@ -455,12 +541,18 @@ func (f *fakeCommandRunner) handleRelationModelGet(args []string) {
 	}
 
 	relation := f.findRelationByID(relationID)
-	if relation == nil {
+	peerRelation := f.findPeerRelationByID(relationID)
+
+	if relation == nil && peerRelation == nil {
 		f.Err = fmt.Errorf("command relation-model-get failed: ERROR invalid value %q for option -r: relation not found", relationID)
 		return
 	}
 
-	uuid := relation.RemoteModelUUID
+	var uuid string
+	if relation != nil {
+		uuid = relation.RemoteModelUUID
+	}
+
 	if uuid == "" && f.Model != nil {
 		uuid = f.Model.UUID
 	}

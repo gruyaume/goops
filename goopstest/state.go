@@ -32,6 +32,15 @@ type Relation struct {
 	RemoteModelUUID string
 }
 
+type PeerRelation struct {
+	Endpoint      string
+	Interface     string
+	ID            string
+	LocalAppData  DataBag
+	LocalUnitData DataBag
+	PeersData     map[UnitID]DataBag // Does not include data for the unit under test
+}
+
 type Port struct {
 	Port     int
 	Protocol string
@@ -98,6 +107,7 @@ type State struct {
 	Secrets            []*Secret
 	ApplicationVersion string
 	Relations          []*Relation
+	PeerRelations      []*PeerRelation
 	Ports              []*Port
 	Model              *Model
 	StoredState        StoredState
