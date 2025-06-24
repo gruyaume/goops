@@ -490,7 +490,9 @@ func (f *fakeCommandRunner) handleRelationSet(args []string) {
 	}
 
 	relation := f.findRelationByID(relationID)
-	if relation == nil {
+	peerRelation := f.findPeerRelationByID(relationID)
+
+	if relation == nil && peerRelation == nil {
 		f.Err = fmt.Errorf("command relation-set failed: ERROR invalid value %q for option -r: relation not found", relationID)
 		return
 	}
@@ -500,16 +502,7 @@ func (f *fakeCommandRunner) handleRelationSet(args []string) {
 		return
 	}
 
-	for _, relation := range f.Relations {
-		if relation.ID != relationID {
-			continue
-		}
-
-		target := &relation.LocalUnitData
-		if isApp {
-			target = &relation.LocalAppData
-		}
-
+	updateDataBag := func(target *DataBag) {
 		if *target == nil {
 			*target = make(DataBag)
 		}
@@ -517,6 +510,24 @@ func (f *fakeCommandRunner) handleRelationSet(args []string) {
 		for k, v := range data {
 			(*target)[k] = v
 		}
+	}
+
+	if relation != nil {
+		target := &relation.LocalUnitData
+		if isApp {
+			target = &relation.LocalAppData
+		}
+
+		updateDataBag(target)
+	}
+
+	if peerRelation != nil {
+		target := &peerRelation.LocalUnitData
+		if isApp {
+			target = &peerRelation.LocalAppData
+		}
+
+		updateDataBag(target)
 	}
 }
 

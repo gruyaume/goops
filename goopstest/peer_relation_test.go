@@ -374,3 +374,135 @@ func TestGetAppPeerRelationDataNoRelation(t *testing.T) {
 		t.Errorf("got CharmErr=%q, want '%s'", ctx.CharmErr.Error(), expectedErr)
 	}
 }
+
+func SetPeerUnitRelationData() error {
+	relationData := map[string]string{
+		"whatever_key": "whatever_value",
+	}
+
+	err := goops.SetUnitRelationData("example-peer:0", relationData)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func TestSetPeerUnitRelationData(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm:   SetPeerUnitRelationData,
+		AppName: "example",
+		UnitID:  "example/0",
+	}
+
+	stateIn := &goopstest.State{
+		PeerRelations: []*goopstest.PeerRelation{
+			{
+				ID: "example-peer:0",
+			},
+		},
+	}
+
+	stateOut, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("expected no error, got %v", ctx.CharmErr)
+	}
+
+	if len(stateOut.PeerRelations) != 1 {
+		t.Errorf("expected 1 peer relation, got %d", len(stateOut.PeerRelations))
+	}
+
+	if stateOut.PeerRelations[0].LocalUnitData["whatever_key"] != "whatever_value" {
+		t.Errorf("expected 'whatever_key=whatever_value', got '%s=%s'", "whatever_key", stateOut.PeerRelations[0].LocalUnitData["whatever_key"])
+	}
+}
+
+func SetPeerAppRelationData() error {
+	relationData := map[string]string{
+		"app_key": "app_value",
+	}
+
+	err := goops.SetAppRelationData("example-peer:0", relationData)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func TestSetPeerAppRelationDataLeader(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm:   SetPeerAppRelationData,
+		AppName: "example-peer",
+		UnitID:  "example-peer/0",
+	}
+
+	stateIn := &goopstest.State{
+		Leader: true,
+		PeerRelations: []*goopstest.PeerRelation{
+			{
+				ID: "example-peer:0",
+			},
+		},
+	}
+
+	stateOut, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("expected no error, got %v", ctx.CharmErr)
+	}
+
+	if len(stateOut.PeerRelations) != 1 {
+		t.Errorf("expected 1 peer relation, got %d", len(stateOut.PeerRelations))
+	}
+
+	if stateOut.PeerRelations[0].LocalAppData["app_key"] != "app_value" {
+		t.Errorf("expected 'app_key=app_value', got '%s=%s'", "app_key", stateOut.PeerRelations[0].LocalAppData["app_key"])
+	}
+}
+
+func TestSetPeerAppRelationDataNonLeader(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm:   SetPeerAppRelationData,
+		AppName: "example-peer",
+		UnitID:  "example-peer/0",
+	}
+
+	stateIn := &goopstest.State{
+		Leader: false,
+		PeerRelations: []*goopstest.PeerRelation{
+			{
+				ID: "example-peer:0",
+			},
+		},
+	}
+
+	stateOut, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr == nil {
+		t.Fatalf("expected charm error to be set, got nil")
+	}
+
+	expectedErr := "failed to set relation data: command relation-set failed: ERROR cannot write relation settings"
+	if ctx.CharmErr.Error() != expectedErr {
+		t.Errorf("got CharmErr=%q, want '%s'", ctx.CharmErr.Error(), expectedErr)
+	}
+
+	if len(stateOut.PeerRelations) != 1 {
+		t.Errorf("expected 1 peer relation, got %d", len(stateOut.PeerRelations))
+	}
+
+	if stateOut.PeerRelations[0].LocalAppData != nil {
+		t.Errorf("expected no app relation data, got %v", stateOut.PeerRelations[0].LocalAppData)
+	}
+}
