@@ -129,6 +129,14 @@ func TestGetAppStatus_Success(t *testing.T) {
 		t.Errorf("Expected message %q, got %q", "Application is active", status.Message)
 	}
 
+	if status.Units["example/0"].Name != goops.StatusUnknown {
+		t.Errorf("Expected unit status %q, got %q", goops.StatusUnknown, status.Units["example/0"].Name)
+	}
+
+	if status.Units["example/1"].Name != goops.StatusActive {
+		t.Errorf("Expected unit status %q, got %q", goops.StatusActive, status.Units["example/1"].Name)
+	}
+
 	if fakeRunner.Command != "status-get" {
 		t.Errorf("Expected command %q, got %q", "status-get", fakeRunner.Command)
 	}

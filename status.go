@@ -88,8 +88,9 @@ func GetUnitStatus() (*UnitStatus, error) {
 }
 
 type AppStatus struct {
-	Name    StatusName `json:"status"`
-	Message string     `json:"message"`
+	Name    StatusName            `json:"status"`
+	Message string                `json:"message"`
+	Units   map[string]UnitStatus `json:"units"`
 }
 
 type appStatusReturn struct {
