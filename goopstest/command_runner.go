@@ -28,8 +28,9 @@ type fakeCommandRunner struct {
 	Ports              []*Port
 	StoredState        StoredState
 	AppName            string
-	UnitID             int
+	UnitID             string
 	JujuLog            []JujuLogLine
+	Model              *Model
 }
 
 func (f *fakeCommandRunner) Run(name string, args ...string) ([]byte, error) {
@@ -53,6 +54,7 @@ func (f *fakeCommandRunner) Run(name string, args ...string) ([]byte, error) {
 		"relation-get":            f.handleRelationGet,
 		"relation-list":           f.handleRelationList,
 		"relation-set":            f.handleRelationSet,
+		"relation-model-get":      f.handleRelationModelGet,
 		"secret-add":              f.handleSecretAdd,
 		"secret-get":              f.handleSecretGet,
 		"secret-remove":           f.handleSecretRemove,
@@ -77,11 +79,6 @@ func (f *fakeCommandRunner) Run(name string, args ...string) ([]byte, error) {
 }
 
 func (f *fakeCommandRunner) handleStatusSet(args []string) {
-	if len(args) == 0 {
-		f.Err = fmt.Errorf("status-set command requires at least one argument")
-		return
-	}
-
 	if args[0] == "--application" {
 		if len(args) < 2 {
 			f.Err = fmt.Errorf("status-set command requires an application status after --application")
@@ -103,22 +100,20 @@ func (f *fakeCommandRunner) handleStatusSet(args []string) {
 func (f *fakeCommandRunner) handleJujuLog(args []string) {
 	var logLevel LogLevel
 
-	if len(args) > 0 {
-		switch args[0] {
-		case "--log-level=INFO":
-			logLevel = LogLevelInfo
-		case "--log-level=WARNING":
-			logLevel = LogLevelWarning
-		case "--log-level=ERROR":
-			logLevel = LogLevelError
-		case "--log-level=DEBUG":
-			logLevel = LogLevelDebug
-		default:
-			logLevel = LogLevelInfo
-		}
-
-		args = args[1:]
+	switch args[0] {
+	case "--log-level=INFO":
+		logLevel = LogLevelInfo
+	case "--log-level=WARNING":
+		logLevel = LogLevelWarning
+	case "--log-level=ERROR":
+		logLevel = LogLevelError
+	case "--log-level=DEBUG":
+		logLevel = LogLevelDebug
+	default:
+		logLevel = LogLevelInfo
 	}
+
+	args = args[1:]
 
 	message := strings.Join(args, " ")
 	newLogEntry := JujuLogLine{
@@ -152,11 +147,6 @@ func (f *fakeCommandRunner) handleOpenedPorts(_ []string) {
 }
 
 func (f *fakeCommandRunner) handleOpenPort(args []string) {
-	if len(args) != 1 {
-		f.Err = fmt.Errorf("open-port command requires exactly one argument")
-		return
-	}
-
 	portInfo := strings.Split(args[0], "/")
 
 	if len(portInfo) != 2 {
@@ -184,11 +174,6 @@ func (f *fakeCommandRunner) handleOpenPort(args []string) {
 }
 
 func (f *fakeCommandRunner) handleClosePort(args []string) {
-	if len(args) != 1 {
-		f.Err = fmt.Errorf("close-port command requires exactly one argument")
-		return
-	}
-
 	portInfo := strings.Split(args[0], "/")
 
 	if len(portInfo) != 2 {
@@ -294,6 +279,17 @@ func parseRelationGetArgs(args []string) (isApp bool, relationID string, unitID 
 	return isApp, relationID, unitID, nil
 }
 
+func getAppNameFromUnitID(unitID string) string {
+	if strings.Contains(unitID, "/") {
+		parts := strings.Split(unitID, "/")
+		if len(parts) == 2 {
+			return parts[0]
+		}
+	}
+
+	return ""
+}
+
 func (f *fakeCommandRunner) handleRelationGet(args []string) {
 	isApp, relationID, unitID, err := parseRelationGetArgs(args)
 	if err != nil {
@@ -303,11 +299,23 @@ func (f *fakeCommandRunner) handleRelationGet(args []string) {
 
 	relation := f.findRelationByID(relationID)
 	if relation == nil {
-		f.Err = fmt.Errorf("relation %s not found", relationID)
+		f.Err = fmt.Errorf("command relation-get failed: ERROR invalid value %q for option -r: relation not found", relationID)
 		return
 	}
 
-	isLocal := unitID == f.AppName+"/"+strconv.Itoa(f.UnitID)
+	argAppName := getAppNameFromUnitID(unitID)
+	ctxAppName := getAppNameFromUnitID(f.UnitID)
+
+	var isLocal bool
+
+	if argAppName == ctxAppName {
+		isLocal = true
+	}
+
+	if isApp && isLocal && !f.Leader {
+		f.Err = fmt.Errorf("command relation-get failed: ERROR permission denied")
+		return
+	}
 
 	data, err := f.selectRelationData(relation, isApp, isLocal, unitID)
 	if err != nil {
@@ -321,7 +329,7 @@ func (f *fakeCommandRunner) handleRelationGet(args []string) {
 	}
 }
 
-func (f *fakeCommandRunner) selectRelationData(rel *Relation, isApp, isLocal bool, unitID string) (any, error) {
+func (f *fakeCommandRunner) selectRelationData(rel *Relation, isApp bool, isLocal bool, unitID string) (any, error) {
 	if isApp {
 		if isLocal {
 			return safeCopy(rel.LocalAppData), nil
@@ -331,6 +339,10 @@ func (f *fakeCommandRunner) selectRelationData(rel *Relation, isApp, isLocal boo
 	}
 
 	if isLocal {
+		if f.UnitID != unitID {
+			return nil, nil
+		}
+
 		if rel.LocalUnitData == nil {
 			return nil, fmt.Errorf("local unit data not found for relation %s", rel.ID)
 		}
@@ -340,14 +352,15 @@ func (f *fakeCommandRunner) selectRelationData(rel *Relation, isApp, isLocal boo
 
 	unitData, ok := rel.RemoteUnitsData[UnitID(unitID)]
 	if !ok {
-		return nil, fmt.Errorf("unit ID %s not found in relation %s", unitID, rel.ID)
+		return nil, fmt.Errorf("command relation-get failed: ERROR cannot read settings for unit %q in relation %q: unit %q: settings not found", unitID, rel.ID, unitID)
 	}
 
 	return unitData, nil
 }
 
 func (f *fakeCommandRunner) handleRelationList(args []string) {
-	relationID := strings.TrimPrefix(args[0], "-r=")
+	meta, _ := splitPrefixedArgs(args, "-")
+	relationID := meta["r"]
 
 	for _, relation := range f.Relations {
 		if relation.ID == relationID {
@@ -367,6 +380,8 @@ func (f *fakeCommandRunner) handleRelationList(args []string) {
 			return
 		}
 	}
+
+	f.Err = fmt.Errorf("command relation-list failed: ERROR invalid value %q for option -r: relation not found", relationID)
 }
 
 func parseRelationSetArgs(args []string) (isApp bool, relationID string, data map[string]string, err error) {
@@ -399,6 +414,17 @@ func (f *fakeCommandRunner) handleRelationSet(args []string) {
 		return
 	}
 
+	relation := f.findRelationByID(relationID)
+	if relation == nil {
+		f.Err = fmt.Errorf("command relation-set failed: ERROR invalid value %q for option -r: relation not found", relationID)
+		return
+	}
+
+	if isApp && !f.Leader {
+		f.Err = fmt.Errorf("command relation-set failed: ERROR cannot write relation settings")
+		return
+	}
+
 	for _, relation := range f.Relations {
 		if relation.ID != relationID {
 			continue
@@ -419,40 +445,55 @@ func (f *fakeCommandRunner) handleRelationSet(args []string) {
 	}
 }
 
-func filterOutLabelArgs(args []string) []string {
-	filtered := make([]string, 0, len(args))
+func (f *fakeCommandRunner) handleRelationModelGet(args []string) {
+	meta, _ := splitPrefixedArgs(args, "-")
+	relationID := meta["r"]
 
-	for _, arg := range args {
-		if !strings.HasPrefix(arg, "--label=") {
-			filtered = append(filtered, arg)
-		}
+	if relationID == "" {
+		f.Err = fmt.Errorf("command relation-model-get failed: ERROR no relation ID specified with -r")
+		return
 	}
 
-	return filtered
+	relation := f.findRelationByID(relationID)
+	if relation == nil {
+		f.Err = fmt.Errorf("command relation-model-get failed: ERROR invalid value %q for option -r: relation not found", relationID)
+		return
+	}
+
+	uuid := relation.RemoteModelUUID
+	if uuid == "" && f.Model != nil {
+		uuid = f.Model.UUID
+	}
+
+	outputBytes, err := json.Marshal(map[string]string{"uuid": uuid})
+	if err != nil {
+		f.Err = fmt.Errorf("failed to marshal relation model get output: %w", err)
+		return
+	}
+
+	f.Output = outputBytes
 }
 
 func (f *fakeCommandRunner) handleSecretAdd(args []string) {
-	label, owner, description, rotation, expiry := extractSecretArgs(args)
-	filtered := filterOutLabelArgs(args)
+	meta, remaining := splitPrefixedArgs(args, "--")
+	label := meta["label"]
+	owner := meta["owner"]
+	description := meta["description"]
+	rotation := meta["rotate"]
+	expiry := meta["expire"]
 
 	if !f.Leader && owner != "unit" {
 		f.Err = fmt.Errorf("command secret-add failed: ERROR this unit is not the leader")
 		return
 	}
 
-	var expiryTime time.Time
-
-	var err error
-
-	if expiry != "" {
-		expiryTime, err = time.Parse(time.RFC3339, expiry)
-		if err != nil {
-			f.Err = fmt.Errorf("invalid expiry format: %w", err)
-			return
-		}
+	expiryTime, err := parseRFC3339(expiry)
+	if err != nil {
+		f.Err = fmt.Errorf("invalid expiry format: %w", err)
+		return
 	}
 
-	content := parseKeyValueArgs(filtered)
+	content := parseKeyValueArgs(remaining)
 
 	f.Secrets = append(f.Secrets, &Secret{
 		Label:       label,
@@ -465,14 +506,8 @@ func (f *fakeCommandRunner) handleSecretAdd(args []string) {
 }
 
 func (f *fakeCommandRunner) handleSecretGet(args []string) {
-	var label, id string
-
-	for _, arg := range args {
-		if strings.HasPrefix(arg, "--label=") {
-			label = strings.TrimPrefix(arg, "--label=")
-			break
-		}
-	}
+	meta, remaining := splitPrefixedArgs(args, "--")
+	label := meta["label"]
 
 	if label != "" {
 		secret := findSecretByLabel(f.Secrets, label)
@@ -486,8 +521,9 @@ func (f *fakeCommandRunner) handleSecretGet(args []string) {
 		return
 	}
 
-	// No label; try extracting ID from positional args
-	for _, arg := range args {
+	var id string
+
+	for _, arg := range remaining {
 		if !strings.HasPrefix(arg, "--") {
 			id = arg
 			break
@@ -528,23 +564,23 @@ func findSecretByID(secrets []*Secret, id string) *Secret {
 	return nil
 }
 
-func extractSecretArgs(args []string) (label, owner, desc, rotate, expire string) {
+func splitPrefixedArgs(args []string, prefix string) (map[string]string, []string) {
+	meta := make(map[string]string)
+	remaining := make([]string, 0, len(args))
+
 	for _, arg := range args {
-		switch {
-		case strings.HasPrefix(arg, "--label="):
-			label = strings.TrimPrefix(arg, "--label=")
-		case strings.HasPrefix(arg, "--owner="):
-			owner = strings.TrimPrefix(arg, "--owner=")
-		case strings.HasPrefix(arg, "--description="):
-			desc = strings.TrimPrefix(arg, "--description=")
-		case strings.HasPrefix(arg, "--rotate="):
-			rotate = strings.TrimPrefix(arg, "--rotate=")
-		case strings.HasPrefix(arg, "--expire="):
-			expire = strings.TrimPrefix(arg, "--expire=")
+		if strings.HasPrefix(arg, prefix) {
+			parts := strings.SplitN(strings.TrimPrefix(arg, prefix), "=", 2)
+			if len(parts) == 2 {
+				meta[parts[0]] = parts[1]
+				continue
+			}
 		}
+
+		remaining = append(remaining, arg)
 	}
 
-	return
+	return meta, remaining
 }
 
 // findSecretByLabel returns the pointer to the secret with the given label.
@@ -581,13 +617,15 @@ type SecretInfo struct {
 }
 
 func (f *fakeCommandRunner) handleSecretInfoGet(args []string) {
-	var id, label string
+	meta, remaining := splitPrefixedArgs(args, "--")
+	label := meta["label"]
 
-	for _, arg := range args {
-		if strings.HasPrefix(arg, "--label=") {
-			label = strings.TrimPrefix(arg, "--label=")
-		} else if !strings.HasPrefix(arg, "--") {
+	var id string
+
+	for _, arg := range remaining {
+		if !strings.HasPrefix(arg, "--") {
 			id = arg
+			break
 		}
 	}
 
@@ -596,25 +634,13 @@ func (f *fakeCommandRunner) handleSecretInfoGet(args []string) {
 	switch {
 	case label != "":
 		secret = findSecretByLabel(f.Secrets, label)
-
-		if secret == nil {
-			f.Err = fmt.Errorf(`ERROR secret %q not found`, label)
-
-			return
-		}
-
-		if !f.Leader && secret.Owner != "unit" {
+		if secret == nil || (!f.Leader && secret.Owner != "unit") {
 			f.Err = fmt.Errorf(`ERROR secret %q not found`, label)
 			return
 		}
 	case id != "":
 		secret = findSecretByID(f.Secrets, id)
-		if secret == nil {
-			f.Err = fmt.Errorf(`ERROR secret %q not found`, id)
-			return
-		}
-
-		if !f.Leader && secret.Owner != "unit" {
+		if secret == nil || (!f.Leader && secret.Owner != "unit") {
 			f.Err = fmt.Errorf(`ERROR secret %q not found`, id)
 			return
 		}
@@ -645,7 +671,7 @@ func (f *fakeCommandRunner) handleSecretInfoGet(args []string) {
 
 func (f *fakeCommandRunner) handleSecretIDs(_ []string) {
 	if len(f.Secrets) == 0 {
-		f.Output = []byte(`null`)
+		f.Output = json.RawMessage("null")
 		return
 	}
 
@@ -669,11 +695,6 @@ func (f *fakeCommandRunner) handleSecretIDs(_ []string) {
 }
 
 func (f *fakeCommandRunner) handleSecretGrant(args []string) {
-	if len(args) == 0 {
-		f.Err = fmt.Errorf("secret-grant command requires at least one argument")
-		return
-	}
-
 	secretID := args[0]
 
 	if !f.Leader {
@@ -683,20 +704,13 @@ func (f *fakeCommandRunner) handleSecretGrant(args []string) {
 }
 
 func (f *fakeCommandRunner) handleSecretSet(args []string) {
-	if len(args) == 0 {
-		f.Err = fmt.Errorf("secret-set command requires at least one argument")
-		return
-	}
-
 	if !f.Leader {
 		f.Output = []byte(`null`)
 		return
 	}
 
 	id := args[0]
-	args = args[1:]
-
-	meta, remaining := parseSecretMetadata(args)
+	meta, remaining := splitPrefixedArgs(args[1:], "--")
 
 	content := make(map[string]string)
 
@@ -716,6 +730,7 @@ func (f *fakeCommandRunner) handleSecretSet(args []string) {
 		}
 
 		secret.Content = content
+
 		if meta["label"] != "" {
 			secret.Label = meta["label"]
 		}
@@ -732,15 +747,13 @@ func (f *fakeCommandRunner) handleSecretSet(args []string) {
 			secret.Rotate = meta["rotation"]
 		}
 
-		if meta["expiry"] != "" {
-			expiryTime, err := time.Parse(time.RFC3339, meta["expiry"])
-			if err != nil {
-				f.Err = fmt.Errorf("invalid expiry format: %w", err)
-				return
-			}
-
-			secret.Expire = expiryTime
+		expiryTime, err := parseRFC3339(meta["expiry"])
+		if err != nil {
+			f.Err = fmt.Errorf("invalid expiry format: %w", err)
+			return
 		}
+
+		secret.Expire = expiryTime
 
 		return
 	}
@@ -748,46 +761,17 @@ func (f *fakeCommandRunner) handleSecretSet(args []string) {
 	f.Err = fmt.Errorf("secret with ID %q not found", id)
 }
 
-func (f *fakeCommandRunner) handleSecretRevoke(args []string) {}
-
-func parseSecretMetadata(args []string) (map[string]string, []string) {
-	meta := map[string]string{
-		"label":       "",
-		"owner":       "",
-		"description": "",
-		"rotation":    "",
-		"expiry":      "",
+func parseRFC3339(s string) (time.Time, error) {
+	if s == "" {
+		return time.Time{}, nil
 	}
 
-	remaining := make([]string, 0, len(args))
-
-	for _, arg := range args {
-		matched := false
-
-		for key := range meta {
-			prefix := "--" + key + "="
-			if strings.HasPrefix(arg, prefix) {
-				meta[key] = strings.TrimPrefix(arg, prefix)
-				matched = true
-
-				break
-			}
-		}
-
-		if !matched {
-			remaining = append(remaining, arg)
-		}
-	}
-
-	return meta, remaining
+	return time.Parse(time.RFC3339, s)
 }
 
-func (f *fakeCommandRunner) handleStateGet(args []string) {
-	if len(args) == 0 {
-		f.Err = fmt.Errorf("state-get command requires at least one argument")
-		return
-	}
+func (f *fakeCommandRunner) handleSecretRevoke(args []string) {}
 
+func (f *fakeCommandRunner) handleStateGet(args []string) {
 	key := args[0]
 
 	if f.StoredState == nil {
@@ -816,11 +800,6 @@ func (f *fakeCommandRunner) handleStateGet(args []string) {
 }
 
 func (f *fakeCommandRunner) handleStateSet(args []string) {
-	if len(args) == 0 {
-		f.Err = fmt.Errorf("state-set command requires at least one argument")
-		return
-	}
-
 	if f.StoredState == nil {
 		f.StoredState = make(StoredState)
 	}
@@ -844,11 +823,6 @@ func (f *fakeCommandRunner) handleStateSet(args []string) {
 }
 
 func (f *fakeCommandRunner) handleStateDelete(args []string) {
-	if len(args) == 0 {
-		f.Err = fmt.Errorf("state-delete command requires at least one argument")
-		return
-	}
-
 	key := args[0]
 
 	if f.StoredState == nil {

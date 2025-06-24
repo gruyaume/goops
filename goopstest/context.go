@@ -24,7 +24,7 @@ type Context struct {
 	Charm         func() error
 	Metadata      goops.Metadata
 	AppName       string
-	UnitID        int
+	UnitID        string
 	JujuVersion   string
 	ActionResults map[string]string
 	ActionError   error
@@ -58,6 +58,7 @@ func (c *Context) Run(hookName string, state *State) (*State, error) {
 		StoredState: state.StoredState,
 		AppName:     c.AppName,
 		UnitID:      c.UnitID,
+		Model:       state.Model,
 	}
 
 	fakeEnv := &fakeEnvGetter{

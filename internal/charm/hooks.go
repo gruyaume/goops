@@ -305,7 +305,7 @@ func Configure() error {
 	}
 
 	if len(certificatesRelationID) > 0 {
-		uuid, err := goops.GetRelationModel(certificatesRelationID[0])
+		uuid, err := goops.GetRelationModelUUID(certificatesRelationID[0])
 		if err != nil {
 			return fmt.Errorf("could not get relation model: %w", err)
 		}

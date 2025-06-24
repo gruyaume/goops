@@ -219,7 +219,7 @@ func TestRelationModelGet_Success(t *testing.T) {
 
 	goops.SetCommandRunner(fakeRunner)
 
-	uuid, err := goops.GetRelationModel("certificates:0")
+	uuid, err := goops.GetRelationModelUUID("certificates:0")
 	if err != nil {
 		t.Fatalf("RelationModelGet returned an error: %v", err)
 	}

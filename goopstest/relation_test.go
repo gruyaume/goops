@@ -107,6 +107,36 @@ func TestCharmGetRelationIDsNoName(t *testing.T) {
 	}
 }
 
+func GetRelationIDsNoResult() error {
+	relationIDs, err := goops.GetRelationIDs("nonexistent")
+	if err != nil {
+		return err
+	}
+
+	if len(relationIDs) != 0 {
+		return fmt.Errorf("expected no relation IDs, got %d", len(relationIDs))
+	}
+
+	return nil
+}
+
+func TestCharmGetRelationIDsNoResult(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: GetRelationIDsNoResult,
+	}
+
+	stateIn := &goopstest.State{}
+
+	_, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Fatal("Expected no charm error, got one")
+	}
+}
+
 func ListRelationUnits1Result() error {
 	relationUnits, err := goops.ListRelationUnits("certificates:0")
 	if err != nil {
@@ -209,6 +239,30 @@ func TestCharmListRelationUnits(t *testing.T) {
 	}
 }
 
+func TestListRelationUnitsResultNotFound(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: ListRelationUnits1Result,
+	}
+
+	stateIn := &goopstest.State{
+		Relations: []*goopstest.Relation{},
+	}
+
+	_, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr == nil {
+		t.Fatal("Expected CharmErr to be set, got nil")
+	}
+
+	expectedErr := "failed to list relation data: command relation-list failed: ERROR invalid value \"certificates:0\" for option -r: relation not found"
+	if ctx.CharmErr.Error() != expectedErr {
+		t.Errorf("got CharmErr=%q, want %q", ctx.CharmErr.Error(), expectedErr)
+	}
+}
+
 func TestListRelationUnitsInActionHook(t *testing.T) {
 	ctx := goopstest.Context{
 		Charm: ListRelationUnits1Result,
@@ -293,6 +347,96 @@ func TestCharmGetRemoteUnitRelationData(t *testing.T) {
 	}
 }
 
+func TestCharmGetRemoteUnitRelationDataNoRelation(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: GetRemoteUnitRelationData,
+	}
+
+	stateIn := &goopstest.State{
+		Relations: []*goopstest.Relation{},
+	}
+
+	_, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr == nil {
+		t.Fatal("Expected CharmErr to be set, got nil")
+	}
+
+	expectedErr := "failed to get relation data: command relation-get failed: ERROR invalid value \"certificates:0\" for option -r: relation not found"
+	if ctx.CharmErr.Error() != expectedErr {
+		t.Errorf("got CharmErr=%q, want %q", ctx.CharmErr.Error(), expectedErr)
+	}
+}
+
+func TestCharmGetRemoteUnitRelationDataNoRemoteUnit(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: GetRemoteUnitRelationData,
+	}
+
+	stateIn := &goopstest.State{
+		Relations: []*goopstest.Relation{
+			{
+				Endpoint:      "certificates",
+				RemoteAppName: "provider",
+				RemoteUnitsData: map[goopstest.UnitID]goopstest.DataBag{
+					goopstest.UnitID("certificates/22"): {
+						"certificate_signing_requests": "csr-data",
+					},
+				},
+			},
+		},
+	}
+
+	_, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr == nil {
+		t.Fatal("Expected CharmErr to be set, got nil")
+	}
+
+	expectedErr := "failed to get relation data: command relation-get failed: ERROR cannot read settings for unit \"provider/0\" in relation \"certificates:0\": unit \"provider/0\": settings not found"
+	if ctx.CharmErr.Error() != expectedErr {
+		t.Errorf("got CharmErr=%q, want %q", ctx.CharmErr.Error(), expectedErr)
+	}
+}
+
+func TestCharmGetRemoteUnitRelationDataNoData(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: GetRemoteUnitRelationData,
+	}
+
+	stateIn := &goopstest.State{
+		Relations: []*goopstest.Relation{
+			{
+				Endpoint:      "certificates",
+				RemoteAppName: "provider",
+				RemoteUnitsData: map[goopstest.UnitID]goopstest.DataBag{
+					goopstest.UnitID("provider/0"): {},
+				},
+			},
+		},
+	}
+
+	_, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr == nil {
+		t.Fatalf("Expected CharmErr to be set, got nil")
+	}
+
+	expectedErr := "expected relation data, got empty map"
+	if ctx.CharmErr.Error() != expectedErr {
+		t.Errorf("got CharmErr=%q, want %q", ctx.CharmErr.Error(), expectedErr)
+	}
+}
+
 func GetLocalUnitRelationData() error {
 	relationData, err := goops.GetUnitRelationData("certificates:0", "requirer/0")
 	if err != nil {
@@ -319,7 +463,7 @@ func TestCharmGetLocalUnitRelationData(t *testing.T) {
 	ctx := goopstest.Context{
 		Charm:   GetLocalUnitRelationData,
 		AppName: "requirer",
-		UnitID:  0,
+		UnitID:  "requirer/0",
 	}
 
 	certRelation := &goopstest.Relation{
@@ -341,6 +485,41 @@ func TestCharmGetLocalUnitRelationData(t *testing.T) {
 
 	if len(stateOut.Relations) != 1 {
 		t.Fatalf("expected 1 relation, got %d", len(stateOut.Relations))
+	}
+}
+
+// In regular relations, each unit can only read its own databag. Reading another local unit's data should return nothing.
+func TestGetOtherLocalUnitRelationData(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm:   GetLocalUnitRelationData,
+		AppName: "requirer",
+		UnitID:  "requirer/1", // This unit should not be able to read data from unit 0
+	}
+
+	certRelation := &goopstest.Relation{
+		Endpoint: "certificates",
+		LocalUnitData: map[string]string{
+			"certificate_signing_requests": "csr-data",
+		},
+	}
+	stateIn := &goopstest.State{
+		Relations: []*goopstest.Relation{
+			certRelation,
+		},
+	}
+
+	_, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr == nil {
+		t.Fatal("Expected CharmErr to be set, got nil")
+	}
+
+	expectedErr := "expected relation data, got empty map"
+	if ctx.CharmErr.Error() != expectedErr {
+		t.Errorf("got CharmErr=%q, want %q", ctx.CharmErr.Error(), expectedErr)
 	}
 }
 
@@ -396,6 +575,30 @@ func TestCharmGetRemoteAppRelationData(t *testing.T) {
 	}
 }
 
+func TestCharmGetRemoteAppRelationDataNoRelation(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: GetRemoteAppRelationData,
+	}
+
+	stateIn := &goopstest.State{
+		Relations: []*goopstest.Relation{},
+	}
+
+	_, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr == nil {
+		t.Fatal("Expected CharmErr to be set, got nil")
+	}
+
+	expectedErr := "failed to get relation data: command relation-get failed: ERROR invalid value \"certificates:0\" for option -r: relation not found"
+	if ctx.CharmErr.Error() != expectedErr {
+		t.Errorf("got CharmErr=%q, want %q", ctx.CharmErr.Error(), expectedErr)
+	}
+}
+
 func GetLocalAppRelationData() error {
 	relationData, err := goops.GetAppRelationData("certificates:0", "requirer/0")
 	if err != nil {
@@ -422,7 +625,7 @@ func TestCharmGetLocalAppRelationData(t *testing.T) {
 	ctx := goopstest.Context{
 		Charm:   GetLocalAppRelationData,
 		AppName: "requirer",
-		UnitID:  0,
+		UnitID:  "requirer/0",
 	}
 
 	certRelation := &goopstest.Relation{
@@ -432,6 +635,7 @@ func TestCharmGetLocalAppRelationData(t *testing.T) {
 		},
 	}
 	stateIn := &goopstest.State{
+		Leader: true,
 		Relations: []*goopstest.Relation{
 			certRelation,
 		},
@@ -442,8 +646,48 @@ func TestCharmGetLocalAppRelationData(t *testing.T) {
 		t.Fatalf("Run returned an error: %v", err)
 	}
 
+	if ctx.CharmErr != nil {
+		t.Fatalf("expected no CharmErr, got %v", ctx.CharmErr)
+	}
+
 	if len(stateOut.Relations) != 1 {
 		t.Fatalf("expected 1 relation, got %d", len(stateOut.Relations))
+	}
+}
+
+// In regular relations, only the leader unit can read to the local application databag
+func TestCharmGetLocalAppRelationDataNonLeader(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm:   GetLocalAppRelationData,
+		AppName: "requirer",
+		UnitID:  "requirer/0",
+	}
+
+	certRelation := &goopstest.Relation{
+		Endpoint: "certificates",
+		LocalAppData: map[string]string{
+			"certificate_signing_requests": "csr-data",
+		},
+	}
+	stateIn := &goopstest.State{
+		Leader: false,
+		Relations: []*goopstest.Relation{
+			certRelation,
+		},
+	}
+
+	_, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr == nil {
+		t.Fatalf("Expected CharmErr to be set, got nil")
+	}
+
+	expectedErr := "failed to get relation data: command relation-get failed: ERROR permission denied"
+	if ctx.CharmErr.Error() != expectedErr {
+		t.Errorf("got CharmErr=%q, want %q", ctx.CharmErr.Error(), expectedErr)
 	}
 }
 
@@ -515,6 +759,7 @@ func TestCharmSetAppRelationData(t *testing.T) {
 		Endpoint: "certificates",
 	}
 	stateIn := &goopstest.State{
+		Leader: true,
 		Relations: []*goopstest.Relation{
 			certRelation,
 		},
@@ -523,6 +768,10 @@ func TestCharmSetAppRelationData(t *testing.T) {
 	stateOut, err := ctx.Run("start", stateIn)
 	if err != nil {
 		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("expected no CharmErr, got %v", ctx.CharmErr)
 	}
 
 	if len(stateOut.Relations) != 1 {
@@ -536,6 +785,64 @@ func TestCharmSetAppRelationData(t *testing.T) {
 
 	if appData["certificate_signing_requests"] != "csr-data" {
 		t.Fatalf("expected 'csr-data', got '%s'", appData["certificate_signing_requests"])
+	}
+}
+
+func TestCharmSetAppRelationDataNoRelation(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: SetAppRelationData,
+	}
+
+	stateIn := &goopstest.State{
+		Leader:    true,
+		Relations: []*goopstest.Relation{},
+	}
+
+	_, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr == nil {
+		t.Fatal("Expected CharmErr to be set, got nil")
+	}
+
+	expectedErr := "failed to set relation data: command relation-set failed: ERROR invalid value \"certificates:0\" for option -r: relation not found"
+	if ctx.CharmErr.Error() != expectedErr {
+		t.Errorf("got CharmErr=%q, want %q", ctx.CharmErr.Error(), expectedErr)
+	}
+}
+
+// In regular relations, only the leader unit can write to the app databag
+func TestCharmSetAppRelationDataNonLeader(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm:   SetAppRelationData,
+		AppName: "requirer",
+		UnitID:  "requirer/0",
+	}
+
+	certRelation := &goopstest.Relation{
+		Endpoint: "certificates",
+	}
+	stateIn := &goopstest.State{
+		Leader: false,
+		Relations: []*goopstest.Relation{
+			certRelation,
+		},
+	}
+
+	_, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr == nil {
+		t.Fatal("Expected CharmErr to be set, got nil")
+	}
+
+	expectedErr := "failed to set relation data: command relation-set failed: ERROR cannot write relation settings"
+	if ctx.CharmErr.Error() != expectedErr {
+		t.Errorf("got CharmErr=%q, want %q", ctx.CharmErr.Error(), expectedErr)
 	}
 }
 
@@ -621,6 +928,7 @@ func TestCharmSetAppRelationData2(t *testing.T) {
 		Endpoint: "metrics",
 	}
 	stateIn := &goopstest.State{
+		Leader: true,
 		Relations: []*goopstest.Relation{
 			certRelation,
 		},
@@ -719,5 +1027,100 @@ func TestCharmRelationEndToEnd(t *testing.T) {
 
 	if len(stateOut.Relations) != 1 {
 		t.Fatalf("expected 1 relation, got %d", len(stateOut.Relations))
+	}
+}
+
+func RelationModelGetUUID() error {
+	modelUUID, err := goops.GetRelationModelUUID("certificates:0")
+	if err != nil {
+		return err
+	}
+
+	if modelUUID != "a4e65ff5-2358-4595-8ace-cc820c120e24" {
+		return fmt.Errorf("expected model UUID 'a4e65ff5-2358-4595-8ace-cc820c120e24', got '%s'", modelUUID)
+	}
+
+	return nil
+}
+
+func TestCharmRelationModelGetUUID(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: RelationModelGetUUID,
+	}
+
+	certRelation := &goopstest.Relation{
+		Endpoint: "certificates",
+	}
+	stateIn := &goopstest.State{
+		Relations: []*goopstest.Relation{
+			certRelation,
+		},
+		Model: &goopstest.Model{
+			UUID: "a4e65ff5-2358-4595-8ace-cc820c120e24",
+		},
+	}
+
+	_, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("expected no CharmErr, got %v", ctx.CharmErr)
+	}
+}
+
+func TestCharmRelationModelGetUUIDWithRemoteModelUUID(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: RelationModelGetUUID,
+	}
+
+	certRelation := &goopstest.Relation{
+		Endpoint:        "certificates",
+		RemoteModelUUID: "a4e65ff5-2358-4595-8ace-cc820c120e24",
+	}
+	stateIn := &goopstest.State{
+		Relations: []*goopstest.Relation{
+			certRelation,
+		},
+		Model: &goopstest.Model{
+			UUID: "a-different-uuid",
+		},
+	}
+
+	_, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("expected no CharmErr, got %v", ctx.CharmErr)
+	}
+}
+
+func TestCharmRelationModelGetUUIDNoRelation(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: RelationModelGetUUID,
+	}
+
+	stateIn := &goopstest.State{
+		Relations: []*goopstest.Relation{},
+		Model: &goopstest.Model{
+			UUID: "a4e65ff5-2358-4595-8ace-cc820c120e24",
+		},
+	}
+
+	_, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr == nil {
+		t.Fatalf("expected CharmErr to be set, got nil")
+	}
+
+	expectedError := "failed to get relation model data: command relation-model-get failed: ERROR invalid value \"certificates:0\" for option -r: relation not found"
+	if ctx.CharmErr.Error() != expectedError {
+		t.Errorf("got CharmErr=%q, want %q", ctx.CharmErr.Error(), expectedError)
 	}
 }

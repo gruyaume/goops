@@ -13,7 +13,7 @@ type fakeEnvGetter struct {
 	ActionName  string
 	Model       *Model
 	AppName     string
-	UnitID      int
+	UnitID      string
 	JujuVersion string
 	Metadata    goops.Metadata
 }
@@ -29,7 +29,7 @@ func (f *fakeEnvGetter) Get(key string) string {
 	case "JUJU_MODEL_UUID":
 		return f.Model.UUID
 	case "JUJU_UNIT_NAME":
-		return fmt.Sprintf("%s/%d", f.AppName, f.UnitID)
+		return f.UnitID
 	case "JUJU_VERSION":
 		return f.JujuVersion
 	}

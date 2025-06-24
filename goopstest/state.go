@@ -29,6 +29,7 @@ type Relation struct {
 	LocalUnitData   DataBag
 	RemoteAppData   DataBag
 	RemoteUnitsData map[UnitID]DataBag
+	RemoteModelUUID string
 }
 
 type Port struct {
