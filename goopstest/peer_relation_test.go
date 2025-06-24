@@ -134,3 +134,48 @@ func TestListPeerRelationUnits(t *testing.T) {
 		t.Errorf("expected 1 peer relation, got %d", len(stateOut.PeerRelations))
 	}
 }
+
+func GetPeerRelationModelUUID() error {
+	modelUUID, err := goops.GetRelationModelUUID("example-peer:0")
+	if err != nil {
+		return fmt.Errorf("could not get peer data: %w", err)
+	}
+
+	if modelUUID != "example-model-uuid" {
+		return fmt.Errorf("expected model UUID 'example-model-uuid', got '%s'", modelUUID)
+	}
+
+	return nil
+}
+
+func TestGetPeerRelationModelUUID(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm:   GetPeerRelationModelUUID,
+		AppName: "example",
+		UnitID:  "example/0",
+	}
+
+	stateIn := &goopstest.State{
+		PeerRelations: []*goopstest.PeerRelation{
+			{
+				ID: "example-peer:0",
+			},
+		},
+		Model: &goopstest.Model{
+			UUID: "example-model-uuid",
+		},
+	}
+
+	stateOut, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Errorf("expected no error, got %v", ctx.CharmErr)
+	}
+
+	if len(stateOut.PeerRelations) != 1 {
+		t.Errorf("expected 1 peer relation, got %d", len(stateOut.PeerRelations))
+	}
+}

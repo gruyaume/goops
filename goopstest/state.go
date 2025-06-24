@@ -33,12 +33,12 @@ type Relation struct {
 }
 
 type PeerRelation struct {
-	Endpoint  string
-	Interface string
-	ID        string
-	AppData   DataBag
-	UnitData  DataBag
-	PeersData map[UnitID]DataBag
+	Endpoint      string
+	Interface     string
+	ID            string
+	LocalAppData  DataBag
+	LocalUnitData DataBag
+	PeersData     map[UnitID]DataBag // Does not include data for the unit under test
 }
 
 type Port struct {

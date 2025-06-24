@@ -271,6 +271,16 @@ func (f *fakeCommandRunner) findRelationByID(id string) *Relation {
 	return nil
 }
 
+func (f *fakeCommandRunner) findPeerRelationByID(id string) *PeerRelation {
+	for i := range f.PeerRelations {
+		if f.PeerRelations[i].ID == id {
+			return f.PeerRelations[i]
+		}
+	}
+
+	return nil
+}
+
 func parseRelationGetArgs(args []string) (isApp bool, relationID string, unitID string, err error) {
 	for i := 0; i < len(args); i++ {
 		switch {
@@ -486,12 +496,18 @@ func (f *fakeCommandRunner) handleRelationModelGet(args []string) {
 	}
 
 	relation := f.findRelationByID(relationID)
-	if relation == nil {
+	peerRelation := f.findPeerRelationByID(relationID)
+
+	if relation == nil && peerRelation == nil {
 		f.Err = fmt.Errorf("command relation-model-get failed: ERROR invalid value %q for option -r: relation not found", relationID)
 		return
 	}
 
-	uuid := relation.RemoteModelUUID
+	var uuid string
+	if relation != nil {
+		uuid = relation.RemoteModelUUID
+	}
+
 	if uuid == "" && f.Model != nil {
 		uuid = f.Model.UUID
 	}
