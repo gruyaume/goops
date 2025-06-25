@@ -21,7 +21,7 @@ func TestCharmApplicationVersion(t *testing.T) {
 		Charm: ApplicationVersion,
 	}
 
-	stateIn := &goopstest.State{}
+	stateIn := goopstest.State{}
 
 	stateOut, err := ctx.Run("start", stateIn)
 	if err != nil {
@@ -38,7 +38,7 @@ func TestCharmApplicationVersionInActionHook(t *testing.T) {
 		Charm: ApplicationVersion,
 	}
 
-	stateIn := &goopstest.State{}
+	stateIn := goopstest.State{}
 
 	stateOut, err := ctx.RunAction("run-action", stateIn, nil)
 	if err != nil {

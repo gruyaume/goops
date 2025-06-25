@@ -41,7 +41,7 @@ func TestCharm(t *testing.T) {
 		Charm: Configure,
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Leader: false,
 	}
 
@@ -138,7 +138,7 @@ func TestCharm(t *testing.T) {
 
 	defer os.RemoveAll(dname)
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Containers: []*goopstest.Container{
 			{
 				Name:       "example",

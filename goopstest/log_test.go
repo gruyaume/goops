@@ -18,7 +18,7 @@ func TestContainerLog(t *testing.T) {
 		Charm: ContainerLog,
 	}
 
-	stateIn := &goopstest.State{}
+	stateIn := goopstest.State{}
 
 	_, err := ctx.Run("install", stateIn)
 	if err != nil {

@@ -36,7 +36,7 @@ func TestCharmBasic(t *testing.T) {
 		Charm: ConfigureBasic,
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Leader: false,
 	}
 
@@ -115,7 +115,7 @@ func TestCharmKubernetes(t *testing.T) {
 
 	defer os.RemoveAll(dname)
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Containers: []*goopstest.Container{
 			{
 				Name:       "example",

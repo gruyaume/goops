@@ -73,7 +73,7 @@ func TestCharmGetSecretByLabel(t *testing.T) {
 				},
 			}
 
-			stateIn := &goopstest.State{
+			stateIn := goopstest.State{
 				Secrets: []*goopstest.Secret{
 					mySecret,
 				},
@@ -105,7 +105,7 @@ func TestCharmGetUnexistingSecretByLabel(t *testing.T) {
 		Charm: GetSecretByLabel,
 	}
 
-	stateIn := &goopstest.State{}
+	stateIn := goopstest.State{}
 
 	stateOut, err := ctx.Run("start", stateIn)
 	if err != nil {
@@ -184,7 +184,7 @@ func TestCharmGetSecretByID(t *testing.T) {
 				},
 			}
 
-			stateIn := &goopstest.State{
+			stateIn := goopstest.State{
 				Secrets: []*goopstest.Secret{
 					mySecret,
 				},
@@ -242,7 +242,7 @@ func TestCharmAddAppSecret(t *testing.T) {
 		Charm: AddAppSecret,
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Leader: true,
 	}
 
@@ -253,6 +253,10 @@ func TestCharmAddAppSecret(t *testing.T) {
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("Run returned an error: %v", ctx.CharmErr)
+	}
+
+	if len(stateIn.Secrets) != 0 {
+		t.Fatalf("expected no secrets in input state, got %d", len(stateIn.Secrets))
 	}
 
 	if len(stateOut.Secrets) != 1 {
@@ -278,7 +282,7 @@ func TestCharmAddAppSecretNonLeader(t *testing.T) {
 		Charm: AddAppSecret,
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Leader: false,
 	}
 
@@ -327,7 +331,7 @@ func TestCharmAddUnitSecretNonLeader(t *testing.T) {
 		Charm: AddUnitSecret,
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Leader: false,
 	}
 
@@ -388,7 +392,7 @@ func TestCharmRemoveSecret(t *testing.T) {
 		Charm: RemoveSecret,
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Leader: true,
 		Secrets: []*goopstest.Secret{
 			{
@@ -416,7 +420,7 @@ func TestCharmRemoveSecretNonLeader(t *testing.T) {
 		Charm: RemoveSecret,
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Leader: false,
 		Secrets: []*goopstest.Secret{
 			{
@@ -448,7 +452,7 @@ func TestCharmRemoveUnexistingSecret(t *testing.T) {
 		Charm: RemoveSecret,
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Secrets: []*goopstest.Secret{
 			{
 				ID: "12345",
@@ -496,7 +500,7 @@ func TestCharmGetSecretInfoByID(t *testing.T) {
 		Charm: GetSecretInfoByID,
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Secrets: []*goopstest.Secret{
 			{
 				ID: "12345",
@@ -528,7 +532,7 @@ func TestCharmGetSecretInfoByIDNonLeader(t *testing.T) {
 		Charm: GetSecretInfoByID,
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Leader: false,
 		Secrets: []*goopstest.Secret{
 			{
@@ -560,7 +564,7 @@ func TestCharmGetUnitSecretInfoByNonLeader(t *testing.T) {
 		Charm: GetSecretInfoByID,
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Secrets: []*goopstest.Secret{
 			{
 				ID: "12345",
@@ -610,7 +614,7 @@ func TestCharmGetSecretInfoByLabel(t *testing.T) {
 		Charm: GetSecretInfoByLabel,
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Leader: true,
 		Secrets: []*goopstest.Secret{
 			{
@@ -638,7 +642,7 @@ func TestCharmGetSecretInfoByLabelNonLeader(t *testing.T) {
 		Charm: GetSecretInfoByLabel,
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Leader: false,
 		Secrets: []*goopstest.Secret{
 			{
@@ -670,7 +674,7 @@ func TestCharmGetUnitSecretInfoByLabelNonLeader(t *testing.T) {
 		Charm: GetSecretInfoByLabel,
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Leader: false,
 		Secrets: []*goopstest.Secret{
 			{
@@ -718,7 +722,7 @@ func TestCharmGetSecretIDs(t *testing.T) {
 		Charm: GetSecretIDs,
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Leader: true,
 		Secrets: []*goopstest.Secret{
 			{
@@ -761,7 +765,7 @@ func TestCharmGetSecretIDsNonLeader(t *testing.T) {
 		Charm: GetSecretIDs,
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Leader: false,
 		Secrets: []*goopstest.Secret{
 			{
@@ -814,7 +818,7 @@ func TestCharmGrantSecretToRelation(t *testing.T) {
 		Charm: GrantSecretToRelation,
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Leader: true,
 		Secrets: []*goopstest.Secret{
 			{
@@ -861,7 +865,7 @@ func TestCharmGrantSecretToUnit(t *testing.T) {
 		Charm: GrantSecretToUnit,
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Leader: true,
 		Secrets: []*goopstest.Secret{
 			{
@@ -893,7 +897,7 @@ func TestCharmGrantSecretNonLeader(t *testing.T) {
 		Charm: GrantSecretToRelation,
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Leader: false,
 		Secrets: []*goopstest.Secret{
 			{
@@ -943,7 +947,7 @@ func TestCharmSetSecret(t *testing.T) {
 		Charm: SetSecret,
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Leader: true,
 		Secrets: []*goopstest.Secret{
 			{
@@ -1001,7 +1005,7 @@ func TestCharmSetSecretNonLeader(t *testing.T) {
 		Charm: SetSecret,
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Leader: false,
 		Secrets: []*goopstest.Secret{
 			{
@@ -1058,7 +1062,7 @@ func TestCharmRevokeSecret(t *testing.T) {
 		Charm: RevokeSecret,
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Leader: true,
 		Secrets: []*goopstest.Secret{
 			{

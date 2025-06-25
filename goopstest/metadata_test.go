@@ -53,7 +53,7 @@ func TestGetMetadata(t *testing.T) {
 		Charm: GetMetadata,
 	}
 
-	stateIn := &goopstest.State{}
+	stateIn := goopstest.State{}
 
 	_, err := ctx.Run("install", stateIn)
 	if err != nil {

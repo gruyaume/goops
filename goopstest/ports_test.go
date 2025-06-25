@@ -26,7 +26,7 @@ func TestSetPorts(t *testing.T) {
 		Charm: SetPorts,
 	}
 
-	stateIn := &goopstest.State{}
+	stateIn := goopstest.State{}
 
 	stateOut, err := ctx.Run("start", stateIn)
 	if err != nil {
@@ -51,7 +51,7 @@ func TestSetPortsAlreadySet(t *testing.T) {
 		Charm: SetPorts,
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Ports: []*goopstest.Port{
 			{
 				Port:     80,
@@ -83,7 +83,7 @@ func TestSetPortsDifferentSet(t *testing.T) {
 		Charm: SetPorts,
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Ports: []*goopstest.Port{
 			{
 				Port:     81,
@@ -124,7 +124,7 @@ func TestCloseUnOpenedPort(t *testing.T) {
 		Charm: ClosePort,
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Ports: []*goopstest.Port{
 			{
 				Port:     81,
@@ -169,7 +169,7 @@ func TestOpenOpenedPort(t *testing.T) {
 		Charm: OpenPort,
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Ports: []*goopstest.Port{
 			{
 				Port:     81,

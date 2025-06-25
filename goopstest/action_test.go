@@ -53,7 +53,7 @@ func TestCharmActionName(t *testing.T) {
 				Charm: tc.handler,
 			}
 
-			stateIn := &goopstest.State{}
+			stateIn := goopstest.State{}
 
 			stateOut, err := ctx.RunAction(tc.actionName, stateIn, nil)
 			if err != nil {
@@ -85,7 +85,7 @@ func TestCharmActionResults1(t *testing.T) {
 		Charm: ActionResults1,
 	}
 
-	stateIn := &goopstest.State{}
+	stateIn := goopstest.State{}
 
 	_, err := ctx.RunAction("run-action", stateIn, nil)
 	if err != nil {
@@ -117,7 +117,7 @@ func TestCharmActionResults3(t *testing.T) {
 		Charm: ActionResults3,
 	}
 
-	stateIn := &goopstest.State{}
+	stateIn := goopstest.State{}
 
 	_, err := ctx.RunAction("run-action", stateIn, nil)
 	if err != nil {
@@ -151,7 +151,7 @@ func TestCharmActionFailed(t *testing.T) {
 		Charm: ActionFailed,
 	}
 
-	stateIn := &goopstest.State{}
+	stateIn := goopstest.State{}
 
 	_, err := ctx.RunAction("run-action", stateIn, nil)
 	if err != nil {
@@ -202,7 +202,7 @@ func TestCharmActionParameters(t *testing.T) {
 		Charm: GetActionParamsAndSetResults,
 	}
 
-	stateIn := &goopstest.State{}
+	stateIn := goopstest.State{}
 
 	_, err := ctx.RunAction("run-action", stateIn, map[string]any{
 		"email":      "expected-value",
@@ -222,7 +222,7 @@ func TestCharmActionParameterNotSet(t *testing.T) {
 		Charm: GetActionParamsAndSetResults,
 	}
 
-	stateIn := &goopstest.State{}
+	stateIn := goopstest.State{}
 
 	_, err := ctx.RunAction("run-action", stateIn, nil)
 	if err != nil {
@@ -258,7 +258,7 @@ func TestGetActionParamInNonActionHook(t *testing.T) {
 		Charm: ActionParams,
 	}
 
-	stateIn := &goopstest.State{}
+	stateIn := goopstest.State{}
 
 	_, err := ctx.Run("start", stateIn)
 	if err != nil {
@@ -288,7 +288,7 @@ func TestActionFailfInNonActionHook(t *testing.T) {
 		Charm: ActionFailf,
 	}
 
-	stateIn := &goopstest.State{}
+	stateIn := goopstest.State{}
 
 	_, err := ctx.Run("start", stateIn)
 	if err != nil {
@@ -318,7 +318,7 @@ func TestActionLogfInNonActionHook(t *testing.T) {
 		Charm: ActionLogf,
 	}
 
-	stateIn := &goopstest.State{}
+	stateIn := goopstest.State{}
 
 	_, err := ctx.Run("start", stateIn)
 	if err != nil {
@@ -352,7 +352,7 @@ func TestSetActionResultsInNonActionHook(t *testing.T) {
 		Charm: SetActionResults,
 	}
 
-	stateIn := &goopstest.State{}
+	stateIn := goopstest.State{}
 
 	_, err := ctx.Run("start", stateIn)
 	if err != nil {

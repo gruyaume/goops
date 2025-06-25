@@ -32,9 +32,9 @@ type Context struct {
 	CharmErr      error
 }
 
-func (c *Context) Run(hookName string, state *State) (*State, error) {
+func (c *Context) Run(hookName string, state State) (State, error) {
 	if c.Charm == nil {
-		return nil, fmt.Errorf("charm function is not set in the context")
+		return State{}, fmt.Errorf("charm function is not set in the context")
 	}
 
 	setRelationIDs(state.Relations)
@@ -106,7 +106,7 @@ func (c *Context) Run(hookName string, state *State) (*State, error) {
 	return state, nil
 }
 
-func (c *Context) RunAction(actionName string, state *State, params map[string]any) (*State, error) {
+func (c *Context) RunAction(actionName string, state State, params map[string]any) (State, error) {
 	fakeCommandRunner := &fakeCommandRunner{
 		Output:           []byte(``),
 		Err:              nil,

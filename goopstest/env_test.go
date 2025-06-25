@@ -52,7 +52,7 @@ func TestGetModelInfo(t *testing.T) {
 		UUID: "12345678-1234-5678-1234-567812345678",
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Model: model,
 	}
 
@@ -77,7 +77,7 @@ func TestGetUnitName(t *testing.T) {
 		UnitID:  "blou/0",
 	}
 
-	stateIn := &goopstest.State{}
+	stateIn := goopstest.State{}
 
 	_, err := ctx.Run("start", stateIn)
 	if err != nil {
@@ -91,7 +91,7 @@ func TestGetJujuVersion(t *testing.T) {
 		JujuVersion: "1.2.3",
 	}
 
-	stateIn := &goopstest.State{}
+	stateIn := goopstest.State{}
 
 	_, err := ctx.Run("start", stateIn)
 	if err != nil {
