@@ -916,7 +916,6 @@ func (f *fakeCommandRunner) handleStateGet(args []string) {
 
 	if f.StoredState == nil {
 		f.Output = []byte(`""`)
-		f.Err = fmt.Errorf("stored state is nil")
 
 		return
 	}
@@ -924,7 +923,6 @@ func (f *fakeCommandRunner) handleStateGet(args []string) {
 	value, exists := f.StoredState[key]
 	if !exists {
 		f.Output = []byte(`""`)
-		f.Err = fmt.Errorf("state key %s not found", key)
 
 		return
 	}
@@ -966,12 +964,10 @@ func (f *fakeCommandRunner) handleStateDelete(args []string) {
 	key := args[0]
 
 	if f.StoredState == nil {
-		f.Err = fmt.Errorf("stored state is nil")
 		return
 	}
 
 	if _, exists := f.StoredState[key]; !exists {
-		f.Err = fmt.Errorf("state key %s not found", key)
 		return
 	}
 

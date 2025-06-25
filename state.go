@@ -11,6 +11,7 @@ const (
 	stateSetCommand    = "state-set"
 )
 
+// DeleteState deletes a state key.
 func DeleteState(key string) error {
 	commandRunner := GetCommandRunner()
 
@@ -28,6 +29,7 @@ func DeleteState(key string) error {
 	return nil
 }
 
+// GetState retrieves the value of a state key.
 func GetState(key string) (string, error) {
 	commandRunner := GetCommandRunner()
 
@@ -52,6 +54,7 @@ func GetState(key string) (string, error) {
 	return state, nil
 }
 
+// SetState sets a state key to a value.
 func SetState(key string, value string) error {
 	commandRunner := GetCommandRunner()
 

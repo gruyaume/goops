@@ -12,6 +12,7 @@ type PebbleGetter interface {
 	Pebble(container string) PebbleClient
 }
 
+// Pebble returns a PebbleClient for the specified container.
 func Pebble(container string) PebbleClient {
 	return defaultPebbleGetter.Pebble(container)
 }

@@ -25,6 +25,7 @@ type Network struct {
 	EgressSubnets    []string      `json:"egress-subnets"`
 }
 
+// GetNetwork retrieves the network configuration for a given binding name.
 func GetNetwork(bindingName string) (*Network, error) {
 	commandRunner := GetCommandRunner()
 

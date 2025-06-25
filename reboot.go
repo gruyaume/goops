@@ -4,6 +4,7 @@ const (
 	jujuRebootCommand = "juju-reboot"
 )
 
+// Reboot causes the host machine to reboot, after stopping all containers hosted on the machine.
 func Reboot(now bool) error {
 	commandRunner := GetCommandRunner()
 

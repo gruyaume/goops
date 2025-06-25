@@ -56,6 +56,7 @@ func SetEnvGetter(envGetter EnvironmentGetter) {
 	defaultGetter = envGetter
 }
 
+// ReadEnv reads the Juju related environment variables and returns an Environment struct
 func ReadEnv() Environment {
 	envGetter := GetEnvGetter()
 

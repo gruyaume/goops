@@ -6,6 +6,7 @@ const (
 	credentialGetCommand = "credential-get" // #nosec G101
 )
 
+// GetCredential retrieves cloud credentials.
 func GetCredential() (map[string]string, error) {
 	commandRunner := GetCommandRunner()
 

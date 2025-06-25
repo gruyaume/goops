@@ -3,7 +3,7 @@ package goops
 import "fmt"
 
 const (
-	applicationVersionSetCommand = "application-version-set"
+	appVersionSetCommand = "application-version-set"
 )
 
 // SetAppVersion sets the application version.
@@ -16,7 +16,7 @@ func SetAppVersion(version string) error {
 		args = append(args, version)
 	}
 
-	_, err := commandRunner.Run(applicationVersionSetCommand, args...)
+	_, err := commandRunner.Run(appVersionSetCommand, args...)
 	if err != nil {
 		return fmt.Errorf("failed to set application version: %w", err)
 	}

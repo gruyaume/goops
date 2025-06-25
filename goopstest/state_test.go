@@ -11,7 +11,7 @@ import (
 func GetState() error {
 	value, err := goops.GetState("my-key")
 	if err != nil {
-		return fmt.Errorf("could not get state: %w", err)
+		return err
 	}
 
 	if value != "my-value" {
@@ -35,6 +35,32 @@ func TestGetState(t *testing.T) {
 	_, err := ctx.Run("start", stateIn)
 	if err != nil {
 		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("expected no error, got: %v", ctx.CharmErr)
+	}
+}
+
+func TestGetStateNoKey(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: GetState,
+	}
+
+	stateIn := goopstest.State{}
+
+	_, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr == nil {
+		t.Fatalf("expected an error, got nil")
+	}
+
+	expectedErr := "no state found for key: my-key"
+	if ctx.CharmErr.Error() != expectedErr {
+		t.Errorf("got CharmErr=%q, want %q", ctx.CharmErr.Error(), expectedErr)
 	}
 }
 
@@ -115,7 +141,7 @@ func TestGetSetState(t *testing.T) {
 func DeleteState() error {
 	err := goops.DeleteState("my-key")
 	if err != nil {
-		return fmt.Errorf("could not delete state: %w", err)
+		return err
 	}
 
 	return nil
@@ -135,6 +161,31 @@ func TestDeleteState(t *testing.T) {
 	stateOut, err := ctx.Run("start", stateIn)
 	if err != nil {
 		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if _, exists := stateOut.StoredState["my-key"]; exists {
+		t.Errorf("expected StoredState[my-key] to be deleted, but it still exists")
+	}
+
+	if len(stateOut.StoredState) != 0 {
+		t.Errorf("expected StoredState to be empty, got %d items", len(stateOut.StoredState))
+	}
+}
+
+func TestDeleteStateNoKey(t *testing.T) {
+	ctx := goopstest.Context{
+		Charm: DeleteState,
+	}
+
+	stateIn := goopstest.State{}
+
+	stateOut, err := ctx.Run("start", stateIn)
+	if err != nil {
+		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("expected no error, got: %v", ctx.CharmErr)
 	}
 
 	if _, exists := stateOut.StoredState["my-key"]; exists {
