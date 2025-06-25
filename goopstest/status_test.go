@@ -84,7 +84,7 @@ func TestCharmSetUnitStatus(t *testing.T) {
 				Charm: tc.handler,
 			}
 
-			stateIn := &goopstest.State{}
+			stateIn := goopstest.State{}
 
 			stateOut, err := ctx.Run(tc.hookName, stateIn)
 			if err != nil {
@@ -103,8 +103,8 @@ func TestCharmSetUnitStatusPreset(t *testing.T) {
 		Charm: SetUnitStatusMaintenance,
 	}
 
-	stateIn := &goopstest.State{
-		UnitStatus: &goopstest.Status{
+	stateIn := goopstest.State{
+		UnitStatus: goopstest.Status{
 			Name: goopstest.StatusActive,
 		},
 	}
@@ -198,7 +198,7 @@ func TestSetAppStatusLeader(t *testing.T) {
 				Charm: tc.handler,
 			}
 
-			stateIn := &goopstest.State{
+			stateIn := goopstest.State{
 				Leader: true, // Assume we are the leader for setting app status
 			}
 
@@ -219,9 +219,9 @@ func TestCharmAppStatusPreset(t *testing.T) {
 		Charm: SetAppStatusMaintenance,
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Leader: true,
-		AppStatus: &goopstest.Status{
+		AppStatus: goopstest.Status{
 			Name: goopstest.StatusActive,
 		},
 	}
@@ -262,8 +262,8 @@ func TestGetUnitStatus(t *testing.T) {
 		Charm: GetUnitStatus,
 	}
 
-	stateIn := &goopstest.State{
-		UnitStatus: &goopstest.Status{
+	stateIn := goopstest.State{
+		UnitStatus: goopstest.Status{
 			Name:    goopstest.StatusActive,
 			Message: "My expected message",
 		},
@@ -305,7 +305,7 @@ func TestGetUnitStatusNotSet(t *testing.T) {
 		Charm: GetUnitStatusUnknown,
 	}
 
-	stateIn := &goopstest.State{}
+	stateIn := goopstest.State{}
 
 	stateOut, err := ctx.Run("install", stateIn)
 	if err != nil {
@@ -347,9 +347,9 @@ func TestGetAppStatusLeader(t *testing.T) {
 		Charm: GetAppStatus,
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Leader: true,
-		AppStatus: &goopstest.Status{
+		AppStatus: goopstest.Status{
 			Name:    goopstest.StatusActive,
 			Message: "My expected message",
 		},
@@ -378,9 +378,9 @@ func TestGetAppStatusNonLeader(t *testing.T) {
 		Charm: GetAppStatus,
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Leader: false,
-		AppStatus: &goopstest.Status{
+		AppStatus: goopstest.Status{
 			Name:    goopstest.StatusActive,
 			Message: "My expected message",
 		},
@@ -414,7 +414,7 @@ func TestSetAppStatusNonLeader(t *testing.T) {
 		Charm: SetAppStatusActive,
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Leader: false,
 	}
 

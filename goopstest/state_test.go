@@ -26,7 +26,7 @@ func TestGetState(t *testing.T) {
 		Charm: GetState,
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		StoredState: map[string]string{
 			"my-key": "my-value",
 		},
@@ -52,7 +52,7 @@ func TestSetState(t *testing.T) {
 		Charm: SetState,
 	}
 
-	stateIn := &goopstest.State{}
+	stateIn := goopstest.State{}
 
 	stateOut, err := ctx.Run("start", stateIn)
 	if err != nil {
@@ -96,7 +96,7 @@ func TestGetSetState(t *testing.T) {
 		Charm: GetSetState,
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		StoredState: map[string]string{
 			"my-key": "my-value",
 		},
@@ -126,7 +126,7 @@ func TestDeleteState(t *testing.T) {
 		Charm: DeleteState,
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		StoredState: map[string]string{
 			"my-key": "my-value",
 		},

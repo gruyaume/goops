@@ -41,7 +41,7 @@ func TestCharm(t *testing.T) {
 		Charm: Configure,
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Leader: false,
 	}
 
@@ -52,8 +52,12 @@ func TestCharm(t *testing.T) {
 	}
 
 	// Assert
-	if stateOut.UnitStatus.Name != goopstest.StatusBlocked {
-		t.Errorf("Expected unit status to be %s, got %s", goopstest.StatusBlocked, stateOut.UnitStatus.Name)
+	expectedStatus := goopstest.Status{
+		Name:    goopstest.StatusBlocked,
+		Message: "Unit is not a leader",
+	}
+	if stateOut.UnitStatus != expectedStatus {
+		t.Errorf("Expected unit status %v, got %v", expectedStatus, stateOut.UnitStatus)
 	}
 }
 ```
@@ -138,7 +142,7 @@ func TestCharm(t *testing.T) {
 
 	defer os.RemoveAll(dname)
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Containers: []*goopstest.Container{
 			{
 				Name:       "example",

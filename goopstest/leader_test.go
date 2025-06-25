@@ -79,7 +79,7 @@ func TestCharmLeader(t *testing.T) {
 				Charm: tc.handler,
 			}
 
-			stateIn := &goopstest.State{
+			stateIn := goopstest.State{
 				Leader: tc.leader,
 			}
 

@@ -90,7 +90,7 @@ func TestContainerCantConnect(t *testing.T) {
 				Charm: tt.fn,
 			}
 
-			stateIn := &goopstest.State{
+			stateIn := goopstest.State{
 				Containers: []*goopstest.Container{
 					{
 						Name:       "example",
@@ -123,7 +123,7 @@ func TestContainerCanConnect(t *testing.T) {
 		Charm: ContainerCanConnect,
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Containers: []*goopstest.Container{
 			{
 				Name:       "example",
@@ -210,7 +210,7 @@ func TestContainerGetPebblePlan(t *testing.T) {
 		Charm: ContainerGetPebblePlan,
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Containers: []*goopstest.Container{
 			{
 				Name:       "example",
@@ -243,7 +243,7 @@ func TestContainerUnexistantGetPebblePlan(t *testing.T) {
 		Charm: ContainerGetPebblePlan,
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Containers: []*goopstest.Container{
 			{
 				Name:       "example",
@@ -297,7 +297,7 @@ func TestContainerAddPebbleLayer(t *testing.T) {
 		Charm: ContainerAddPebbleLayer,
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Containers: []*goopstest.Container{
 			{
 				Name:       "example",
@@ -367,7 +367,7 @@ func TestContainerStartPebbleService(t *testing.T) {
 		Charm: ConatainerStartPebbleService,
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Containers: []*goopstest.Container{
 			{
 				Name:       "example",
@@ -436,7 +436,7 @@ func TestContainerGetPebbleServiceStatus(t *testing.T) {
 		Charm: ContainerGetPebbleServiceStatus,
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Containers: []*goopstest.Container{
 			{
 				Name:       "example",
@@ -501,7 +501,7 @@ func TestContainerStopPebbleService(t *testing.T) {
 		Charm: ContainerStopPebbleService,
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Containers: []*goopstest.Container{
 			{
 				Name:       "example",
@@ -558,7 +558,7 @@ func TestContainerRestartPebbleService(t *testing.T) {
 		Charm: ContainerRestartPebbleService,
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Containers: []*goopstest.Container{
 			{
 				Name:       "example",
@@ -636,7 +636,7 @@ func TestContainerPushFile(t *testing.T) {
 
 	defer os.RemoveAll(dname)
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Containers: []*goopstest.Container{
 			{
 				Name:       "example",
@@ -719,7 +719,7 @@ func TestContainerPullFile(t *testing.T) {
 		t.Fatalf("failed to copy file contents to %s: %v", tempLocation, err)
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Containers: []*goopstest.Container{
 			{
 				Name:       "example",
@@ -800,7 +800,7 @@ func TestMultiContainer(t *testing.T) {
 				Charm: MultiContainer,
 			}
 
-			stateIn := &goopstest.State{
+			stateIn := goopstest.State{
 				Containers: []*goopstest.Container{
 					{
 						Name:       "example1",

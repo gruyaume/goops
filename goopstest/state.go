@@ -101,8 +101,8 @@ type Status struct {
 
 type State struct {
 	Leader             bool
-	UnitStatus         *Status
-	AppStatus          *Status
+	UnitStatus         Status
+	AppStatus          Status
 	Config             map[string]any
 	Secrets            []*Secret
 	ApplicationVersion string

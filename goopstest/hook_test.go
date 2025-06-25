@@ -68,7 +68,7 @@ func TestCharmHookName(t *testing.T) {
 				Charm: tc.handler,
 			}
 
-			stateIn := &goopstest.State{}
+			stateIn := goopstest.State{}
 
 			stateOut, err := ctx.Run(tc.hookName, stateIn)
 			if err != nil {

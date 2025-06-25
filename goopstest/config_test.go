@@ -93,7 +93,7 @@ func TestCharmConfig(t *testing.T) {
 				tc.key: tc.value,
 			}
 
-			stateIn := &goopstest.State{
+			stateIn := goopstest.State{
 				Config: config,
 			}
 
@@ -122,7 +122,7 @@ func TestActiveIfExpectedConfigInActionHook(t *testing.T) {
 		"whatever_key": "expected",
 	}
 
-	stateIn := &goopstest.State{
+	stateIn := goopstest.State{
 		Config: config,
 	}
 
