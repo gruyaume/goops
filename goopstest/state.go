@@ -108,7 +108,7 @@ type State struct {
 	ApplicationVersion string
 	Relations          []*Relation
 	PeerRelations      []*PeerRelation
-	Ports              []*Port
+	Ports              []Port
 	Model              Model
 	StoredState        StoredState
 	Containers         []*Container

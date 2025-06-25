@@ -26,7 +26,7 @@ type fakeCommandRunner struct {
 	ApplicationVersion string
 	Relations          []*Relation
 	PeerRelations      []*PeerRelation
-	Ports              []*Port
+	Ports              []Port
 	StoredState        StoredState
 	AppName            string
 	UnitID             string
@@ -211,7 +211,7 @@ func (f *fakeCommandRunner) handleOpenPort(args []string) {
 		}
 	}
 
-	f.Ports = append(f.Ports, &Port{
+	f.Ports = append(f.Ports, Port{
 		Port:     port,
 		Protocol: protocol,
 	})
