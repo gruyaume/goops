@@ -36,7 +36,7 @@ func TestGetRelationIDsForPeers(t *testing.T) {
 		goopstest.UnitID("example/1"): {},
 	}
 
-	peerRelation := &goopstest.PeerRelation{
+	peerRelation := goopstest.PeerRelation{
 		Endpoint:  "example-peer",
 		Interface: "example-peer",
 		ID:        "example-peer:0",
@@ -44,7 +44,7 @@ func TestGetRelationIDsForPeers(t *testing.T) {
 	}
 
 	stateIn := goopstest.State{
-		PeerRelations: []*goopstest.PeerRelation{
+		PeerRelations: []goopstest.PeerRelation{
 			peerRelation,
 		},
 	}
@@ -71,7 +71,7 @@ func TestGetRelationIDsNoPeers(t *testing.T) {
 	}
 
 	stateIn := goopstest.State{
-		PeerRelations: []*goopstest.PeerRelation{},
+		PeerRelations: []goopstest.PeerRelation{},
 	}
 
 	_, err := ctx.Run("start", stateIn)
@@ -113,7 +113,7 @@ func TestListPeerRelationUnits(t *testing.T) {
 	}
 
 	stateIn := goopstest.State{
-		PeerRelations: []*goopstest.PeerRelation{
+		PeerRelations: []goopstest.PeerRelation{
 			{
 				ID:        "example-peer:0",
 				PeersData: map[goopstest.UnitID]goopstest.DataBag{"example/1": {}},
@@ -156,12 +156,12 @@ func TestGetPeerRelationModelUUID(t *testing.T) {
 	}
 
 	stateIn := goopstest.State{
-		PeerRelations: []*goopstest.PeerRelation{
+		PeerRelations: []goopstest.PeerRelation{
 			{
 				ID: "example-peer:0",
 			},
 		},
-		Model: &goopstest.Model{
+		Model: goopstest.Model{
 			UUID: "example-model-uuid",
 		},
 	}
@@ -215,7 +215,7 @@ func TestGetSelfUnitPeerRelationData(t *testing.T) {
 
 			stateIn := goopstest.State{
 				Leader: tc.leader,
-				PeerRelations: []*goopstest.PeerRelation{
+				PeerRelations: []goopstest.PeerRelation{
 					{
 						ID: "example-peer:0",
 						LocalUnitData: goopstest.DataBag{
@@ -259,7 +259,7 @@ func TestGetOtherUnitPeerRelationData(t *testing.T) {
 
 			stateIn := goopstest.State{
 				Leader: tc.leader,
-				PeerRelations: []*goopstest.PeerRelation{
+				PeerRelations: []goopstest.PeerRelation{
 					{
 						ID:            "example-peer:0",
 						LocalUnitData: goopstest.DataBag{},
@@ -323,7 +323,7 @@ func TestGetAppPeerRelationData(t *testing.T) {
 
 			stateIn := goopstest.State{
 				Leader: tc.leader,
-				PeerRelations: []*goopstest.PeerRelation{
+				PeerRelations: []goopstest.PeerRelation{
 					{
 						ID: "example-peer:0",
 						LocalAppData: goopstest.DataBag{
@@ -357,7 +357,7 @@ func TestGetAppPeerRelationDataNoRelation(t *testing.T) {
 	}
 
 	stateIn := goopstest.State{
-		PeerRelations: []*goopstest.PeerRelation{},
+		PeerRelations: []goopstest.PeerRelation{},
 	}
 
 	_, err := ctx.Run("start", stateIn)
@@ -396,7 +396,7 @@ func TestSetPeerUnitRelationData(t *testing.T) {
 	}
 
 	stateIn := goopstest.State{
-		PeerRelations: []*goopstest.PeerRelation{
+		PeerRelations: []goopstest.PeerRelation{
 			{
 				ID: "example-peer:0",
 			},
@@ -443,7 +443,7 @@ func TestSetPeerAppRelationDataLeader(t *testing.T) {
 
 	stateIn := goopstest.State{
 		Leader: true,
-		PeerRelations: []*goopstest.PeerRelation{
+		PeerRelations: []goopstest.PeerRelation{
 			{
 				ID: "example-peer:0",
 			},
@@ -477,7 +477,7 @@ func TestSetPeerAppRelationDataNonLeader(t *testing.T) {
 
 	stateIn := goopstest.State{
 		Leader: false,
-		PeerRelations: []*goopstest.PeerRelation{
+		PeerRelations: []goopstest.PeerRelation{
 			{
 				ID: "example-peer:0",
 			},

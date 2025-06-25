@@ -19,19 +19,19 @@ type fakeCommandRunner struct {
 	AppStatus          Status
 	Leader             bool
 	Config             map[string]any
-	Secrets            []*Secret
+	Secrets            []Secret
 	ActionResults      map[string]string
 	ActionParameters   map[string]any
 	ActionError        error
 	ApplicationVersion string
-	Relations          []*Relation
-	PeerRelations      []*PeerRelation
-	Ports              []*Port
+	Relations          []Relation
+	PeerRelations      []PeerRelation
+	Ports              []Port
 	StoredState        StoredState
 	AppName            string
 	UnitID             string
 	JujuLog            []JujuLogLine
-	Model              *Model
+	Model              Model
 }
 
 func (f *fakeCommandRunner) Run(name string, args ...string) ([]byte, error) {
@@ -211,7 +211,7 @@ func (f *fakeCommandRunner) handleOpenPort(args []string) {
 		}
 	}
 
-	f.Ports = append(f.Ports, &Port{
+	f.Ports = append(f.Ports, Port{
 		Port:     port,
 		Protocol: protocol,
 	})
@@ -305,7 +305,7 @@ func safeCopy(data DataBag) DataBag {
 func (f *fakeCommandRunner) findRelationByID(id string) *Relation {
 	for i := range f.Relations {
 		if f.Relations[i].ID == id {
-			return f.Relations[i]
+			return &f.Relations[i]
 		}
 	}
 
@@ -315,7 +315,7 @@ func (f *fakeCommandRunner) findRelationByID(id string) *Relation {
 func (f *fakeCommandRunner) findPeerRelationByID(id string) *PeerRelation {
 	for i := range f.PeerRelations {
 		if f.PeerRelations[i].ID == id {
-			return f.PeerRelations[i]
+			return &f.PeerRelations[i]
 		}
 	}
 
@@ -594,7 +594,7 @@ func (f *fakeCommandRunner) handleRelationModelGet(args []string) {
 		uuid = relation.RemoteModelUUID
 	}
 
-	if uuid == "" && f.Model != nil {
+	if uuid == "" {
 		uuid = f.Model.UUID
 	}
 
@@ -628,7 +628,7 @@ func (f *fakeCommandRunner) handleSecretAdd(args []string) {
 
 	content := parseKeyValueArgs(remaining)
 
-	f.Secrets = append(f.Secrets, &Secret{
+	f.Secrets = append(f.Secrets, Secret{
 		Label:       label,
 		Content:     content,
 		Owner:       owner,
@@ -687,10 +687,10 @@ func (f *fakeCommandRunner) setSecretOutput(secret *Secret) {
 	f.Output = output
 }
 
-func findSecretByID(secrets []*Secret, id string) *Secret {
+func findSecretByID(secrets []Secret, id string) *Secret {
 	for _, s := range secrets {
 		if s.ID == id {
-			return s
+			return &s
 		}
 	}
 
@@ -717,10 +717,10 @@ func splitPrefixedArgs(args []string, prefix string) (map[string]string, []strin
 }
 
 // findSecretByLabel returns the pointer to the secret with the given label.
-func findSecretByLabel(secrets []*Secret, label string) *Secret {
+func findSecretByLabel(secrets []Secret, label string) *Secret {
 	for _, secret := range secrets {
 		if secret.Label == label {
-			return secret
+			return &secret
 		}
 	}
 
@@ -887,6 +887,13 @@ func (f *fakeCommandRunner) handleSecretSet(args []string) {
 		}
 
 		secret.Expire = expiryTime
+
+		for i, s := range f.Secrets {
+			if s.ID == id {
+				f.Secrets[i] = secret
+				break
+			}
+		}
 
 		return
 	}

@@ -37,15 +37,16 @@ func (c *Context) Run(hookName string, state State) (State, error) {
 		return State{}, fmt.Errorf("charm function is not set in the context")
 	}
 
-	setRelationIDs(state.Relations)
-	setPeerRelationIDs(state.PeerRelations)
-	setUnitIDs(state.Relations)
+	state.Relations = setRelationIDs(state.Relations)
+	state.Relations = setUnitIDs(state.Relations)
+	state.PeerRelations = setPeerRelationIDs(state.PeerRelations)
 
-	if state.Model == nil {
-		state.Model = &Model{
-			Name: "test-model",
-			UUID: "12345678-1234-5678-1234-567812345678",
-		}
+	if state.Model.Name == "" {
+		state.Model.Name = "test-model"
+	}
+
+	if state.Model.UUID == "" {
+		state.Model.UUID = "12345678-1234-5678-1234-567812345678"
 	}
 
 	nilStatus := Status{}
@@ -126,11 +127,12 @@ func (c *Context) RunAction(actionName string, state State, params map[string]an
 		AppStatus:        state.AppStatus,
 	}
 
-	if state.Model == nil {
-		state.Model = &Model{
-			Name: "test-model",
-			UUID: "12345678-1234-5678-1234-567812345678",
-		}
+	if state.Model.Name == "" {
+		state.Model.Name = "test-model"
+	}
+
+	if state.Model.UUID == "" {
+		state.Model.UUID = "12345678-1234-5678-1234-567812345678"
 	}
 
 	fakeEnvGetter := &fakeEnvGetter{
@@ -160,7 +162,7 @@ func (c *Context) RunAction(actionName string, state State, params map[string]an
 }
 
 // For each relation, we set the remoteUnitsData so that it contains at leader 1 unit
-func setUnitIDs(relations []*Relation) {
+func setUnitIDs(relations []Relation) []Relation {
 	for _, relation := range relations {
 		if relation.RemoteUnitsData == nil {
 			relation.RemoteUnitsData = make(map[UnitID]DataBag)
@@ -170,22 +172,28 @@ func setUnitIDs(relations []*Relation) {
 			relation.RemoteUnitsData[UnitID(relation.RemoteAppName+"/0")] = DataBag{}
 		}
 	}
+
+	return relations
 }
 
 // For each relation, we set the ID to: <name>:<number>
-func setRelationIDs(relations []*Relation) {
-	for i, relation := range relations {
-		if relation.ID == "" {
-			relation.ID = fmt.Sprintf("%s:%d", relation.Endpoint, i)
+func setRelationIDs(relations []Relation) []Relation {
+	for i := range relations {
+		if relations[i].ID == "" {
+			relations[i].ID = fmt.Sprintf("%s:%d", relations[i].Endpoint, i)
 		}
 	}
+
+	return relations
 }
 
 // For each peer relation, we set the ID to: <name>:<number>
-func setPeerRelationIDs(peerRelations []*PeerRelation) {
+func setPeerRelationIDs(peerRelations []PeerRelation) []PeerRelation {
 	for i, relation := range peerRelations {
 		if relation.ID == "" {
 			relation.ID = fmt.Sprintf("%s:%d", relation.Endpoint, i)
 		}
 	}
+
+	return peerRelations
 }

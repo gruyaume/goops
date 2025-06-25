@@ -52,7 +52,7 @@ func TestSetPortsAlreadySet(t *testing.T) {
 	}
 
 	stateIn := goopstest.State{
-		Ports: []*goopstest.Port{
+		Ports: []goopstest.Port{
 			{
 				Port:     80,
 				Protocol: "tcp",
@@ -84,7 +84,7 @@ func TestSetPortsDifferentSet(t *testing.T) {
 	}
 
 	stateIn := goopstest.State{
-		Ports: []*goopstest.Port{
+		Ports: []goopstest.Port{
 			{
 				Port:     81,
 				Protocol: "udp",
@@ -125,7 +125,7 @@ func TestCloseUnOpenedPort(t *testing.T) {
 	}
 
 	stateIn := goopstest.State{
-		Ports: []*goopstest.Port{
+		Ports: []goopstest.Port{
 			{
 				Port:     81,
 				Protocol: "udp",
@@ -170,7 +170,7 @@ func TestOpenOpenedPort(t *testing.T) {
 	}
 
 	stateIn := goopstest.State{
-		Ports: []*goopstest.Port{
+		Ports: []goopstest.Port{
 			{
 				Port:     81,
 				Protocol: "udp",

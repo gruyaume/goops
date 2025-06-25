@@ -13,7 +13,7 @@ import (
 )
 
 type FakePebbleClient struct {
-	Containers    []*Container
+	Containers    []Container
 	ContainerName string
 }
 
@@ -22,7 +22,7 @@ func (f *FakePebbleClient) getContainer() *Container {
 
 	for _, c := range f.Containers {
 		if c.Name == f.ContainerName {
-			container = c
+			container = &c
 			break
 		}
 	}
@@ -182,6 +182,13 @@ func (f *FakePebbleClient) Start(opts *client.ServiceOptions) (string, error) {
 		}
 
 		container.ServiceStatuses[name] = client.StatusActive
+	}
+
+	for i, c := range f.Containers {
+		if c.Name == f.ContainerName {
+			f.Containers[i] = *container
+			break
+		}
 	}
 
 	return "123", nil
@@ -352,16 +359,23 @@ func (f *FakePebbleClient) AddLayer(opts *client.AddLayerOptions) error {
 	}
 
 	if container.Layers == nil {
-		container.Layers = make(map[string]*Layer)
+		container.Layers = make(map[string]Layer)
 	}
 
-	container.Layers[opts.Label] = &layer
+	container.Layers[opts.Label] = layer
+
+	for i, c := range f.Containers {
+		if c.Name == f.ContainerName {
+			f.Containers[i] = *container
+			break
+		}
+	}
 
 	return nil
 }
 
 type fakePebbleGetter struct {
-	Containers []*Container
+	Containers []Container
 }
 
 func (f *fakePebbleGetter) Pebble(name string) goops.PebbleClient {

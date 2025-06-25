@@ -66,7 +66,7 @@ func TestCharmGetSecretByLabel(t *testing.T) {
 				Charm: tc.handler,
 			}
 
-			mySecret := &goopstest.Secret{
+			mySecret := goopstest.Secret{
 				Label: "whatever-label",
 				Content: map[string]string{
 					tc.key: tc.value,
@@ -74,7 +74,7 @@ func TestCharmGetSecretByLabel(t *testing.T) {
 			}
 
 			stateIn := goopstest.State{
-				Secrets: []*goopstest.Secret{
+				Secrets: []goopstest.Secret{
 					mySecret,
 				},
 				Leader: true,
@@ -177,7 +177,7 @@ func TestCharmGetSecretByID(t *testing.T) {
 				Charm: tc.handler,
 			}
 
-			mySecret := &goopstest.Secret{
+			mySecret := goopstest.Secret{
 				ID: "12345",
 				Content: map[string]string{
 					tc.key: tc.value,
@@ -185,7 +185,7 @@ func TestCharmGetSecretByID(t *testing.T) {
 			}
 
 			stateIn := goopstest.State{
-				Secrets: []*goopstest.Secret{
+				Secrets: []goopstest.Secret{
 					mySecret,
 				},
 				Leader: true,
@@ -394,7 +394,7 @@ func TestCharmRemoveSecret(t *testing.T) {
 
 	stateIn := goopstest.State{
 		Leader: true,
-		Secrets: []*goopstest.Secret{
+		Secrets: []goopstest.Secret{
 			{
 				ID: "123",
 				Content: map[string]string{
@@ -422,7 +422,7 @@ func TestCharmRemoveSecretNonLeader(t *testing.T) {
 
 	stateIn := goopstest.State{
 		Leader: false,
-		Secrets: []*goopstest.Secret{
+		Secrets: []goopstest.Secret{
 			{
 				ID: "123",
 				Content: map[string]string{
@@ -453,7 +453,7 @@ func TestCharmRemoveUnexistingSecret(t *testing.T) {
 	}
 
 	stateIn := goopstest.State{
-		Secrets: []*goopstest.Secret{
+		Secrets: []goopstest.Secret{
 			{
 				ID: "12345",
 				Content: map[string]string{
@@ -501,7 +501,7 @@ func TestCharmGetSecretInfoByID(t *testing.T) {
 	}
 
 	stateIn := goopstest.State{
-		Secrets: []*goopstest.Secret{
+		Secrets: []goopstest.Secret{
 			{
 				ID: "12345",
 				Content: map[string]string{
@@ -534,7 +534,7 @@ func TestCharmGetSecretInfoByIDNonLeader(t *testing.T) {
 
 	stateIn := goopstest.State{
 		Leader: false,
-		Secrets: []*goopstest.Secret{
+		Secrets: []goopstest.Secret{
 			{
 				ID: "12345",
 				Content: map[string]string{
@@ -565,7 +565,7 @@ func TestCharmGetUnitSecretInfoByNonLeader(t *testing.T) {
 	}
 
 	stateIn := goopstest.State{
-		Secrets: []*goopstest.Secret{
+		Secrets: []goopstest.Secret{
 			{
 				ID: "12345",
 				Content: map[string]string{
@@ -616,7 +616,7 @@ func TestCharmGetSecretInfoByLabel(t *testing.T) {
 
 	stateIn := goopstest.State{
 		Leader: true,
-		Secrets: []*goopstest.Secret{
+		Secrets: []goopstest.Secret{
 			{
 				Label: "whatever-label",
 				Content: map[string]string{
@@ -644,7 +644,7 @@ func TestCharmGetSecretInfoByLabelNonLeader(t *testing.T) {
 
 	stateIn := goopstest.State{
 		Leader: false,
-		Secrets: []*goopstest.Secret{
+		Secrets: []goopstest.Secret{
 			{
 				Label: "whatever-label",
 				Content: map[string]string{
@@ -676,7 +676,7 @@ func TestCharmGetUnitSecretInfoByLabelNonLeader(t *testing.T) {
 
 	stateIn := goopstest.State{
 		Leader: false,
-		Secrets: []*goopstest.Secret{
+		Secrets: []goopstest.Secret{
 			{
 				Label: "whatever-label",
 				Content: map[string]string{
@@ -724,7 +724,7 @@ func TestCharmGetSecretIDs(t *testing.T) {
 
 	stateIn := goopstest.State{
 		Leader: true,
-		Secrets: []*goopstest.Secret{
+		Secrets: []goopstest.Secret{
 			{
 				ID: "12345",
 				Content: map[string]string{
@@ -767,7 +767,7 @@ func TestCharmGetSecretIDsNonLeader(t *testing.T) {
 
 	stateIn := goopstest.State{
 		Leader: false,
-		Secrets: []*goopstest.Secret{
+		Secrets: []goopstest.Secret{
 			{
 				ID: "12345",
 				Content: map[string]string{
@@ -820,7 +820,7 @@ func TestCharmGrantSecretToRelation(t *testing.T) {
 
 	stateIn := goopstest.State{
 		Leader: true,
-		Secrets: []*goopstest.Secret{
+		Secrets: []goopstest.Secret{
 			{
 				ID: "12345",
 				Content: map[string]string{
@@ -867,7 +867,7 @@ func TestCharmGrantSecretToUnit(t *testing.T) {
 
 	stateIn := goopstest.State{
 		Leader: true,
-		Secrets: []*goopstest.Secret{
+		Secrets: []goopstest.Secret{
 			{
 				ID: "12345",
 				Content: map[string]string{
@@ -899,7 +899,7 @@ func TestCharmGrantSecretNonLeader(t *testing.T) {
 
 	stateIn := goopstest.State{
 		Leader: false,
-		Secrets: []*goopstest.Secret{
+		Secrets: []goopstest.Secret{
 			{
 				ID: "12345",
 				Content: map[string]string{
@@ -949,7 +949,7 @@ func TestCharmSetSecret(t *testing.T) {
 
 	stateIn := goopstest.State{
 		Leader: true,
-		Secrets: []*goopstest.Secret{
+		Secrets: []goopstest.Secret{
 			{
 				ID:    "12345",
 				Label: "my-initial-label",
@@ -1007,7 +1007,7 @@ func TestCharmSetSecretNonLeader(t *testing.T) {
 
 	stateIn := goopstest.State{
 		Leader: false,
-		Secrets: []*goopstest.Secret{
+		Secrets: []goopstest.Secret{
 			{
 				ID:    "12345",
 				Label: "my-initial-label",
@@ -1064,7 +1064,7 @@ func TestCharmRevokeSecret(t *testing.T) {
 
 	stateIn := goopstest.State{
 		Leader: true,
-		Secrets: []*goopstest.Secret{
+		Secrets: []goopstest.Secret{
 			{
 				ID: "12345",
 				Content: map[string]string{
