@@ -75,7 +75,7 @@ type Exec struct {
 type Container struct {
 	Name            string
 	CanConnect      bool
-	Layers          map[string]*Layer
+	Layers          map[string]Layer
 	ServiceStatuses map[string]client.ServiceStatus
 	Mounts          map[string]Mount
 	Execs           []Exec
@@ -104,12 +104,12 @@ type State struct {
 	UnitStatus         Status
 	AppStatus          Status
 	Config             map[string]any
-	Secrets            []*Secret
+	Secrets            []Secret
 	ApplicationVersion string
-	Relations          []*Relation
-	PeerRelations      []*PeerRelation
+	Relations          []Relation
+	PeerRelations      []PeerRelation
 	Ports              []Port
 	Model              Model
 	StoredState        StoredState
-	Containers         []*Container
+	Containers         []Container
 }

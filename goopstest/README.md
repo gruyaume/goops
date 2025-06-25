@@ -131,6 +131,7 @@ func Configure() error {
 }
 
 func TestCharm(t *testing.T) {
+	// Arrange
 	ctx := goopstest.Context{
 		Charm: Configure,
 	}
@@ -143,7 +144,7 @@ func TestCharm(t *testing.T) {
 	defer os.RemoveAll(dname)
 
 	stateIn := goopstest.State{
-		Containers: []*goopstest.Container{
+		Containers: []goopstest.Container{
 			{
 				Name:       "example",
 				CanConnect: true,
@@ -157,11 +158,13 @@ func TestCharm(t *testing.T) {
 		},
 	}
 
+	// Act
 	stateOut, err := ctx.Run("install", stateIn)
 	if err != nil {
 		t.Fatalf("Run returned an error: %v", err)
 	}
 
+	// Assert
 	if len(stateOut.Containers) != 1 {
 		t.Fatalf("Expected 1 container in stateOut, got %d", len(stateOut.Containers))
 	}
@@ -170,11 +173,7 @@ func TestCharm(t *testing.T) {
 		t.Fatalf("Expected 1 Pebble layer in container, got %d", len(stateOut.Containers[0].Layers))
 	}
 
-	if stateOut.Containers[0].Layers["example-layer"] == nil {
-		t.Fatal("Expected Pebble layer 'example-layer' to be present, but it was not found")
-	}
-
-	expectedLayer := &goopstest.Layer{
+	expectedLayer := goopstest.Layer{
 		Summary:     "My service layer",
 		Description: "This layer configures my service",
 		Services: map[string]goopstest.Service{

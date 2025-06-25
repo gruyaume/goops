@@ -31,11 +31,11 @@ func TestCharmGetRelationIDs(t *testing.T) {
 		Charm: GetRelationIDs,
 	}
 
-	certRelation := &goopstest.Relation{
+	certRelation := goopstest.Relation{
 		Endpoint: "certificates",
 	}
 	stateIn := goopstest.State{
-		Relations: []*goopstest.Relation{
+		Relations: []goopstest.Relation{
 			certRelation,
 		},
 	}
@@ -217,13 +217,13 @@ func TestCharmListRelationUnits(t *testing.T) {
 			remoteUnitsData[goopstest.UnitID(unitID)] = goopstest.DataBag{}
 		}
 
-		certRelation := &goopstest.Relation{
+		certRelation := goopstest.Relation{
 			Endpoint:        "certificates",
 			RemoteAppName:   "provider",
 			RemoteUnitsData: remoteUnitsData,
 		}
 		stateIn := goopstest.State{
-			Relations: []*goopstest.Relation{
+			Relations: []goopstest.Relation{
 				certRelation,
 			},
 		}
@@ -245,7 +245,7 @@ func TestListRelationUnitsResultNotFound(t *testing.T) {
 	}
 
 	stateIn := goopstest.State{
-		Relations: []*goopstest.Relation{},
+		Relations: []goopstest.Relation{},
 	}
 
 	_, err := ctx.Run("start", stateIn)
@@ -272,13 +272,13 @@ func TestListRelationUnitsInActionHook(t *testing.T) {
 		goopstest.UnitID("provider/0"): {},
 	}
 
-	certRelation := &goopstest.Relation{
+	certRelation := goopstest.Relation{
 		Endpoint:        "certificates",
 		RemoteAppName:   "provider",
 		RemoteUnitsData: remoteUnitsData,
 	}
 	stateIn := goopstest.State{
-		Relations: []*goopstest.Relation{
+		Relations: []goopstest.Relation{
 			certRelation,
 		},
 	}
@@ -326,13 +326,13 @@ func TestCharmGetRemoteUnitRelationData(t *testing.T) {
 		},
 	}
 
-	certRelation := &goopstest.Relation{
+	certRelation := goopstest.Relation{
 		Endpoint:        "certificates",
 		RemoteAppName:   "provider",
 		RemoteUnitsData: remoteUnitsData,
 	}
 	stateIn := goopstest.State{
-		Relations: []*goopstest.Relation{
+		Relations: []goopstest.Relation{
 			certRelation,
 		},
 	}
@@ -353,7 +353,7 @@ func TestCharmGetRemoteUnitRelationDataNoRelation(t *testing.T) {
 	}
 
 	stateIn := goopstest.State{
-		Relations: []*goopstest.Relation{},
+		Relations: []goopstest.Relation{},
 	}
 
 	_, err := ctx.Run("start", stateIn)
@@ -377,7 +377,7 @@ func TestCharmGetRemoteUnitRelationDataNoRemoteUnit(t *testing.T) {
 	}
 
 	stateIn := goopstest.State{
-		Relations: []*goopstest.Relation{
+		Relations: []goopstest.Relation{
 			{
 				Endpoint:      "certificates",
 				RemoteAppName: "provider",
@@ -411,7 +411,7 @@ func TestCharmGetRemoteUnitRelationDataNoData(t *testing.T) {
 	}
 
 	stateIn := goopstest.State{
-		Relations: []*goopstest.Relation{
+		Relations: []goopstest.Relation{
 			{
 				Endpoint:      "certificates",
 				RemoteAppName: "provider",
@@ -466,14 +466,14 @@ func TestCharmGetLocalUnitRelationData(t *testing.T) {
 		UnitID:  "requirer/0",
 	}
 
-	certRelation := &goopstest.Relation{
+	certRelation := goopstest.Relation{
 		Endpoint: "certificates",
 		LocalUnitData: map[string]string{
 			"certificate_signing_requests": "csr-data",
 		},
 	}
 	stateIn := goopstest.State{
-		Relations: []*goopstest.Relation{
+		Relations: []goopstest.Relation{
 			certRelation,
 		},
 	}
@@ -496,14 +496,14 @@ func TestGetOtherLocalUnitRelationData(t *testing.T) {
 		UnitID:  "requirer/1", // This unit should not be able to read data from unit 0
 	}
 
-	certRelation := &goopstest.Relation{
+	certRelation := goopstest.Relation{
 		Endpoint: "certificates",
 		LocalUnitData: map[string]string{
 			"certificate_signing_requests": "csr-data",
 		},
 	}
 	stateIn := goopstest.State{
-		Relations: []*goopstest.Relation{
+		Relations: []goopstest.Relation{
 			certRelation,
 		},
 	}
@@ -530,14 +530,14 @@ func TestGetOtherUnexistantLocalUnitRelationData(t *testing.T) {
 		UnitID:  "banana/1", // This unit should not be able to read data from unit 0
 	}
 
-	certRelation := &goopstest.Relation{
+	certRelation := goopstest.Relation{
 		Endpoint: "certificates",
 		LocalUnitData: map[string]string{
 			"certificate_signing_requests": "csr-data",
 		},
 	}
 	stateIn := goopstest.State{
-		Relations: []*goopstest.Relation{
+		Relations: []goopstest.Relation{
 			certRelation,
 		},
 	}
@@ -588,13 +588,13 @@ func TestCharmGetRemoteAppRelationData(t *testing.T) {
 		"certificate_signing_requests": "csr-data",
 	}
 
-	certRelation := &goopstest.Relation{
+	certRelation := goopstest.Relation{
 		Endpoint:      "certificates",
 		RemoteAppName: "provider",
 		RemoteAppData: remoteAppData,
 	}
 	stateIn := goopstest.State{
-		Relations: []*goopstest.Relation{
+		Relations: []goopstest.Relation{
 			certRelation,
 		},
 	}
@@ -615,7 +615,7 @@ func TestCharmGetRemoteAppRelationDataNoRelation(t *testing.T) {
 	}
 
 	stateIn := goopstest.State{
-		Relations: []*goopstest.Relation{},
+		Relations: []goopstest.Relation{},
 	}
 
 	_, err := ctx.Run("start", stateIn)
@@ -662,7 +662,7 @@ func TestCharmGetLocalAppRelationData(t *testing.T) {
 		UnitID:  "requirer/0",
 	}
 
-	certRelation := &goopstest.Relation{
+	certRelation := goopstest.Relation{
 		Endpoint: "certificates",
 		LocalAppData: map[string]string{
 			"certificate_signing_requests": "csr-data",
@@ -670,7 +670,7 @@ func TestCharmGetLocalAppRelationData(t *testing.T) {
 	}
 	stateIn := goopstest.State{
 		Leader: true,
-		Relations: []*goopstest.Relation{
+		Relations: []goopstest.Relation{
 			certRelation,
 		},
 	}
@@ -697,7 +697,7 @@ func TestCharmGetLocalAppRelationDataNonLeader(t *testing.T) {
 		UnitID:  "requirer/0",
 	}
 
-	certRelation := &goopstest.Relation{
+	certRelation := goopstest.Relation{
 		Endpoint: "certificates",
 		LocalAppData: map[string]string{
 			"certificate_signing_requests": "csr-data",
@@ -705,7 +705,7 @@ func TestCharmGetLocalAppRelationDataNonLeader(t *testing.T) {
 	}
 	stateIn := goopstest.State{
 		Leader: false,
-		Relations: []*goopstest.Relation{
+		Relations: []goopstest.Relation{
 			certRelation,
 		},
 	}
@@ -743,11 +743,11 @@ func TestCharmSetUnitRelationData(t *testing.T) {
 		Charm: SetUnitRelationData,
 	}
 
-	certRelation := &goopstest.Relation{
+	certRelation := goopstest.Relation{
 		Endpoint: "certificates",
 	}
 	stateIn := goopstest.State{
-		Relations: []*goopstest.Relation{
+		Relations: []goopstest.Relation{
 			certRelation,
 		},
 	}
@@ -789,12 +789,12 @@ func TestCharmSetAppRelationData(t *testing.T) {
 		Charm: SetAppRelationData,
 	}
 
-	certRelation := &goopstest.Relation{
+	certRelation := goopstest.Relation{
 		Endpoint: "certificates",
 	}
 	stateIn := goopstest.State{
 		Leader: true,
-		Relations: []*goopstest.Relation{
+		Relations: []goopstest.Relation{
 			certRelation,
 		},
 	}
@@ -829,7 +829,7 @@ func TestCharmSetAppRelationDataNoRelation(t *testing.T) {
 
 	stateIn := goopstest.State{
 		Leader:    true,
-		Relations: []*goopstest.Relation{},
+		Relations: []goopstest.Relation{},
 	}
 
 	_, err := ctx.Run("start", stateIn)
@@ -855,12 +855,12 @@ func TestCharmSetAppRelationDataNonLeader(t *testing.T) {
 		UnitID:  "requirer/0",
 	}
 
-	certRelation := &goopstest.Relation{
+	certRelation := goopstest.Relation{
 		Endpoint: "certificates",
 	}
 	stateIn := goopstest.State{
 		Leader: false,
-		Relations: []*goopstest.Relation{
+		Relations: []goopstest.Relation{
 			certRelation,
 		},
 	}
@@ -958,12 +958,12 @@ func TestCharmSetAppRelationData2(t *testing.T) {
 		Charm: SetAppRelationData2,
 	}
 
-	certRelation := &goopstest.Relation{
+	certRelation := goopstest.Relation{
 		Endpoint: "metrics",
 	}
 	stateIn := goopstest.State{
 		Leader: true,
-		Relations: []*goopstest.Relation{
+		Relations: []goopstest.Relation{
 			certRelation,
 		},
 	}
@@ -1043,13 +1043,13 @@ func TestCharmRelationEndToEnd(t *testing.T) {
 		},
 	}
 
-	certRelation := &goopstest.Relation{
+	certRelation := goopstest.Relation{
 		Endpoint:        "certificates",
 		RemoteAppName:   "provider",
 		RemoteUnitsData: remoteUnitsData,
 	}
 	stateIn := goopstest.State{
-		Relations: []*goopstest.Relation{
+		Relations: []goopstest.Relation{
 			certRelation,
 		},
 	}
@@ -1082,11 +1082,11 @@ func TestCharmRelationModelGetUUID(t *testing.T) {
 		Charm: RelationModelGetUUID,
 	}
 
-	certRelation := &goopstest.Relation{
+	certRelation := goopstest.Relation{
 		Endpoint: "certificates",
 	}
 	stateIn := goopstest.State{
-		Relations: []*goopstest.Relation{
+		Relations: []goopstest.Relation{
 			certRelation,
 		},
 		Model: goopstest.Model{
@@ -1109,12 +1109,12 @@ func TestCharmRelationModelGetUUIDWithRemoteModelUUID(t *testing.T) {
 		Charm: RelationModelGetUUID,
 	}
 
-	certRelation := &goopstest.Relation{
+	certRelation := goopstest.Relation{
 		Endpoint:        "certificates",
 		RemoteModelUUID: "a4e65ff5-2358-4595-8ace-cc820c120e24",
 	}
 	stateIn := goopstest.State{
-		Relations: []*goopstest.Relation{
+		Relations: []goopstest.Relation{
 			certRelation,
 		},
 		Model: goopstest.Model{
@@ -1138,7 +1138,7 @@ func TestCharmRelationModelGetUUIDNoRelation(t *testing.T) {
 	}
 
 	stateIn := goopstest.State{
-		Relations: []*goopstest.Relation{},
+		Relations: []goopstest.Relation{},
 		Model: goopstest.Model{
 			UUID: "a4e65ff5-2358-4595-8ace-cc820c120e24",
 		},

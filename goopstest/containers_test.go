@@ -91,7 +91,7 @@ func TestContainerCantConnect(t *testing.T) {
 			}
 
 			stateIn := goopstest.State{
-				Containers: []*goopstest.Container{
+				Containers: []goopstest.Container{
 					{
 						Name:       "example",
 						CanConnect: false,
@@ -124,7 +124,7 @@ func TestContainerCanConnect(t *testing.T) {
 	}
 
 	stateIn := goopstest.State{
-		Containers: []*goopstest.Container{
+		Containers: []goopstest.Container{
 			{
 				Name:       "example",
 				CanConnect: true,
@@ -211,11 +211,11 @@ func TestContainerGetPebblePlan(t *testing.T) {
 	}
 
 	stateIn := goopstest.State{
-		Containers: []*goopstest.Container{
+		Containers: []goopstest.Container{
 			{
 				Name:       "example",
 				CanConnect: true,
-				Layers: map[string]*goopstest.Layer{
+				Layers: map[string]goopstest.Layer{
 					"my-service": {
 						Summary:     "My service layer",
 						Description: "This layer configures my service",
@@ -244,11 +244,11 @@ func TestContainerUnexistantGetPebblePlan(t *testing.T) {
 	}
 
 	stateIn := goopstest.State{
-		Containers: []*goopstest.Container{
+		Containers: []goopstest.Container{
 			{
 				Name:       "example",
 				CanConnect: true,
-				Layers:     map[string]*goopstest.Layer{},
+				Layers:     map[string]goopstest.Layer{},
 			},
 		},
 	}
@@ -298,7 +298,7 @@ func TestContainerAddPebbleLayer(t *testing.T) {
 	}
 
 	stateIn := goopstest.State{
-		Containers: []*goopstest.Container{
+		Containers: []goopstest.Container{
 			{
 				Name:       "example",
 				CanConnect: true,
@@ -316,9 +316,6 @@ func TestContainerAddPebbleLayer(t *testing.T) {
 	}
 
 	layer := stateOut.Containers[0].Layers["example-log-forwarding"]
-	if layer == nil {
-		t.Fatal("Expected Pebble layer 'example-log-forwarding' to be present, but it was not found")
-	}
 
 	expectedLogTarget := &goopstest.LogTarget{
 		Type:     "loki",
@@ -368,11 +365,11 @@ func TestContainerStartPebbleService(t *testing.T) {
 	}
 
 	stateIn := goopstest.State{
-		Containers: []*goopstest.Container{
+		Containers: []goopstest.Container{
 			{
 				Name:       "example",
 				CanConnect: true,
-				Layers: map[string]*goopstest.Layer{
+				Layers: map[string]goopstest.Layer{
 					"my-service": {
 						Summary:     "My service layer",
 						Description: "This layer configures my service",
@@ -437,11 +434,11 @@ func TestContainerGetPebbleServiceStatus(t *testing.T) {
 	}
 
 	stateIn := goopstest.State{
-		Containers: []*goopstest.Container{
+		Containers: []goopstest.Container{
 			{
 				Name:       "example",
 				CanConnect: true,
-				Layers: map[string]*goopstest.Layer{
+				Layers: map[string]goopstest.Layer{
 					"my-service": {
 						Summary:     "My service layer",
 						Description: "This layer configures my service",
@@ -502,11 +499,11 @@ func TestContainerStopPebbleService(t *testing.T) {
 	}
 
 	stateIn := goopstest.State{
-		Containers: []*goopstest.Container{
+		Containers: []goopstest.Container{
 			{
 				Name:       "example",
 				CanConnect: true,
-				Layers: map[string]*goopstest.Layer{
+				Layers: map[string]goopstest.Layer{
 					"my-service": {
 						Summary:     "My service layer",
 						Description: "This layer configures my service",
@@ -559,11 +556,11 @@ func TestContainerRestartPebbleService(t *testing.T) {
 	}
 
 	stateIn := goopstest.State{
-		Containers: []*goopstest.Container{
+		Containers: []goopstest.Container{
 			{
 				Name:       "example",
 				CanConnect: true,
-				Layers: map[string]*goopstest.Layer{
+				Layers: map[string]goopstest.Layer{
 					"my-service": {
 						Summary:     "My service layer",
 						Description: "This layer configures my service",
@@ -637,7 +634,7 @@ func TestContainerPushFile(t *testing.T) {
 	defer os.RemoveAll(dname)
 
 	stateIn := goopstest.State{
-		Containers: []*goopstest.Container{
+		Containers: []goopstest.Container{
 			{
 				Name:       "example",
 				CanConnect: true,
@@ -720,7 +717,7 @@ func TestContainerPullFile(t *testing.T) {
 	}
 
 	stateIn := goopstest.State{
-		Containers: []*goopstest.Container{
+		Containers: []goopstest.Container{
 			{
 				Name:       "example",
 				CanConnect: true,
@@ -801,7 +798,7 @@ func TestMultiContainer(t *testing.T) {
 			}
 
 			stateIn := goopstest.State{
-				Containers: []*goopstest.Container{
+				Containers: []goopstest.Container{
 					{
 						Name:       "example1",
 						CanConnect: tt.example1CanConnect,

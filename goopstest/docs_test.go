@@ -120,7 +120,7 @@ func TestCharmKubernetes(t *testing.T) {
 	defer os.RemoveAll(dname)
 
 	stateIn := goopstest.State{
-		Containers: []*goopstest.Container{
+		Containers: []goopstest.Container{
 			{
 				Name:       "example",
 				CanConnect: true,
@@ -149,11 +149,7 @@ func TestCharmKubernetes(t *testing.T) {
 		t.Fatalf("Expected 1 Pebble layer in container, got %d", len(stateOut.Containers[0].Layers))
 	}
 
-	if stateOut.Containers[0].Layers["example-layer"] == nil {
-		t.Fatal("Expected Pebble layer 'example-layer' to be present, but it was not found")
-	}
-
-	expectedLayer := &goopstest.Layer{
+	expectedLayer := goopstest.Layer{
 		Summary:     "My service layer",
 		Description: "This layer configures my service",
 		Services: map[string]goopstest.Service{
