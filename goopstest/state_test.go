@@ -85,6 +85,10 @@ func TestSetState(t *testing.T) {
 		t.Fatalf("Run returned an error: %v", err)
 	}
 
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
+	}
+
 	if stateOut.StoredState["my-key"] != "my-value" {
 		t.Errorf("got StoredState[my-key]=%s, want my-value", stateOut.StoredState["my-key"])
 	}
@@ -133,6 +137,10 @@ func TestGetSetState(t *testing.T) {
 		t.Fatalf("Run returned an error: %v", err)
 	}
 
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
+	}
+
 	if stateOut.StoredState["my-key"] != "my-new-value" {
 		t.Errorf("got StoredState[my-key]=%s, want my-new-value", stateOut.StoredState["my-key"])
 	}
@@ -161,6 +169,10 @@ func TestDeleteState(t *testing.T) {
 	stateOut, err := ctx.Run("start", stateIn)
 	if err != nil {
 		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
 	}
 
 	if _, exists := stateOut.StoredState["my-key"]; exists {

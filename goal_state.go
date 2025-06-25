@@ -7,8 +7,8 @@ const (
 )
 
 type GoalStateStatusContents struct {
-	Status string `json:"status"`
-	Since  string `json:"since,omitempty"`
+	Status StatusName `json:"status"`
+	Since  string     `json:"since,omitempty"`
 }
 
 type UnitsGoalStateContents map[string]GoalStateStatusContents
@@ -34,10 +34,6 @@ func GetGoalState() (*GoalState, error) {
 	err = json.Unmarshal(output, &goalState)
 	if err != nil {
 		return nil, err
-	}
-
-	if len(goalState.Relations) == 0 {
-		goalState.Relations = nil
 	}
 
 	return &goalState, nil

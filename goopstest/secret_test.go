@@ -85,6 +85,10 @@ func TestCharmGetSecretByLabel(t *testing.T) {
 				t.Fatalf("Run returned an error: %v", err)
 			}
 
+			if ctx.CharmErr != nil {
+				t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
+			}
+
 			if stateOut.UnitStatus.Name != tc.expectedStatusName {
 				t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, tc.expectedStatusName)
 			}
@@ -110,6 +114,10 @@ func TestCharmGetUnexistingSecretByLabel(t *testing.T) {
 	stateOut, err := ctx.Run("start", stateIn)
 	if err != nil {
 		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
 	}
 
 	if stateOut.UnitStatus.Name != goopstest.StatusMaintenance {
@@ -410,6 +418,10 @@ func TestCharmRemoveSecret(t *testing.T) {
 		t.Fatalf("Run returned an error: %v", err)
 	}
 
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
+	}
+
 	if len(stateOut.Secrets) != 0 {
 		t.Errorf("got %d secrets, want 0", len(stateOut.Secrets))
 	}
@@ -436,6 +448,10 @@ func TestCharmRemoveSecretNonLeader(t *testing.T) {
 	stateOut, err := ctx.Run("start", stateIn)
 	if err != nil {
 		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
 	}
 
 	if len(stateOut.Secrets) != 1 {
@@ -467,6 +483,10 @@ func TestCharmRemoveUnexistingSecret(t *testing.T) {
 	stateOut, err := ctx.Run("start", stateIn)
 	if err != nil {
 		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
 	}
 
 	if len(stateOut.Secrets) != 1 {
@@ -630,6 +650,10 @@ func TestCharmGetSecretInfoByLabel(t *testing.T) {
 	stateOut, err := ctx.Run("start", stateIn)
 	if err != nil {
 		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
 	}
 
 	if stateOut.UnitStatus.Name != goopstest.StatusActive {
@@ -1022,6 +1046,10 @@ func TestCharmSetSecretNonLeader(t *testing.T) {
 	stateOut, err := ctx.Run("start", stateIn)
 	if err != nil {
 		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
 	}
 
 	if len(stateOut.Secrets) != 1 {

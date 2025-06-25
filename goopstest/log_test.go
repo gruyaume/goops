@@ -25,6 +25,10 @@ func TestContainerLog(t *testing.T) {
 		t.Fatalf("Run returned an error: %v", err)
 	}
 
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
+	}
+
 	expectedLog := goopstest.JujuLogLine{
 		Message: "This is an info log message",
 		Level:   goopstest.LogLevelInfo,

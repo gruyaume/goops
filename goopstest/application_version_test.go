@@ -28,6 +28,10 @@ func TestCharmApplicationVersion(t *testing.T) {
 		t.Fatalf("Run returned an error: %v", err)
 	}
 
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
+	}
+
 	if stateOut.ApplicationVersion != "1.2.3" {
 		t.Errorf("Expected application version '1.2.3', got '%s'", stateOut.ApplicationVersion)
 	}
@@ -43,6 +47,10 @@ func TestCharmApplicationVersionInActionHook(t *testing.T) {
 	stateOut, err := ctx.RunAction("run-action", stateIn, nil)
 	if err != nil {
 		t.Fatalf("RunAction returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
 	}
 
 	if stateOut.ApplicationVersion != "1.2.3" {

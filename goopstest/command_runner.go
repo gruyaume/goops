@@ -46,11 +46,15 @@ func (f *fakeCommandRunner) Run(name string, args ...string) ([]byte, error) {
 		"action-set":              f.handleActionSet,
 		"action-log":              f.handleActionLog,
 		"application-version-set": f.handleApplicationVersionSet,
+		"close-port":              f.handleClosePort,
 		"config-get":              f.handleConfigGet,
+		"credential-get":          f.handleCredentialGet,
+		"goal-state":              f.handleGoalState,
 		"is-leader":               f.handleIsLeader,
+		"juju-log":                f.handleJujuLog,
+		"juju-reboot":             f.handleJujuReboot,
 		"opened-ports":            f.handleOpenedPorts,
 		"open-port":               f.handleOpenPort,
-		"close-port":              f.handleClosePort,
 		"relation-ids":            f.handleRelationIDs,
 		"relation-get":            f.handleRelationGet,
 		"relation-list":           f.handleRelationList,
@@ -69,7 +73,6 @@ func (f *fakeCommandRunner) Run(name string, args ...string) ([]byte, error) {
 		"state-delete":            f.handleStateDelete,
 		"status-get":              f.handleStatusGet,
 		"status-set":              f.handleStatusSet,
-		"juju-log":                f.handleJujuLog,
 	}
 
 	if handler, exists := handlers[name]; exists {
@@ -160,6 +163,8 @@ func (f *fakeCommandRunner) handleJujuLog(args []string) {
 	}
 	f.JujuLog = append(f.JujuLog, newLogEntry)
 }
+
+func (f *fakeCommandRunner) handleJujuReboot(_ []string) {}
 
 func (f *fakeCommandRunner) handleIsLeader(_ []string) {
 	if f.Leader {
@@ -255,6 +260,59 @@ func (f *fakeCommandRunner) handleConfigGet(_ []string) {
 	output, err := json.Marshal(f.Config)
 	if err != nil {
 		f.Err = fmt.Errorf("failed to marshal config: %w", err)
+		return
+	}
+
+	f.Output = output
+}
+
+func (f *fakeCommandRunner) handleCredentialGet(_ []string) {
+	f.Output = []byte(`{}`)
+}
+
+type goalStateStatusContents struct {
+	Status StatusName `json:"status"`
+	Since  string     `json:"since,omitempty"`
+}
+
+type unitsGoalStateContents map[string]goalStateStatusContents
+
+type goalState struct {
+	Units     unitsGoalStateContents            `json:"units"`
+	Relations map[string]unitsGoalStateContents `json:"relations"`
+}
+
+func (f *fakeCommandRunner) handleGoalState(_ []string) {
+	goalState := goalState{
+		Units:     make(unitsGoalStateContents),
+		Relations: make(map[string]unitsGoalStateContents),
+	}
+
+	// Add unit status
+	goalState.Units[f.UnitID] = goalStateStatusContents{
+		Status: f.UnitStatus.Name,
+	}
+
+	// add relation info
+	for _, relation := range f.Relations {
+		if _, exists := goalState.Relations[relation.Endpoint]; !exists {
+			goalState.Relations[relation.Endpoint] = make(unitsGoalStateContents)
+		}
+
+		goalState.Relations[relation.Endpoint][relation.RemoteAppName] = goalStateStatusContents{
+			Status: StatusActive,
+		}
+
+		for unitID := range relation.RemoteUnitsData {
+			goalState.Relations[relation.Endpoint][string(unitID)] = goalStateStatusContents{
+				Status: StatusActive,
+			}
+		}
+	}
+
+	output, err := json.Marshal(goalState)
+	if err != nil {
+		f.Err = fmt.Errorf("failed to marshal goal state: %w", err)
 		return
 	}
 

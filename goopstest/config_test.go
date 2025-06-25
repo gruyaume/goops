@@ -131,6 +131,10 @@ func TestActiveIfExpectedConfigInActionHook(t *testing.T) {
 		t.Fatalf("Run returned an error: %v", err)
 	}
 
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
+	}
+
 	if stateOut.UnitStatus.Name != goopstest.StatusActive {
 		t.Errorf("Expected UnitStatus %q, got %q", goopstest.StatusActive, stateOut.UnitStatus)
 	}

@@ -44,6 +44,10 @@ func TestCharmGetRelationIDs(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Run returned an error: %v", err)
 	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
+	}
 }
 
 func GetRelationIDsNoRelation() error {
@@ -69,6 +73,10 @@ func TestCharmGetRelationIDsNoRelation(t *testing.T) {
 	stateOut, err := ctx.Run("start", stateIn)
 	if err != nil {
 		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
 	}
 
 	if len(stateOut.Relations) != 0 {
@@ -233,6 +241,10 @@ func TestCharmListRelationUnits(t *testing.T) {
 			t.Fatalf("Run returned an error: %v", err)
 		}
 
+		if ctx.CharmErr != nil {
+			t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
+		}
+
 		if len(stateOut.Relations) != 1 {
 			t.Fatalf("expected 1 relation, got %d", len(stateOut.Relations))
 		}
@@ -340,6 +352,10 @@ func TestCharmGetRemoteUnitRelationData(t *testing.T) {
 	stateOut, err := ctx.Run("start", stateIn)
 	if err != nil {
 		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
 	}
 
 	if len(stateOut.Relations) != 1 {
@@ -483,6 +499,10 @@ func TestCharmGetLocalUnitRelationData(t *testing.T) {
 		t.Fatalf("Run returned an error: %v", err)
 	}
 
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
+	}
+
 	if len(stateOut.Relations) != 1 {
 		t.Fatalf("expected 1 relation, got %d", len(stateOut.Relations))
 	}
@@ -602,6 +622,10 @@ func TestCharmGetRemoteAppRelationData(t *testing.T) {
 	stateOut, err := ctx.Run("start", stateIn)
 	if err != nil {
 		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
 	}
 
 	if len(stateOut.Relations) != 1 {
@@ -755,6 +779,10 @@ func TestCharmSetUnitRelationData(t *testing.T) {
 	stateOut, err := ctx.Run("start", stateIn)
 	if err != nil {
 		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
 	}
 
 	if len(stateOut.Relations) != 1 {
@@ -973,6 +1001,10 @@ func TestCharmSetAppRelationData2(t *testing.T) {
 		t.Fatalf("Run returned an error: %v", err)
 	}
 
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
+	}
+
 	if len(stateOut.Relations) != 1 {
 		t.Fatalf("expected 1 relation, got %d", len(stateOut.Relations))
 	}
@@ -1057,6 +1089,10 @@ func TestCharmRelationEndToEnd(t *testing.T) {
 	stateOut, err := ctx.Run("start", stateIn)
 	if err != nil {
 		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
 	}
 
 	if len(stateOut.Relations) != 1 {

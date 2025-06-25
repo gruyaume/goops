@@ -59,4 +59,8 @@ func TestGetMetadata(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Run returned an error: %v", err)
 	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
+	}
 }

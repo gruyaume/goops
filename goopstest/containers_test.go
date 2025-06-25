@@ -136,6 +136,10 @@ func TestContainerCanConnect(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Run returned an error: %v", err)
 	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
+	}
 }
 
 type ServiceConfig struct {
@@ -236,6 +240,10 @@ func TestContainerGetPebblePlan(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Run returned an error: %v", err)
 	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
+	}
 }
 
 func TestContainerUnexistantGetPebblePlan(t *testing.T) {
@@ -309,6 +317,10 @@ func TestContainerAddPebbleLayer(t *testing.T) {
 	stateOut, err := ctx.Run("install", stateIn)
 	if err != nil {
 		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
 	}
 
 	if len(stateOut.Containers) != 1 {
@@ -394,6 +406,10 @@ func TestContainerStartPebbleService(t *testing.T) {
 		t.Fatalf("Run returned an error: %v", err)
 	}
 
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
+	}
+
 	if stateOut.Containers[0].ServiceStatuses["my-service"] != client.StatusActive {
 		t.Errorf("Expected service 'my-service' to be active, got %s", stateOut.Containers[0].ServiceStatuses["my-service"])
 	}
@@ -463,6 +479,10 @@ func TestContainerGetPebbleServiceStatus(t *testing.T) {
 		t.Fatalf("Run returned an error: %v", err)
 	}
 
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
+	}
+
 	if len(stateOut.Containers) != 1 {
 		t.Fatalf("Expected 1 container in stateOut, got %d", len(stateOut.Containers))
 	}
@@ -528,6 +548,10 @@ func TestContainerStopPebbleService(t *testing.T) {
 		t.Fatalf("Run returned an error: %v", err)
 	}
 
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
+	}
+
 	if stateOut.Containers[0].ServiceStatuses["my-service"] != client.StatusInactive {
 		t.Errorf("Expected service 'my-service' to be inactive, got %s", stateOut.Containers[0].ServiceStatuses["my-service"])
 	}
@@ -583,6 +607,10 @@ func TestContainerRestartPebbleService(t *testing.T) {
 	stateOut, err := ctx.Run("install", stateIn)
 	if err != nil {
 		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
 	}
 
 	if stateOut.Containers[0].ServiceStatuses["my-service"] != client.StatusActive {

@@ -61,6 +61,10 @@ func TestGetModelInfo(t *testing.T) {
 		t.Fatalf("Run returned an error: %v", err)
 	}
 
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
+	}
+
 	if stateOut.Model.Name != "test-model" {
 		t.Errorf("got Model.Name=%q, want %q", stateOut.Model.Name, "test-model")
 	}
@@ -83,6 +87,10 @@ func TestGetUnitName(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Run returned an error: %v", err)
 	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
+	}
 }
 
 func TestGetJujuVersion(t *testing.T) {
@@ -96,5 +104,9 @@ func TestGetJujuVersion(t *testing.T) {
 	_, err := ctx.Run("start", stateIn)
 	if err != nil {
 		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
 	}
 }

@@ -91,6 +91,10 @@ func TestCharmSetUnitStatus(t *testing.T) {
 				t.Fatalf("Run returned an error: %v", err)
 			}
 
+			if ctx.CharmErr != nil {
+				t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
+			}
+
 			if stateOut.UnitStatus.Name != tc.expectedStatusName {
 				t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, tc.expectedStatusName)
 			}
@@ -112,6 +116,10 @@ func TestCharmSetUnitStatusPreset(t *testing.T) {
 	stateOut, err := ctx.Run("start", stateIn)
 	if err != nil {
 		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
 	}
 
 	if stateOut.UnitStatus.Name != goopstest.StatusMaintenance {
@@ -207,6 +215,10 @@ func TestSetAppStatusLeader(t *testing.T) {
 				t.Fatalf("Run returned an error: %v", err)
 			}
 
+			if ctx.CharmErr != nil {
+				t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
+			}
+
 			if stateOut.AppStatus.Name != tc.expectedStatusName {
 				t.Errorf("got AppStatus=%q, want %q", stateOut.AppStatus, tc.expectedStatusName)
 			}
@@ -229,6 +241,10 @@ func TestCharmAppStatusPreset(t *testing.T) {
 	stateOut, err := ctx.Run("start", stateIn)
 	if err != nil {
 		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
 	}
 
 	if stateOut.AppStatus.Name != goopstest.StatusMaintenance {
