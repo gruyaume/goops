@@ -9,6 +9,7 @@ const (
 	isLeaderCommand = "is-leader"
 )
 
+// IsLeader retrieves the unit's leadership status.
 func IsLeader() (bool, error) {
 	commandRunner := GetCommandRunner()
 

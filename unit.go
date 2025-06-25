@@ -29,10 +29,12 @@ func getUnit(key string) (string, error) {
 	return result, nil
 }
 
+// GetUnitName returns the public IP address of the unit.
 func GetUnitPublicAddress() (string, error) {
 	return getUnit("public-address")
 }
 
+// GetUnitPrivateAddress returns the private IP address of the unit.
 func GetUnitPrivateAddress() (string, error) {
 	return getUnit("private-address")
 }

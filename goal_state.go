@@ -18,6 +18,7 @@ type GoalState struct {
 	Relations map[string]UnitsGoalStateContents `json:"relations"`
 }
 
+// GetGoalState retrieves the status of the charm's peers and related units.
 func GetGoalState() (*GoalState, error) {
 	commandRunner := GetCommandRunner()
 

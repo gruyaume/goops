@@ -4,6 +4,7 @@ const (
 	resourceGetCommand = "resource-get"
 )
 
+// GetResource retrieves the local path to a resource file for the given resource name.
 func GetResource(name string) (string, error) {
 	commandRunner := GetCommandRunner()
 

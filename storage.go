@@ -11,6 +11,7 @@ const (
 	storageListCommand = "storage-list"
 )
 
+// AddStorage adds a storage instance to the unit.
 func AddStorage(name string, count int) error {
 	commandRunner := GetCommandRunner()
 
@@ -26,50 +27,35 @@ func AddStorage(name string, count int) error {
 	return nil
 }
 
-func GetStorageByID(id string) (string, error) {
+type StorageInfo struct {
+	Kind     string `json:"kind"`
+	Location string `json:"location"`
+}
+
+// GetStorageByID retrieves storage information by its ID.
+func GetStorageByID(id string) (*StorageInfo, error) {
 	commandRunner := GetCommandRunner()
 
-	args := []string{id}
+	args := []string{"-s", id}
 
 	args = append(args, "--format=json")
 
 	output, err := commandRunner.Run(storageGetCommand, args...)
 	if err != nil {
-		return "", fmt.Errorf("failed to get storage: %w", err)
+		return nil, fmt.Errorf("failed to get storage: %w", err)
 	}
 
-	var storage string
+	var storageInfo StorageInfo
 
-	err = json.Unmarshal(output, &storage)
+	err = json.Unmarshal(output, &storageInfo)
 	if err != nil {
-		return "", fmt.Errorf("failed to parse storage: %w", err)
+		return nil, fmt.Errorf("failed to parse storage: %w", err)
 	}
 
-	return storage, nil
+	return &storageInfo, nil
 }
 
-func GetStorageByName(name string) (string, error) {
-	commandRunner := GetCommandRunner()
-
-	args := []string{"-s", name}
-
-	args = append(args, "--format=json")
-
-	output, err := commandRunner.Run(storageGetCommand, args...)
-	if err != nil {
-		return "", fmt.Errorf("failed to get storage: %w", err)
-	}
-
-	var storage string
-
-	err = json.Unmarshal(output, &storage)
-	if err != nil {
-		return "", fmt.Errorf("failed to parse storage: %w", err)
-	}
-
-	return storage, nil
-}
-
+// ListStorage lists all storage IDs for a given storage name.
 func ListStorage(name string) ([]string, error) {
 	commandRunner := GetCommandRunner()
 

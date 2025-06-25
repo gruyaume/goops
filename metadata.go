@@ -41,6 +41,7 @@ type Metadata struct {
 	Summary     string                 `yaml:"summary"`
 }
 
+// ReadMetadata reads the metadata.yaml file from the charm directory and unmarshals it into a Metadata struct.
 func ReadMetadata() (*Metadata, error) {
 	env := ReadEnv()
 

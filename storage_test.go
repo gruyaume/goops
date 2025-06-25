@@ -58,15 +58,15 @@ func TestStorageAddWithCount_Success(t *testing.T) {
 	}
 }
 
-func TestStorageGetByName_Success(t *testing.T) {
+func TestStorageGetByID_Success(t *testing.T) {
 	fakeRunner := &FakeRunner{
-		Output: []byte(`"database-storage"`),
+		Output: []byte(`{"kind":"filesystem","location":"/var/lib/juju/storage/config/0"}`),
 		Err:    nil,
 	}
 
 	goops.SetCommandRunner(fakeRunner)
 
-	storage, err := goops.GetStorageByName("database-storage")
+	storage, err := goops.GetStorageByID("database-storage")
 	if err != nil {
 		t.Fatalf("StorageGet returned an error: %v", err)
 	}
@@ -91,42 +91,12 @@ func TestStorageGetByName_Success(t *testing.T) {
 		t.Errorf("Expected argument %q, got %q", "--format=json", fakeRunner.Args[2])
 	}
 
-	if storage != "database-storage" {
-		t.Errorf("Expected storage %q, got %q", "database-storage", storage)
-	}
-}
-
-func TestStorageGetByID_Success(t *testing.T) {
-	fakeRunner := &FakeRunner{
-		Output: []byte(`"database-storage"`),
-		Err:    nil,
+	if storage.Kind != "filesystem" {
+		t.Errorf("Expected storage %q, got %q", "filesystem", storage.Kind)
 	}
 
-	goops.SetCommandRunner(fakeRunner)
-
-	storage, err := goops.GetStorageByID("21127934-8986-11e5-af63-feff819cdc9f")
-	if err != nil {
-		t.Fatalf("StorageGet returned an error: %v", err)
-	}
-
-	if fakeRunner.Command != "storage-get" {
-		t.Errorf("Expected command %q, got %q", "storage-get", fakeRunner.Command)
-	}
-
-	if len(fakeRunner.Args) != 2 {
-		t.Fatalf("Expected 3 argument, got %d", len(fakeRunner.Args))
-	}
-
-	if fakeRunner.Args[0] != "21127934-8986-11e5-af63-feff819cdc9f" {
-		t.Errorf("Expected argument %q, got %q", "21127934-8986-11e5-af63-feff819cdc9f", fakeRunner.Args[0])
-	}
-
-	if fakeRunner.Args[1] != "--format=json" {
-		t.Errorf("Expected argument %q, got %q", "--format=json", fakeRunner.Args[1])
-	}
-
-	if storage != "database-storage" {
-		t.Errorf("Expected storage %q, got %q", "database-storage", storage)
+	if storage.Location != "/var/lib/juju/storage/config/0" {
+		t.Errorf("Expected storage location %q, got %q", "/var/lib/juju/storage/config/0", storage.Location)
 	}
 }
 

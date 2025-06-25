@@ -36,18 +36,22 @@ func logf(level Level, format string, args ...any) {
 	}
 }
 
+// LogDebugf logs a debug message. Log messages can be read using `juju debug-log`.
 func LogDebugf(format string, args ...any) {
 	logf(Debug, format, args...)
 }
 
+// LogInfof logs an informational message. Log messages can be read using `juju debug-log`.
 func LogInfof(format string, args ...any) {
 	logf(Info, format, args...)
 }
 
+// LogWarningf logs a warning message. Log messages can be read using `juju debug-log`.
 func LogWarningf(format string, args ...any) {
 	logf(Warning, format, args...)
 }
 
+// LogErrorf logs an error message. Log messages can be read using `juju debug-log`.
 func LogErrorf(format string, args ...any) {
 	logf(Error, format, args...)
 }
