@@ -1089,7 +1089,7 @@ func TestCharmRelationModelGetUUID(t *testing.T) {
 		Relations: []*goopstest.Relation{
 			certRelation,
 		},
-		Model: &goopstest.Model{
+		Model: goopstest.Model{
 			UUID: "a4e65ff5-2358-4595-8ace-cc820c120e24",
 		},
 	}
@@ -1117,7 +1117,7 @@ func TestCharmRelationModelGetUUIDWithRemoteModelUUID(t *testing.T) {
 		Relations: []*goopstest.Relation{
 			certRelation,
 		},
-		Model: &goopstest.Model{
+		Model: goopstest.Model{
 			UUID: "a-different-uuid",
 		},
 	}
@@ -1139,7 +1139,7 @@ func TestCharmRelationModelGetUUIDNoRelation(t *testing.T) {
 
 	stateIn := goopstest.State{
 		Relations: []*goopstest.Relation{},
-		Model: &goopstest.Model{
+		Model: goopstest.Model{
 			UUID: "a4e65ff5-2358-4595-8ace-cc820c120e24",
 		},
 	}

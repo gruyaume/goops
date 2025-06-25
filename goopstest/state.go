@@ -109,7 +109,7 @@ type State struct {
 	Relations          []*Relation
 	PeerRelations      []*PeerRelation
 	Ports              []*Port
-	Model              *Model
+	Model              Model
 	StoredState        StoredState
 	Containers         []*Container
 }

@@ -161,7 +161,7 @@ func TestGetPeerRelationModelUUID(t *testing.T) {
 				ID: "example-peer:0",
 			},
 		},
-		Model: &goopstest.Model{
+		Model: goopstest.Model{
 			UUID: "example-model-uuid",
 		},
 	}

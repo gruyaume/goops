@@ -41,11 +41,12 @@ func (c *Context) Run(hookName string, state State) (State, error) {
 	setPeerRelationIDs(state.PeerRelations)
 	setUnitIDs(state.Relations)
 
-	if state.Model == nil {
-		state.Model = &Model{
-			Name: "test-model",
-			UUID: "12345678-1234-5678-1234-567812345678",
-		}
+	if state.Model.Name == "" {
+		state.Model.Name = "test-model"
+	}
+
+	if state.Model.UUID == "" {
+		state.Model.UUID = "12345678-1234-5678-1234-567812345678"
 	}
 
 	nilStatus := Status{}
@@ -126,11 +127,12 @@ func (c *Context) RunAction(actionName string, state State, params map[string]an
 		AppStatus:        state.AppStatus,
 	}
 
-	if state.Model == nil {
-		state.Model = &Model{
-			Name: "test-model",
-			UUID: "12345678-1234-5678-1234-567812345678",
-		}
+	if state.Model.Name == "" {
+		state.Model.Name = "test-model"
+	}
+
+	if state.Model.UUID == "" {
+		state.Model.UUID = "12345678-1234-5678-1234-567812345678"
 	}
 
 	fakeEnvGetter := &fakeEnvGetter{

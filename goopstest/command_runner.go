@@ -31,7 +31,7 @@ type fakeCommandRunner struct {
 	AppName            string
 	UnitID             string
 	JujuLog            []JujuLogLine
-	Model              *Model
+	Model              Model
 }
 
 func (f *fakeCommandRunner) Run(name string, args ...string) ([]byte, error) {
@@ -594,7 +594,7 @@ func (f *fakeCommandRunner) handleRelationModelGet(args []string) {
 		uuid = relation.RemoteModelUUID
 	}
 
-	if uuid == "" && f.Model != nil {
+	if uuid == "" {
 		uuid = f.Model.UUID
 	}
 

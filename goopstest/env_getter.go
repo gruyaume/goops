@@ -11,7 +11,7 @@ import (
 type fakeEnvGetter struct {
 	HookName    string
 	ActionName  string
-	Model       *Model
+	Model       Model
 	AppName     string
 	UnitID      string
 	JujuVersion string

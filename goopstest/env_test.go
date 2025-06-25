@@ -47,7 +47,7 @@ func TestGetModelInfo(t *testing.T) {
 		Charm: GetModelInfo,
 	}
 
-	model := &goopstest.Model{
+	model := goopstest.Model{
 		Name: "test-model",
 		UUID: "12345678-1234-5678-1234-567812345678",
 	}
