@@ -104,7 +104,7 @@ func TestCharmSetUnitStatusPreset(t *testing.T) {
 	}
 
 	stateIn := goopstest.State{
-		UnitStatus: &goopstest.Status{
+		UnitStatus: goopstest.Status{
 			Name: goopstest.StatusActive,
 		},
 	}
@@ -221,7 +221,7 @@ func TestCharmAppStatusPreset(t *testing.T) {
 
 	stateIn := goopstest.State{
 		Leader: true,
-		AppStatus: &goopstest.Status{
+		AppStatus: goopstest.Status{
 			Name: goopstest.StatusActive,
 		},
 	}
@@ -263,7 +263,7 @@ func TestGetUnitStatus(t *testing.T) {
 	}
 
 	stateIn := goopstest.State{
-		UnitStatus: &goopstest.Status{
+		UnitStatus: goopstest.Status{
 			Name:    goopstest.StatusActive,
 			Message: "My expected message",
 		},
@@ -349,7 +349,7 @@ func TestGetAppStatusLeader(t *testing.T) {
 
 	stateIn := goopstest.State{
 		Leader: true,
-		AppStatus: &goopstest.Status{
+		AppStatus: goopstest.Status{
 			Name:    goopstest.StatusActive,
 			Message: "My expected message",
 		},
@@ -380,7 +380,7 @@ func TestGetAppStatusNonLeader(t *testing.T) {
 
 	stateIn := goopstest.State{
 		Leader: false,
-		AppStatus: &goopstest.Status{
+		AppStatus: goopstest.Status{
 			Name:    goopstest.StatusActive,
 			Message: "My expected message",
 		},

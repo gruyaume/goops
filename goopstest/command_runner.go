@@ -15,8 +15,8 @@ type fakeCommandRunner struct {
 	Args               []string
 	Output             []byte
 	Err                error
-	UnitStatus         *Status
-	AppStatus          *Status
+	UnitStatus         Status
+	AppStatus          Status
 	Leader             bool
 	Config             map[string]any
 	Secrets            []*Secret
@@ -123,12 +123,12 @@ func (f *fakeCommandRunner) handleStatusSet(args []string) {
 			return
 		}
 
-		f.AppStatus = &Status{
+		f.AppStatus = Status{
 			Name:    StatusName(args[1]),
 			Message: strings.Join(args[2:], " "),
 		}
 	} else {
-		f.UnitStatus = &Status{
+		f.UnitStatus = Status{
 			Name:    StatusName(args[0]),
 			Message: strings.Join(args[1:], " "),
 		}

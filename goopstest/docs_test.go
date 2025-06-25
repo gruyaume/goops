@@ -47,8 +47,12 @@ func TestCharmBasic(t *testing.T) {
 	}
 
 	// Assert
-	if stateOut.UnitStatus.Name != goopstest.StatusBlocked {
-		t.Errorf("Expected unit status to be %s, got %s", goopstest.StatusBlocked, stateOut.UnitStatus.Name)
+	expectedStatus := goopstest.Status{
+		Name:    goopstest.StatusBlocked,
+		Message: "Unit is not a leader",
+	}
+	if stateOut.UnitStatus != expectedStatus {
+		t.Errorf("Expected unit status %v, got %v", expectedStatus, stateOut.UnitStatus)
 	}
 }
 

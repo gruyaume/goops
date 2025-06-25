@@ -48,8 +48,9 @@ func (c *Context) Run(hookName string, state State) (State, error) {
 		}
 	}
 
-	if state.UnitStatus == nil {
-		state.UnitStatus = &Status{
+	nilStatus := Status{}
+	if state.UnitStatus == nilStatus {
+		state.UnitStatus = Status{
 			Name: StatusUnknown,
 		}
 	}
