@@ -1,22 +1,28 @@
-# goopstest
+---
+description: Unit testing for `goops` charms.
+---
 
-**The unit testing framework for Goops charms.**
+# Unit Testing
 
-`goopstest` follows the same design principles as [ops-testing](https://ops.readthedocs.io/en/latest/reference/ops-testing.html#ops-testing), allowing users to write unit tests in a "state-transition" style. Each test consists of:
+`goopstest` is a unit testing framework for `goops` charms. It allows you to simulate Juju environments and test your charm logic without needing a live Juju controller.
+
+`goopstest` allows users to write unit tests in a "state-transition" style. Each test consists of:
+
 - A Context and an initial state (Arrange)
 - An event (Act)
 - An output state (Assert)
 
-## Getting Started
+## Examples
+
+### A basic charm
+
+Here's an example of a simple charm that uses `goops` to check if the unit is a leader and set its status accordingly:
 
 ```go
-package charm_test
+package charm
 
 import (
-	"testing"
-
 	"github.com/gruyaume/goops"
-	"github.com/gruyaume/goops/goopstest"
 )
 
 func Configure() error {
@@ -34,6 +40,18 @@ func Configure() error {
 
 	return nil
 }
+```
+
+And here's the corresponding unit test written using `goopstest`:
+
+```go
+package charm_test
+
+import (
+	"testing"
+
+	"github.com/gruyaume/goops/goopstest"
+)
 
 func TestCharm(t *testing.T) {
 	// Arrange
@@ -57,21 +75,19 @@ func TestCharm(t *testing.T) {
 }
 ```
 
-## Writing tests for Kubernetes charms
+### A Kubernetes charm
+
+Here's a Kubernetes charm example that uses `goops` to configure a Pebble service and start it:
 
 ```go
-package charm_test
+package charm
 
 import (
 	"fmt"
-	"os"
-	"reflect"
 	"strings"
-	"testing"
 
 	"github.com/canonical/pebble/client"
 	"github.com/gruyaume/goops"
-	"github.com/gruyaume/goops/goopstest"
 	"gopkg.in/yaml.v3"
 )
 
@@ -124,6 +140,21 @@ func Configure() error {
 
 	return nil
 }
+```
+
+And here's the corresponding unit test using `goopstest`:
+
+```go
+package charm_test
+
+import (
+	"os"
+	"reflect"
+	"testing"
+
+	"github.com/canonical/pebble/client"
+	"github.com/gruyaume/goops/goopstest"
+)
 
 func TestCharm(t *testing.T) {
 	// Arrange
@@ -196,8 +227,6 @@ func TestCharm(t *testing.T) {
 }
 ```
 
-## Reference
+## API Documentation
 
-### API Documentation
-
-The API documentation for `goopstest` is available at [pkg.go.dev/github.com/gruyaume/goops/goopstest](https://pkg.go.dev/github.com/gruyaume/goops/goopstest).
+You can refer to the [goopstest API documentation](https://pkg.go.dev/github.com/gruyaume/goops/goopstest) for more details.
