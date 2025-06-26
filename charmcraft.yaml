@@ -4,8 +4,8 @@ description: |
   Example Juju charm that uses `goops`
 
 type: charm
-base: ubuntu@18.04
-build-base: ubuntu@18.04
+base: ubuntu@24.04
+build-base: ubuntu@24.04
 platforms:
   amd64:
 
