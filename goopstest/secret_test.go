@@ -78,10 +78,7 @@ func TestCharmGetSecretByLabel(t *testing.T) {
 				Leader: true,
 			}
 
-			stateOut, err := ctx.Run(tc.hookName, stateIn)
-			if err != nil {
-				t.Fatalf("Run returned an error: %v", err)
-			}
+			stateOut := ctx.Run(tc.hookName, stateIn)
 
 			if ctx.CharmErr != nil {
 				t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
@@ -107,10 +104,7 @@ func TestCharmGetUnexistingSecretByLabel(t *testing.T) {
 
 	stateIn := goopstest.State{}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
@@ -193,10 +187,7 @@ func TestCharmGetSecretByID(t *testing.T) {
 				Leader: true,
 			}
 
-			stateOut, err := ctx.Run(tc.hookName, stateIn)
-			if err != nil {
-				t.Fatalf("Run returned an error: %v", err)
-			}
+			stateOut := ctx.Run(tc.hookName, stateIn)
 
 			if ctx.CharmErr != nil {
 				t.Fatalf("Run returned an error: %v", ctx.CharmErr)
@@ -246,10 +237,7 @@ func TestCharmAddAppSecret(t *testing.T) {
 		Leader: true,
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("Run returned an error: %v", ctx.CharmErr)
@@ -284,10 +272,7 @@ func TestCharmAddAppSecretNonLeader(t *testing.T) {
 		Leader: false,
 	}
 
-	_, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	_ = ctx.Run("start", stateIn)
 
 	if ctx.CharmErr == nil {
 		t.Fatalf("expected an error when not leader, got nil")
@@ -331,10 +316,7 @@ func TestCharmAddUnitSecretNonLeader(t *testing.T) {
 		Leader: false,
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("Run returned an error: %v", ctx.CharmErr)
@@ -399,10 +381,7 @@ func TestCharmRemoveSecret(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
@@ -429,10 +408,7 @@ func TestCharmRemoveSecretNonLeader(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
@@ -462,10 +438,7 @@ func TestCharmRemoveUnexistingSecret(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
@@ -513,10 +486,7 @@ func TestCharmGetSecretInfoByID(t *testing.T) {
 		Leader: true,
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("Run returned an error: %v", ctx.CharmErr)
@@ -543,10 +513,7 @@ func TestCharmGetSecretInfoByIDNonLeader(t *testing.T) {
 		},
 	}
 
-	_, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	_ = ctx.Run("start", stateIn)
 
 	if ctx.CharmErr == nil {
 		t.Fatalf("expected an error when not leader, got nil")
@@ -574,10 +541,7 @@ func TestCharmGetUnitSecretInfoByNonLeader(t *testing.T) {
 		Leader: false,
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("Run returned an error: %v", ctx.CharmErr)
@@ -621,10 +585,7 @@ func TestCharmGetSecretInfoByLabel(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
@@ -651,10 +612,7 @@ func TestCharmGetSecretInfoByLabelNonLeader(t *testing.T) {
 		},
 	}
 
-	_, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	_ = ctx.Run("start", stateIn)
 
 	if ctx.CharmErr == nil {
 		t.Fatalf("expected an error when not leader, got nil")
@@ -682,10 +640,7 @@ func TestCharmGetUnitSecretInfoByLabelNonLeader(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("Run returned an error: %v", ctx.CharmErr)
@@ -734,10 +689,7 @@ func TestCharmGetSecretIDs(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("Run returned an error: %v", ctx.CharmErr)
@@ -775,10 +727,7 @@ func TestCharmGetSecretIDsNonLeader(t *testing.T) {
 		},
 	}
 
-	_, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	_ = ctx.Run("start", stateIn)
 
 	if ctx.CharmErr == nil {
 		t.Fatalf("expected an error when not leader, got nil")
@@ -819,10 +768,7 @@ func TestCharmGrantSecretToRelation(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("Run returned an error: %v", ctx.CharmErr)
@@ -864,10 +810,7 @@ func TestCharmGrantSecretToUnit(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("Run returned an error: %v", ctx.CharmErr)
@@ -894,10 +837,7 @@ func TestCharmGrantSecretNonLeader(t *testing.T) {
 		},
 	}
 
-	_, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	_ = ctx.Run("start", stateIn)
 
 	if ctx.CharmErr == nil {
 		t.Fatalf("expected an error when not leader, got nil")
@@ -943,10 +883,7 @@ func TestCharmSetSecret(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("Run returned an error: %v", ctx.CharmErr)
@@ -999,10 +936,7 @@ func TestCharmSetSecretNonLeader(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
@@ -1057,10 +991,7 @@ func TestCharmRevokeSecret(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("Run returned an error: %v", ctx.CharmErr)

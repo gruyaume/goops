@@ -38,10 +38,7 @@ func TestCharmGetRelationIDs(t *testing.T) {
 		},
 	}
 
-	_, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	_ = ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
@@ -66,10 +63,7 @@ func TestCharmGetRelationIDsNoRelation(t *testing.T) {
 
 	stateIn := goopstest.State{}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
@@ -94,10 +88,7 @@ func TestCharmGetRelationIDsNoName(t *testing.T) {
 
 	stateIn := goopstest.State{}
 
-	_, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	_ = ctx.Run("start", stateIn)
 
 	if ctx.CharmErr == nil {
 		t.Fatal("Expected CharmErr to be set, got nil")
@@ -127,10 +118,7 @@ func TestCharmGetRelationIDsNoResult(t *testing.T) {
 
 	stateIn := goopstest.State{}
 
-	_, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	_ = ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatal("Expected no charm error, got one")
@@ -226,10 +214,7 @@ func TestCharmListRelationUnits(t *testing.T) {
 			},
 		}
 
-		stateOut, err := ctx.Run("start", stateIn)
-		if err != nil {
-			t.Fatalf("Run returned an error: %v", err)
-		}
+		stateOut := ctx.Run("start", stateIn)
 
 		if ctx.CharmErr != nil {
 			t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
@@ -248,10 +233,7 @@ func TestListRelationUnitsResultNotFound(t *testing.T) {
 		Relations: []goopstest.Relation{},
 	}
 
-	_, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	_ = ctx.Run("start", stateIn)
 
 	if ctx.CharmErr == nil {
 		t.Fatal("Expected CharmErr to be set, got nil")
@@ -333,10 +315,7 @@ func TestCharmGetRemoteUnitRelationData(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
@@ -354,10 +333,7 @@ func TestCharmGetRemoteUnitRelationDataNoRelation(t *testing.T) {
 		Relations: []goopstest.Relation{},
 	}
 
-	_, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	_ = ctx.Run("start", stateIn)
 
 	if ctx.CharmErr == nil {
 		t.Fatal("Expected CharmErr to be set, got nil")
@@ -386,10 +362,7 @@ func TestCharmGetRemoteUnitRelationDataNoRemoteUnit(t *testing.T) {
 		},
 	}
 
-	_, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	_ = ctx.Run("start", stateIn)
 
 	if ctx.CharmErr == nil {
 		t.Fatal("Expected CharmErr to be set, got nil")
@@ -416,10 +389,7 @@ func TestCharmGetRemoteUnitRelationDataNoData(t *testing.T) {
 		},
 	}
 
-	_, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	_ = ctx.Run("start", stateIn)
 
 	if ctx.CharmErr == nil {
 		t.Fatalf("Expected CharmErr to be set, got nil")
@@ -468,10 +438,7 @@ func TestCharmGetLocalUnitRelationData(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
@@ -497,10 +464,7 @@ func TestGetOtherLocalUnitRelationData(t *testing.T) {
 		},
 	}
 
-	_, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	_ = ctx.Run("start", stateIn)
 
 	if ctx.CharmErr == nil {
 		t.Fatal("Expected CharmErr to be set, got nil")
@@ -527,10 +491,7 @@ func TestGetOtherUnexistantLocalUnitRelationData(t *testing.T) {
 		},
 	}
 
-	_, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	_ = ctx.Run("start", stateIn)
 
 	if ctx.CharmErr == nil {
 		t.Fatal("Expected CharmErr to be set, got nil")
@@ -582,10 +543,7 @@ func TestCharmGetRemoteAppRelationData(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
@@ -603,10 +561,7 @@ func TestCharmGetRemoteAppRelationDataNoRelation(t *testing.T) {
 		Relations: []goopstest.Relation{},
 	}
 
-	_, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	_ = ctx.Run("start", stateIn)
 
 	if ctx.CharmErr == nil {
 		t.Fatal("Expected CharmErr to be set, got nil")
@@ -656,10 +611,7 @@ func TestCharmGetLocalAppRelationData(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("expected no CharmErr, got %v", ctx.CharmErr)
@@ -687,10 +639,7 @@ func TestCharmGetLocalAppRelationDataNonLeader(t *testing.T) {
 		},
 	}
 
-	_, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	_ = ctx.Run("start", stateIn)
 
 	if ctx.CharmErr == nil {
 		t.Fatalf("Expected CharmErr to be set, got nil")
@@ -727,10 +676,7 @@ func TestCharmSetUnitRelationData(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
@@ -776,10 +722,7 @@ func TestCharmSetAppRelationData(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("expected no CharmErr, got %v", ctx.CharmErr)
@@ -807,10 +750,7 @@ func TestCharmSetAppRelationDataNoRelation(t *testing.T) {
 		Relations: []goopstest.Relation{},
 	}
 
-	_, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	_ = ctx.Run("start", stateIn)
 
 	if ctx.CharmErr == nil {
 		t.Fatal("Expected CharmErr to be set, got nil")
@@ -836,10 +776,7 @@ func TestCharmSetAppRelationDataNonLeader(t *testing.T) {
 		},
 	}
 
-	_, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	_ = ctx.Run("start", stateIn)
 
 	if ctx.CharmErr == nil {
 		t.Fatal("Expected CharmErr to be set, got nil")
@@ -937,10 +874,7 @@ func TestCharmSetAppRelationData2(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
@@ -1025,10 +959,7 @@ func TestCharmRelationEndToEnd(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
@@ -1067,10 +998,7 @@ func TestCharmRelationModelGetUUID(t *testing.T) {
 		},
 	}
 
-	_, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	_ = ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("expected no CharmErr, got %v", ctx.CharmErr)
@@ -1093,10 +1021,7 @@ func TestCharmRelationModelGetUUIDWithRemoteModelUUID(t *testing.T) {
 		},
 	}
 
-	_, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	_ = ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("expected no CharmErr, got %v", ctx.CharmErr)
@@ -1113,10 +1038,7 @@ func TestCharmRelationModelGetUUIDNoRelation(t *testing.T) {
 		},
 	}
 
-	_, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	_ = ctx.Run("start", stateIn)
 
 	if ctx.CharmErr == nil {
 		t.Fatalf("expected CharmErr to be set, got nil")

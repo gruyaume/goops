@@ -97,9 +97,10 @@ func TestContainerCantConnect(t *testing.T) {
 				},
 			}
 
-			_, err := ctx.Run("install", stateIn)
+			_ = ctx.Run("install", stateIn)
+
 			if ctx.CharmErr.Error() != "cannot connect to Pebble" {
-				t.Errorf("Run should have returned 'cannot connect to Pebble', got: %v", err)
+				t.Errorf("Run should have returned 'cannot connect to Pebble', got: %v", ctx.CharmErr)
 			}
 		})
 	}
@@ -128,10 +129,7 @@ func TestContainerCanConnect(t *testing.T) {
 		},
 	}
 
-	_, err := ctx.Run("install", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	_ = ctx.Run("install", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
@@ -230,10 +228,7 @@ func TestContainerGetPebblePlan(t *testing.T) {
 		},
 	}
 
-	_, err := ctx.Run("install", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	_ = ctx.Run("install", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
@@ -253,9 +248,10 @@ func TestContainerUnexistantGetPebblePlan(t *testing.T) {
 		},
 	}
 
-	_, err := ctx.Run("install", stateIn)
+	_ = ctx.Run("install", stateIn)
+
 	if ctx.CharmErr.Error() != "service 'my-service' not found in plan" {
-		t.Fatalf("Run should have returned 'service 'my-service' not found in plan', got: %v", err)
+		t.Fatalf("Run should have returned 'service 'my-service' not found in plan', got: %v", ctx.CharmErr)
 	}
 }
 
@@ -304,10 +300,7 @@ func TestContainerAddPebbleLayer(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("install", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("install", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
@@ -389,10 +382,7 @@ func TestContainerStartPebbleService(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("install", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("install", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
@@ -460,10 +450,7 @@ func TestContainerGetPebbleServiceStatus(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("install", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("install", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
@@ -527,10 +514,7 @@ func TestContainerStopPebbleService(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("install", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("install", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
@@ -586,10 +570,7 @@ func TestContainerRestartPebbleService(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("install", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("install", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
@@ -656,10 +637,7 @@ func TestContainerPushFile(t *testing.T) {
 		},
 	}
 
-	_, err = ctx.Run("install", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	_ = ctx.Run("install", stateIn)
 
 	content, err := os.ReadFile(dname + "/etc/config.yaml")
 	if err != nil {
@@ -737,9 +715,10 @@ func TestContainerPullFile(t *testing.T) {
 		},
 	}
 
-	_, err = ctx.Run("install", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
+	_ = ctx.Run("install", stateIn)
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
 	}
 }
 
@@ -814,20 +793,13 @@ func TestMultiContainer(t *testing.T) {
 				},
 			}
 
-			_, err := ctx.Run("install", stateIn)
-			if err != nil {
-				t.Errorf("Run failed: %v", err)
-			}
+			_ = ctx.Run("install", stateIn)
 
 			if tt.expectError {
 				if ctx.CharmErr == nil {
 					t.Errorf("Charm should have returned an error, but got none")
 				} else if ctx.CharmErr.Error() != tt.expectedError {
 					t.Errorf("Charm returned error %v, expected %v", ctx.CharmErr.Error(), tt.expectedError)
-				}
-			} else {
-				if err != nil {
-					t.Fatalf("Charm returned an error: %v", err)
 				}
 			}
 		})

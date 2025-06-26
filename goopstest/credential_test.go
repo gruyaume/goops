@@ -26,10 +26,7 @@ func TestGetCredential(t *testing.T) {
 
 	stateIn := goopstest.State{}
 
-	_, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	_ = ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("expected no error, got: %v", ctx.CharmErr)

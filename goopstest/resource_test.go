@@ -36,10 +36,7 @@ func TestResourceGet(t *testing.T) {
 
 	stateIn := goopstest.State{}
 
-	_, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	_ = ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
@@ -51,10 +48,7 @@ func TestResourceGetDoesntExist(t *testing.T) {
 
 	stateIn := goopstest.State{}
 
-	_, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	_ = ctx.Run("start", stateIn)
 
 	if ctx.CharmErr == nil {
 		t.Fatalf("Expected charm to return an error for non-existent resource, but got nil")

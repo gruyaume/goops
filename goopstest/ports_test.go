@@ -26,10 +26,7 @@ func TestSetPorts(t *testing.T) {
 
 	stateIn := goopstest.State{}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
@@ -60,10 +57,7 @@ func TestSetPortsAlreadySet(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
@@ -94,10 +88,7 @@ func TestSetPortsDifferentSet(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
@@ -137,10 +128,7 @@ func TestCloseUnOpenedPort(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Errorf("Expected no error, got %v", ctx.CharmErr)
@@ -180,10 +168,7 @@ func TestOpenOpenedPort(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Errorf("Expected no error, got %v", ctx.CharmErr)

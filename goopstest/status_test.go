@@ -84,10 +84,7 @@ func TestCharmSetUnitStatus(t *testing.T) {
 
 			stateIn := goopstest.State{}
 
-			stateOut, err := ctx.Run(tc.hookName, stateIn)
-			if err != nil {
-				t.Fatalf("Run returned an error: %v", err)
-			}
+			stateOut := ctx.Run(tc.hookName, stateIn)
 
 			if ctx.CharmErr != nil {
 				t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
@@ -109,10 +106,7 @@ func TestCharmSetUnitStatusPreset(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
@@ -204,10 +198,7 @@ func TestSetAppStatusLeader(t *testing.T) {
 				Leader: true, // Assume we are the leader for setting app status
 			}
 
-			stateOut, err := ctx.Run(tc.hookName, stateIn)
-			if err != nil {
-				t.Fatalf("Run returned an error: %v", err)
-			}
+			stateOut := ctx.Run(tc.hookName, stateIn)
 
 			if ctx.CharmErr != nil {
 				t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
@@ -230,10 +221,7 @@ func TestCharmAppStatusPreset(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
@@ -275,10 +263,7 @@ func TestGetUnitStatus(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("install", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("install", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("expected no error, got %v", ctx.CharmErr)
@@ -311,10 +296,7 @@ func TestGetUnitStatusNotSet(t *testing.T) {
 
 	stateIn := goopstest.State{}
 
-	stateOut, err := ctx.Run("install", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("install", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("expected no error, got %v", ctx.CharmErr)
@@ -357,10 +339,7 @@ func TestGetAppStatusLeader(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("install", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("install", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("expected no error, got %v", ctx.CharmErr)
@@ -386,10 +365,7 @@ func TestGetAppStatusNonLeader(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("install", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("install", stateIn)
 
 	if ctx.CharmErr == nil {
 		t.Fatalf("expected CharmErr to be set, got nil")
@@ -416,10 +392,7 @@ func TestSetAppStatusNonLeader(t *testing.T) {
 		Leader: false,
 	}
 
-	_, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	_ = ctx.Run("start", stateIn)
 
 	if ctx.CharmErr == nil {
 		t.Fatalf("expected CharmErr to be set, got nil")

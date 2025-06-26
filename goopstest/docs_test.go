@@ -39,10 +39,7 @@ func TestCharmBasic(t *testing.T) {
 	}
 
 	// Act
-	stateOut, err := ctx.Run("install", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("install", stateIn)
 
 	// Assert
 	expectedStatus := goopstest.Status{
@@ -131,10 +128,7 @@ func TestCharmKubernetes(t *testing.T) {
 	}
 
 	// Act
-	stateOut, err := ctx.Run("install", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("install", stateIn)
 
 	// Assert
 	if len(stateOut.Containers) != 1 {

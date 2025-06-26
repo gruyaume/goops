@@ -68,10 +68,7 @@ func TestCharmHookName(t *testing.T) {
 
 			stateIn := goopstest.State{}
 
-			stateOut, err := ctx.Run(tc.hookName, stateIn)
-			if err != nil {
-				t.Fatalf("Run returned an error: %v", err)
-			}
+			stateOut := ctx.Run(tc.hookName, stateIn)
 
 			if stateOut.UnitStatus.Name != tc.expectedStatusName {
 				t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, tc.expectedStatusName)

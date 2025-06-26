@@ -45,10 +45,7 @@ func TestGetRelationIDsForPeers(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Errorf("expected no error, got %v", ctx.CharmErr)
@@ -66,10 +63,7 @@ func TestGetRelationIDsNoPeers(t *testing.T) {
 		PeerRelations: []goopstest.PeerRelation{},
 	}
 
-	_, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	_ = ctx.Run("start", stateIn)
 
 	if ctx.CharmErr == nil {
 		t.Errorf("expected charm error to be set, got nil")
@@ -109,10 +103,7 @@ func TestListPeerRelationUnits(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Errorf("expected no error, got %v", ctx.CharmErr)
@@ -150,10 +141,7 @@ func TestGetPeerRelationModelUUID(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Errorf("expected no error, got %v", ctx.CharmErr)
@@ -205,10 +193,7 @@ func TestGetSelfUnitPeerRelationData(t *testing.T) {
 				},
 			}
 
-			stateOut, err := ctx.Run("start", stateIn)
-			if err != nil {
-				t.Fatalf("Run returned an error: %v", err)
-			}
+			stateOut := ctx.Run("start", stateIn)
 
 			if ctx.CharmErr != nil {
 				t.Errorf("expected no error, got %v", ctx.CharmErr)
@@ -248,10 +233,7 @@ func TestGetOtherUnitPeerRelationData(t *testing.T) {
 				},
 			}
 
-			stateOut, err := ctx.Run("start", stateIn)
-			if err != nil {
-				t.Fatalf("Run returned an error: %v", err)
-			}
+			stateOut := ctx.Run("start", stateIn)
 
 			if ctx.CharmErr != nil {
 				t.Errorf("expected no error, got %v", ctx.CharmErr)
@@ -305,10 +287,7 @@ func TestGetAppPeerRelationData(t *testing.T) {
 				},
 			}
 
-			stateOut, err := ctx.Run("start", stateIn)
-			if err != nil {
-				t.Fatalf("Run returned an error: %v", err)
-			}
+			stateOut := ctx.Run("start", stateIn)
 
 			if ctx.CharmErr != nil {
 				t.Errorf("expected no error, got %v", ctx.CharmErr)
@@ -328,10 +307,7 @@ func TestGetAppPeerRelationDataNoRelation(t *testing.T) {
 		PeerRelations: []goopstest.PeerRelation{},
 	}
 
-	_, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	_ = ctx.Run("start", stateIn)
 
 	if ctx.CharmErr == nil {
 		t.Errorf("expected charm error to be set, got nil")
@@ -367,10 +343,7 @@ func TestSetPeerUnitRelationData(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("expected no error, got %v", ctx.CharmErr)
@@ -410,10 +383,7 @@ func TestSetPeerAppRelationDataLeader(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("expected no error, got %v", ctx.CharmErr)
@@ -440,10 +410,7 @@ func TestSetPeerAppRelationDataNonLeader(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr == nil {
 		t.Fatalf("expected charm error to be set, got nil")

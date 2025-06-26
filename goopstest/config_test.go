@@ -95,10 +95,7 @@ func TestCharmConfig(t *testing.T) {
 				Config: config,
 			}
 
-			stateOut, err := ctx.Run(tc.hookName, stateIn)
-			if err != nil {
-				t.Fatalf("Run returned an error: %v", err)
-			}
+			stateOut := ctx.Run(tc.hookName, stateIn)
 
 			if ctx.CharmErr != nil {
 				t.Errorf("expected no error, got %v", ctx.CharmErr)

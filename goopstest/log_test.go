@@ -18,10 +18,7 @@ func TestContainerLog(t *testing.T) {
 
 	stateIn := goopstest.State{}
 
-	_, err := ctx.Run("install", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	_ = ctx.Run("install", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)

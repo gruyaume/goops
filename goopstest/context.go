@@ -123,7 +123,7 @@ func NewContext(charm func() error, opts ...func(*Context)) *Context {
 	return ctx
 }
 
-func (c *Context) Run(hookName string, state State) (State, error) {
+func (c *Context) Run(hookName string, state State) State {
 	state.Relations = setRelationIDs(state.Relations)
 	state.Relations = setUnitIDs(state.Relations)
 	state.PeerRelations = setPeerRelationIDs(state.PeerRelations)
@@ -193,7 +193,7 @@ func (c *Context) Run(hookName string, state State) (State, error) {
 
 	c.JujuLog = fakeCommand.JujuLog
 
-	return state, nil
+	return state
 }
 
 func (c *Context) RunAction(actionName string, state State, params map[string]any) (State, error) {

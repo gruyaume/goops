@@ -37,19 +37,14 @@ func Configure() error {
 
 func TestCharm(t *testing.T) {
 	// Arrange
-	ctx := goopstest.Context{
-		CharmFunc: Configure,
-	}
+	ctx := goopstest.NewContext(Configure)
 
 	stateIn := goopstest.State{
 		Leader: false,
 	}
 
 	// Act
-	stateOut, err := ctx.Run("install", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("install", stateIn)
 
 	// Assert
 	expectedStatus := goopstest.Status{
@@ -132,9 +127,7 @@ func Configure() error {
 
 func TestCharm(t *testing.T) {
 	// Arrange
-	ctx := goopstest.Context{
-		CharmFunc: Configure,
-	}
+	ctx := goopstest.NewContext(Configure)
 
 	dname, err := os.MkdirTemp("", "sampledir")
 	if err != nil {
@@ -159,10 +152,7 @@ func TestCharm(t *testing.T) {
 	}
 
 	// Act
-	stateOut, err := ctx.Run("install", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("install", stateIn)
 
 	// Assert
 	if len(stateOut.Containers) != 1 {
