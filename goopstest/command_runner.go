@@ -32,6 +32,7 @@ type fakeCommandRunner struct {
 	UnitID             string
 	JujuLog            []JujuLogLine
 	Model              Model
+	Metadata           Metadata
 }
 
 func (f *fakeCommandRunner) Run(name string, args ...string) ([]byte, error) {
@@ -46,16 +47,21 @@ func (f *fakeCommandRunner) Run(name string, args ...string) ([]byte, error) {
 		"action-set":              f.handleActionSet,
 		"action-log":              f.handleActionLog,
 		"application-version-set": f.handleApplicationVersionSet,
+		"close-port":              f.handleClosePort,
 		"config-get":              f.handleConfigGet,
+		"credential-get":          f.handleCredentialGet,
+		"goal-state":              f.handleGoalState,
 		"is-leader":               f.handleIsLeader,
+		"juju-log":                f.handleJujuLog,
+		"juju-reboot":             f.handleJujuReboot,
 		"opened-ports":            f.handleOpenedPorts,
 		"open-port":               f.handleOpenPort,
-		"close-port":              f.handleClosePort,
 		"relation-ids":            f.handleRelationIDs,
 		"relation-get":            f.handleRelationGet,
 		"relation-list":           f.handleRelationList,
 		"relation-set":            f.handleRelationSet,
 		"relation-model-get":      f.handleRelationModelGet,
+		"resource-get":            f.handleResourceGet,
 		"secret-add":              f.handleSecretAdd,
 		"secret-get":              f.handleSecretGet,
 		"secret-remove":           f.handleSecretRemove,
@@ -69,7 +75,6 @@ func (f *fakeCommandRunner) Run(name string, args ...string) ([]byte, error) {
 		"state-delete":            f.handleStateDelete,
 		"status-get":              f.handleStatusGet,
 		"status-set":              f.handleStatusSet,
-		"juju-log":                f.handleJujuLog,
 	}
 
 	if handler, exists := handlers[name]; exists {
@@ -160,6 +165,8 @@ func (f *fakeCommandRunner) handleJujuLog(args []string) {
 	}
 	f.JujuLog = append(f.JujuLog, newLogEntry)
 }
+
+func (f *fakeCommandRunner) handleJujuReboot(_ []string) {}
 
 func (f *fakeCommandRunner) handleIsLeader(_ []string) {
 	if f.Leader {
@@ -255,6 +262,59 @@ func (f *fakeCommandRunner) handleConfigGet(_ []string) {
 	output, err := json.Marshal(f.Config)
 	if err != nil {
 		f.Err = fmt.Errorf("failed to marshal config: %w", err)
+		return
+	}
+
+	f.Output = output
+}
+
+func (f *fakeCommandRunner) handleCredentialGet(_ []string) {
+	f.Output = []byte(`{}`)
+}
+
+type goalStateStatusContents struct {
+	Status StatusName `json:"status"`
+	Since  string     `json:"since,omitempty"`
+}
+
+type unitsGoalStateContents map[string]goalStateStatusContents
+
+type goalState struct {
+	Units     unitsGoalStateContents            `json:"units"`
+	Relations map[string]unitsGoalStateContents `json:"relations"`
+}
+
+func (f *fakeCommandRunner) handleGoalState(_ []string) {
+	goalState := goalState{
+		Units:     make(unitsGoalStateContents),
+		Relations: make(map[string]unitsGoalStateContents),
+	}
+
+	// Add unit status
+	goalState.Units[f.UnitID] = goalStateStatusContents{
+		Status: f.UnitStatus.Name,
+	}
+
+	// add relation info
+	for _, relation := range f.Relations {
+		if _, exists := goalState.Relations[relation.Endpoint]; !exists {
+			goalState.Relations[relation.Endpoint] = make(unitsGoalStateContents)
+		}
+
+		goalState.Relations[relation.Endpoint][relation.RemoteAppName] = goalStateStatusContents{
+			Status: StatusActive,
+		}
+
+		for unitID := range relation.RemoteUnitsData {
+			goalState.Relations[relation.Endpoint][string(unitID)] = goalStateStatusContents{
+				Status: StatusActive,
+			}
+		}
+	}
+
+	output, err := json.Marshal(goalState)
+	if err != nil {
+		f.Err = fmt.Errorf("failed to marshal goal state: %w", err)
 		return
 	}
 
@@ -605,6 +665,24 @@ func (f *fakeCommandRunner) handleRelationModelGet(args []string) {
 	}
 
 	f.Output = outputBytes
+}
+
+func (f *fakeCommandRunner) handleResourceGet(args []string) {
+	requestedResourceName := args[0]
+	appName := f.AppName
+	unitID := f.UnitID
+	unitNumber := strings.Split(unitID, "/")[1]
+
+	for resourceName, resource := range f.Metadata.Resources {
+		if resourceName == requestedResourceName {
+			path := fmt.Sprintf("/var/lib/juju/agents/unit-%s-%s/resources/%s", appName, unitNumber, resource.Filename)
+			f.Output = []byte(path)
+
+			return
+		}
+	}
+
+	f.Err = fmt.Errorf("command resource-get failed: ERROR could not download resource: HTTP request failed: Get https://1.2.3.4:17070/model/7bc47acd-4a48-4d11-8f52-3c44656bcb94/units/unit-example-0/resources/%q: resource#example/%q not found", requestedResourceName, requestedResourceName)
 }
 
 func (f *fakeCommandRunner) handleSecretAdd(args []string) {
@@ -1012,8 +1090,7 @@ func (f *fakeCommandRunner) handleActionFail(args []string) {
 }
 
 func (f *fakeCommandRunner) handleActionGet(_ []string) {
-	env := goops.ReadEnv()
-	if env.ActionName == "" {
+	if goops.ReadEnv().ActionName == "" {
 		f.Err = fmt.Errorf("command action-get failed: ERROR not running an action")
 		return
 	}

@@ -9,6 +9,10 @@ import (
 type LogLevel string
 
 const (
+	DefaultJujuVersion = "3.6.0"
+)
+
+const (
 	LogLevelInfo    LogLevel = "INFO"
 	LogLevelWarning LogLevel = "WARNING"
 	LogLevelError   LogLevel = "ERROR"
@@ -20,9 +24,44 @@ type JujuLogLine struct {
 	Message string
 }
 
+type MountMeta struct {
+	Location string
+	Storage  string
+}
+
+type ContainerMeta struct {
+	Mounts   []MountMeta
+	Resource string
+}
+
+type IntegrationMeta struct {
+	Interface string
+}
+
+type ResourceMeta struct {
+	Description string
+	Type        string
+	Filename    string
+}
+
+type StorageMeta struct {
+	MinimumSize string
+	Type        string
+}
+
+type Metadata struct {
+	Containers  map[string]ContainerMeta
+	Description string
+	Name        string
+	Provides    map[string]IntegrationMeta
+	Resources   map[string]ResourceMeta
+	Storage     map[string]StorageMeta
+	Summary     string
+}
+
 type Context struct {
-	Charm         func() error
-	Metadata      goops.Metadata
+	CharmFunc     func() error
+	Metadata      Metadata
 	AppName       string
 	UnitID        string
 	JujuVersion   string
@@ -32,11 +71,59 @@ type Context struct {
 	CharmErr      error
 }
 
-func (c *Context) Run(hookName string, state State) (State, error) {
-	if c.Charm == nil {
-		return State{}, fmt.Errorf("charm function is not set in the context")
+func WithUnitID(id string) func(*Context) {
+	return func(c *Context) {
+		c.UnitID = id
+	}
+}
+
+func WithAppName(name string) func(*Context) {
+	return func(c *Context) {
+		c.AppName = name
+	}
+}
+
+func WithJujuVersion(version string) func(*Context) {
+	return func(c *Context) {
+		c.JujuVersion = version
+	}
+}
+
+func WithMetadata(meta Metadata) func(*Context) {
+	return func(c *Context) {
+		c.Metadata = meta
+	}
+}
+
+func NewContext(charm func() error, opts ...func(*Context)) *Context {
+	ctx := &Context{
+		CharmFunc: charm,
 	}
 
+	for _, opt := range opts {
+		opt(ctx)
+	}
+
+	if ctx.AppName == "" {
+		if ctx.UnitID != "" {
+			ctx.AppName = ctx.UnitID[:len(ctx.UnitID)-2] // Remove the "/0" at the end
+		} else {
+			ctx.AppName = "test-app"
+		}
+	}
+
+	if ctx.UnitID == "" {
+		ctx.UnitID = ctx.AppName + "/0"
+	}
+
+	if ctx.JujuVersion == "" {
+		ctx.JujuVersion = DefaultJujuVersion
+	}
+
+	return ctx
+}
+
+func (c *Context) Run(hookName string, state State) State {
 	state.Relations = setRelationIDs(state.Relations)
 	state.Relations = setUnitIDs(state.Relations)
 	state.PeerRelations = setPeerRelationIDs(state.PeerRelations)
@@ -71,6 +158,7 @@ func (c *Context) Run(hookName string, state State) (State, error) {
 		Model:         state.Model,
 		UnitStatus:    state.UnitStatus,
 		AppStatus:     state.AppStatus,
+		Metadata:      c.Metadata,
 	}
 
 	fakeEnv := &fakeEnvGetter{
@@ -90,7 +178,7 @@ func (c *Context) Run(hookName string, state State) (State, error) {
 	goops.SetCommandRunner(fakeCommand)
 	goops.SetEnvGetter(fakeEnv)
 
-	err := c.Charm()
+	err := c.CharmFunc()
 	if err != nil {
 		c.CharmErr = err
 	}
@@ -105,7 +193,7 @@ func (c *Context) Run(hookName string, state State) (State, error) {
 
 	c.JujuLog = fakeCommand.JujuLog
 
-	return state, nil
+	return state
 }
 
 func (c *Context) RunAction(actionName string, state State, params map[string]any) (State, error) {
@@ -146,7 +234,7 @@ func (c *Context) RunAction(actionName string, state State, params map[string]an
 	goops.SetCommandRunner(fakeCommandRunner)
 	goops.SetEnvGetter(fakeEnvGetter)
 
-	err := c.Charm()
+	err := c.CharmFunc()
 	if err != nil {
 		c.CharmErr = err
 	}

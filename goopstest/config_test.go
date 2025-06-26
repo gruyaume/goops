@@ -85,9 +85,7 @@ func TestCharmConfig(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			ctx := goopstest.Context{
-				Charm: tc.handler,
-			}
+			ctx := goopstest.NewContext(tc.handler)
 
 			config := map[string]any{
 				tc.key: tc.value,
@@ -97,10 +95,7 @@ func TestCharmConfig(t *testing.T) {
 				Config: config,
 			}
 
-			stateOut, err := ctx.Run(tc.hookName, stateIn)
-			if err != nil {
-				t.Fatalf("Run returned an error: %v", err)
-			}
+			stateOut := ctx.Run(tc.hookName, stateIn)
 
 			if ctx.CharmErr != nil {
 				t.Errorf("expected no error, got %v", ctx.CharmErr)
@@ -114,9 +109,7 @@ func TestCharmConfig(t *testing.T) {
 }
 
 func TestActiveIfExpectedConfigInActionHook(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm: ActiveIfExpectedConfig,
-	}
+	ctx := goopstest.NewContext(ActiveIfExpectedConfig)
 
 	config := map[string]any{
 		"whatever_key": "expected",
@@ -129,6 +122,10 @@ func TestActiveIfExpectedConfigInActionHook(t *testing.T) {
 	stateOut, err := ctx.RunAction("run-action", stateIn, nil)
 	if err != nil {
 		t.Fatalf("Run returned an error: %v", err)
+	}
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
 	}
 
 	if stateOut.UnitStatus.Name != goopstest.StatusActive {

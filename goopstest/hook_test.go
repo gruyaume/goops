@@ -64,16 +64,11 @@ func TestCharmHookName(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			ctx := goopstest.Context{
-				Charm: tc.handler,
-			}
+			ctx := goopstest.NewContext(tc.handler)
 
 			stateIn := goopstest.State{}
 
-			stateOut, err := ctx.Run(tc.hookName, stateIn)
-			if err != nil {
-				t.Fatalf("Run returned an error: %v", err)
-			}
+			stateOut := ctx.Run(tc.hookName, stateIn)
 
 			if stateOut.UnitStatus.Name != tc.expectedStatusName {
 				t.Errorf("got UnitStatus=%q, want %q", stateOut.UnitStatus, tc.expectedStatusName)

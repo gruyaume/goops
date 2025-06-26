@@ -22,9 +22,7 @@ func GetState() error {
 }
 
 func TestGetState(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm: GetState,
-	}
+	ctx := goopstest.NewContext(GetState)
 
 	stateIn := goopstest.State{
 		StoredState: map[string]string{
@@ -32,10 +30,7 @@ func TestGetState(t *testing.T) {
 		},
 	}
 
-	_, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	_ = ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("expected no error, got: %v", ctx.CharmErr)
@@ -43,16 +38,11 @@ func TestGetState(t *testing.T) {
 }
 
 func TestGetStateNoKey(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm: GetState,
-	}
+	ctx := goopstest.NewContext(GetState)
 
 	stateIn := goopstest.State{}
 
-	_, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	_ = ctx.Run("start", stateIn)
 
 	if ctx.CharmErr == nil {
 		t.Fatalf("expected an error, got nil")
@@ -74,15 +64,14 @@ func SetState() error {
 }
 
 func TestSetState(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm: SetState,
-	}
+	ctx := goopstest.NewContext(SetState)
 
 	stateIn := goopstest.State{}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
+	stateOut := ctx.Run("start", stateIn)
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
 	}
 
 	if stateOut.StoredState["my-key"] != "my-value" {
@@ -118,9 +107,7 @@ func GetSetState() error {
 }
 
 func TestGetSetState(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm: GetSetState,
-	}
+	ctx := goopstest.NewContext(GetSetState)
 
 	stateIn := goopstest.State{
 		StoredState: map[string]string{
@@ -128,9 +115,10 @@ func TestGetSetState(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
+	stateOut := ctx.Run("start", stateIn)
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
 	}
 
 	if stateOut.StoredState["my-key"] != "my-new-value" {
@@ -148,9 +136,7 @@ func DeleteState() error {
 }
 
 func TestDeleteState(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm: DeleteState,
-	}
+	ctx := goopstest.NewContext(DeleteState)
 
 	stateIn := goopstest.State{
 		StoredState: map[string]string{
@@ -158,9 +144,10 @@ func TestDeleteState(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
+	stateOut := ctx.Run("start", stateIn)
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
 	}
 
 	if _, exists := stateOut.StoredState["my-key"]; exists {
@@ -173,16 +160,11 @@ func TestDeleteState(t *testing.T) {
 }
 
 func TestDeleteStateNoKey(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm: DeleteState,
-	}
+	ctx := goopstest.NewContext(DeleteState)
 
 	stateIn := goopstest.State{}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("expected no error, got: %v", ctx.CharmErr)

@@ -43,9 +43,7 @@ func GetJujuVersion() error {
 }
 
 func TestGetModelInfo(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm: GetModelInfo,
-	}
+	ctx := goopstest.NewContext(GetModelInfo)
 
 	model := goopstest.Model{
 		Name: "test-model",
@@ -56,9 +54,10 @@ func TestGetModelInfo(t *testing.T) {
 		Model: model,
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
+	stateOut := ctx.Run("start", stateIn)
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
 	}
 
 	if stateOut.Model.Name != "test-model" {
@@ -71,30 +70,25 @@ func TestGetModelInfo(t *testing.T) {
 }
 
 func TestGetUnitName(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm:   GetUnitName,
-		AppName: "blou",
-		UnitID:  "blou/0",
-	}
+	ctx := goopstest.NewContext(GetUnitName, goopstest.WithUnitID("blou/0"))
 
 	stateIn := goopstest.State{}
 
-	_, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
+	_ = ctx.Run("start", stateIn)
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
 	}
 }
 
 func TestGetJujuVersion(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm:       GetJujuVersion,
-		JujuVersion: "1.2.3",
-	}
+	ctx := goopstest.NewContext(GetJujuVersion, goopstest.WithJujuVersion("1.2.3"))
 
 	stateIn := goopstest.State{}
 
-	_, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
+	_ = ctx.Run("start", stateIn)
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
 	}
 }

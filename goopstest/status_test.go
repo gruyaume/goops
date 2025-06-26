@@ -80,15 +80,14 @@ func TestCharmSetUnitStatus(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			ctx := goopstest.Context{
-				Charm: tc.handler,
-			}
+			ctx := goopstest.NewContext(tc.handler)
 
 			stateIn := goopstest.State{}
 
-			stateOut, err := ctx.Run(tc.hookName, stateIn)
-			if err != nil {
-				t.Fatalf("Run returned an error: %v", err)
+			stateOut := ctx.Run(tc.hookName, stateIn)
+
+			if ctx.CharmErr != nil {
+				t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
 			}
 
 			if stateOut.UnitStatus.Name != tc.expectedStatusName {
@@ -99,9 +98,7 @@ func TestCharmSetUnitStatus(t *testing.T) {
 }
 
 func TestCharmSetUnitStatusPreset(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm: SetUnitStatusMaintenance,
-	}
+	ctx := goopstest.NewContext(SetUnitStatusMaintenance)
 
 	stateIn := goopstest.State{
 		UnitStatus: goopstest.Status{
@@ -109,9 +106,10 @@ func TestCharmSetUnitStatusPreset(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
+	stateOut := ctx.Run("start", stateIn)
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
 	}
 
 	if stateOut.UnitStatus.Name != goopstest.StatusMaintenance {
@@ -194,17 +192,16 @@ func TestSetAppStatusLeader(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			ctx := goopstest.Context{
-				Charm: tc.handler,
-			}
+			ctx := goopstest.NewContext(tc.handler)
 
 			stateIn := goopstest.State{
 				Leader: true, // Assume we are the leader for setting app status
 			}
 
-			stateOut, err := ctx.Run(tc.hookName, stateIn)
-			if err != nil {
-				t.Fatalf("Run returned an error: %v", err)
+			stateOut := ctx.Run(tc.hookName, stateIn)
+
+			if ctx.CharmErr != nil {
+				t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
 			}
 
 			if stateOut.AppStatus.Name != tc.expectedStatusName {
@@ -215,9 +212,7 @@ func TestSetAppStatusLeader(t *testing.T) {
 }
 
 func TestCharmAppStatusPreset(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm: SetAppStatusMaintenance,
-	}
+	ctx := goopstest.NewContext(SetAppStatusMaintenance)
 
 	stateIn := goopstest.State{
 		Leader: true,
@@ -226,9 +221,10 @@ func TestCharmAppStatusPreset(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
+	stateOut := ctx.Run("start", stateIn)
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
 	}
 
 	if stateOut.AppStatus.Name != goopstest.StatusMaintenance {
@@ -258,9 +254,7 @@ func GetUnitStatus() error {
 }
 
 func TestGetUnitStatus(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm: GetUnitStatus,
-	}
+	ctx := goopstest.NewContext(GetUnitStatus)
 
 	stateIn := goopstest.State{
 		UnitStatus: goopstest.Status{
@@ -269,10 +263,7 @@ func TestGetUnitStatus(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("install", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("install", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("expected no error, got %v", ctx.CharmErr)
@@ -301,16 +292,11 @@ func GetUnitStatusUnknown() error {
 }
 
 func TestGetUnitStatusNotSet(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm: GetUnitStatusUnknown,
-	}
+	ctx := goopstest.NewContext(GetUnitStatusUnknown)
 
 	stateIn := goopstest.State{}
 
-	stateOut, err := ctx.Run("install", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("install", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("expected no error, got %v", ctx.CharmErr)
@@ -343,9 +329,7 @@ func GetAppStatus() error {
 }
 
 func TestGetAppStatusLeader(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm: GetAppStatus,
-	}
+	ctx := goopstest.NewContext(GetAppStatus)
 
 	stateIn := goopstest.State{
 		Leader: true,
@@ -355,10 +339,7 @@ func TestGetAppStatusLeader(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("install", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("install", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("expected no error, got %v", ctx.CharmErr)
@@ -374,9 +355,7 @@ func TestGetAppStatusLeader(t *testing.T) {
 }
 
 func TestGetAppStatusNonLeader(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm: GetAppStatus,
-	}
+	ctx := goopstest.NewContext(GetAppStatus)
 
 	stateIn := goopstest.State{
 		Leader: false,
@@ -386,10 +365,7 @@ func TestGetAppStatusNonLeader(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("install", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("install", stateIn)
 
 	if ctx.CharmErr == nil {
 		t.Fatalf("expected CharmErr to be set, got nil")
@@ -410,18 +386,13 @@ func TestGetAppStatusNonLeader(t *testing.T) {
 }
 
 func TestSetAppStatusNonLeader(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm: SetAppStatusActive,
-	}
+	ctx := goopstest.NewContext(SetAppStatusActive)
 
 	stateIn := goopstest.State{
 		Leader: false,
 	}
 
-	_, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	_ = ctx.Run("start", stateIn)
 
 	if ctx.CharmErr == nil {
 		t.Fatalf("expected CharmErr to be set, got nil")

@@ -18,6 +18,11 @@ parts:
     organize:
       bin/example: dispatch
 
+resources:
+  water:
+    type: file
+    filename: somefile.txt
+
 config:
   options:
     ca-common-name:

@@ -22,15 +22,14 @@ func SetPorts() error {
 }
 
 func TestSetPorts(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm: SetPorts,
-	}
+	ctx := goopstest.NewContext(SetPorts)
 
 	stateIn := goopstest.State{}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
+	stateOut := ctx.Run("start", stateIn)
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
 	}
 
 	if len(stateOut.Ports) != 1 {
@@ -47,9 +46,7 @@ func TestSetPorts(t *testing.T) {
 }
 
 func TestSetPortsAlreadySet(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm: SetPorts,
-	}
+	ctx := goopstest.NewContext(SetPorts)
 
 	stateIn := goopstest.State{
 		Ports: []goopstest.Port{
@@ -60,9 +57,10 @@ func TestSetPortsAlreadySet(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
+	stateOut := ctx.Run("start", stateIn)
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
 	}
 
 	if len(stateOut.Ports) != 1 {
@@ -79,9 +77,7 @@ func TestSetPortsAlreadySet(t *testing.T) {
 }
 
 func TestSetPortsDifferentSet(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm: SetPorts,
-	}
+	ctx := goopstest.NewContext(SetPorts)
 
 	stateIn := goopstest.State{
 		Ports: []goopstest.Port{
@@ -92,9 +88,10 @@ func TestSetPortsDifferentSet(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
+	stateOut := ctx.Run("start", stateIn)
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
 	}
 
 	if len(stateOut.Ports) != 1 {
@@ -120,9 +117,7 @@ func ClosePort() error {
 }
 
 func TestCloseUnOpenedPort(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm: ClosePort,
-	}
+	ctx := goopstest.NewContext(ClosePort)
 
 	stateIn := goopstest.State{
 		Ports: []goopstest.Port{
@@ -133,10 +128,7 @@ func TestCloseUnOpenedPort(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Errorf("Expected no error, got %v", ctx.CharmErr)
@@ -165,9 +157,7 @@ func OpenPort() error {
 }
 
 func TestOpenOpenedPort(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm: OpenPort,
-	}
+	ctx := goopstest.NewContext(OpenPort)
 
 	stateIn := goopstest.State{
 		Ports: []goopstest.Port{
@@ -178,10 +168,7 @@ func TestOpenOpenedPort(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Errorf("Expected no error, got %v", ctx.CharmErr)

@@ -49,9 +49,7 @@ func TestCharmActionName(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			ctx := goopstest.Context{
-				Charm: tc.handler,
-			}
+			ctx := goopstest.NewContext(tc.handler)
 
 			stateIn := goopstest.State{}
 
@@ -81,9 +79,7 @@ func ActionResults1() error {
 }
 
 func TestCharmActionResults1(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm: ActionResults1,
-	}
+	ctx := goopstest.NewContext(ActionResults1)
 
 	stateIn := goopstest.State{}
 
@@ -113,9 +109,7 @@ func ActionResults3() error {
 }
 
 func TestCharmActionResults3(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm: ActionResults3,
-	}
+	ctx := goopstest.NewContext(ActionResults3)
 
 	stateIn := goopstest.State{}
 
@@ -147,9 +141,7 @@ func ActionFailed() error {
 }
 
 func TestCharmActionFailed(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm: ActionFailed,
-	}
+	ctx := goopstest.NewContext(ActionFailed)
 
 	stateIn := goopstest.State{}
 
@@ -198,9 +190,7 @@ func GetActionParamsAndSetResults() error {
 }
 
 func TestCharmActionParameters(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm: GetActionParamsAndSetResults,
-	}
+	ctx := goopstest.NewContext(GetActionParamsAndSetResults)
 
 	stateIn := goopstest.State{}
 
@@ -218,9 +208,7 @@ func TestCharmActionParameters(t *testing.T) {
 }
 
 func TestCharmActionParameterNotSet(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm: GetActionParamsAndSetResults,
-	}
+	ctx := goopstest.NewContext(GetActionParamsAndSetResults)
 
 	stateIn := goopstest.State{}
 
@@ -254,16 +242,11 @@ func ActionParams() error {
 }
 
 func TestGetActionParamInNonActionHook(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm: ActionParams,
-	}
+	ctx := goopstest.NewContext(ActionParams)
 
 	stateIn := goopstest.State{}
 
-	_, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	_ = ctx.Run("start", stateIn)
 
 	if ctx.CharmErr == nil {
 		t.Fatal("Expected CharmErr to be set, got nil")
@@ -284,16 +267,11 @@ func ActionFailf() error {
 }
 
 func TestActionFailfInNonActionHook(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm: ActionFailf,
-	}
+	ctx := goopstest.NewContext(ActionFailf)
 
 	stateIn := goopstest.State{}
 
-	_, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	_ = ctx.Run("start", stateIn)
 
 	if ctx.CharmErr == nil {
 		t.Fatal("Expected CharmErr to be set, got nil")
@@ -314,16 +292,11 @@ func ActionLogf() error {
 }
 
 func TestActionLogfInNonActionHook(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm: ActionLogf,
-	}
+	ctx := goopstest.NewContext(ActionLogf)
 
 	stateIn := goopstest.State{}
 
-	_, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	_ = ctx.Run("start", stateIn)
 
 	if ctx.CharmErr == nil {
 		t.Fatal("Expected CharmErr to be set, got nil")
@@ -348,16 +321,11 @@ func SetActionResults() error {
 }
 
 func TestSetActionResultsInNonActionHook(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm: SetActionResults,
-	}
+	ctx := goopstest.NewContext(SetActionResults)
 
 	stateIn := goopstest.State{}
 
-	_, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	_ = ctx.Run("start", stateIn)
 
 	if ctx.CharmErr == nil {
 		t.Fatal("Expected CharmErr to be set, got nil")

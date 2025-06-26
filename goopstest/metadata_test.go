@@ -34,29 +34,29 @@ func GetMetadata() error {
 }
 
 func TestGetMetadata(t *testing.T) {
-	ctx := goopstest.Context{
-		Metadata: goops.Metadata{
+	ctx := goopstest.NewContext(GetMetadata, goopstest.WithAppName("example"), goopstest.WithMetadata(
+		goopstest.Metadata{
 			Name:        "example",
 			Description: "An example charm",
-			Containers: map[string]goops.Container{
+			Containers: map[string]goopstest.ContainerMeta{
 				"example-container": {
 					Resource: "example-image",
-					Mounts:   []goops.Mount{},
+					Mounts:   []goopstest.MountMeta{},
 				},
 			},
-			Provides: map[string]goops.Integration{
+			Provides: map[string]goopstest.IntegrationMeta{
 				"example-interface": {
 					Interface: "example-interface",
 				},
 			},
 		},
-		Charm: GetMetadata,
-	}
+	))
 
 	stateIn := goopstest.State{}
 
-	_, err := ctx.Run("install", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
+	_ = ctx.Run("install", stateIn)
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
 	}
 }

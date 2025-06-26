@@ -86,9 +86,7 @@ func TestContainerCantConnect(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctx := goopstest.Context{
-				Charm: tt.fn,
-			}
+			ctx := goopstest.NewContext(tt.fn)
 
 			stateIn := goopstest.State{
 				Containers: []goopstest.Container{
@@ -99,9 +97,10 @@ func TestContainerCantConnect(t *testing.T) {
 				},
 			}
 
-			_, err := ctx.Run("install", stateIn)
+			_ = ctx.Run("install", stateIn)
+
 			if ctx.CharmErr.Error() != "cannot connect to Pebble" {
-				t.Errorf("Run should have returned 'cannot connect to Pebble', got: %v", err)
+				t.Errorf("Run should have returned 'cannot connect to Pebble', got: %v", ctx.CharmErr)
 			}
 		})
 	}
@@ -119,9 +118,7 @@ func ContainerCanConnect() error {
 }
 
 func TestContainerCanConnect(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm: ContainerCanConnect,
-	}
+	ctx := goopstest.NewContext(ContainerCanConnect)
 
 	stateIn := goopstest.State{
 		Containers: []goopstest.Container{
@@ -132,9 +129,10 @@ func TestContainerCanConnect(t *testing.T) {
 		},
 	}
 
-	_, err := ctx.Run("install", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
+	_ = ctx.Run("install", stateIn)
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
 	}
 }
 
@@ -206,9 +204,7 @@ func ContainerGetPebblePlan() error {
 }
 
 func TestContainerGetPebblePlan(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm: ContainerGetPebblePlan,
-	}
+	ctx := goopstest.NewContext(ContainerGetPebblePlan)
 
 	stateIn := goopstest.State{
 		Containers: []goopstest.Container{
@@ -232,16 +228,15 @@ func TestContainerGetPebblePlan(t *testing.T) {
 		},
 	}
 
-	_, err := ctx.Run("install", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
+	_ = ctx.Run("install", stateIn)
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
 	}
 }
 
 func TestContainerUnexistantGetPebblePlan(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm: ContainerGetPebblePlan,
-	}
+	ctx := goopstest.NewContext(ContainerGetPebblePlan)
 
 	stateIn := goopstest.State{
 		Containers: []goopstest.Container{
@@ -253,9 +248,10 @@ func TestContainerUnexistantGetPebblePlan(t *testing.T) {
 		},
 	}
 
-	_, err := ctx.Run("install", stateIn)
+	_ = ctx.Run("install", stateIn)
+
 	if ctx.CharmErr.Error() != "service 'my-service' not found in plan" {
-		t.Fatalf("Run should have returned 'service 'my-service' not found in plan', got: %v", err)
+		t.Fatalf("Run should have returned 'service 'my-service' not found in plan', got: %v", ctx.CharmErr)
 	}
 }
 
@@ -293,9 +289,7 @@ func ContainerAddPebbleLayer() error {
 }
 
 func TestContainerAddPebbleLayer(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm: ContainerAddPebbleLayer,
-	}
+	ctx := goopstest.NewContext(ContainerAddPebbleLayer)
 
 	stateIn := goopstest.State{
 		Containers: []goopstest.Container{
@@ -306,9 +300,10 @@ func TestContainerAddPebbleLayer(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("install", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
+	stateOut := ctx.Run("install", stateIn)
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
 	}
 
 	if len(stateOut.Containers) != 1 {
@@ -360,9 +355,7 @@ func ConatainerStartPebbleService() error {
 }
 
 func TestContainerStartPebbleService(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm: ConatainerStartPebbleService,
-	}
+	ctx := goopstest.NewContext(ConatainerStartPebbleService)
 
 	stateIn := goopstest.State{
 		Containers: []goopstest.Container{
@@ -389,9 +382,10 @@ func TestContainerStartPebbleService(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("install", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
+	stateOut := ctx.Run("install", stateIn)
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
 	}
 
 	if stateOut.Containers[0].ServiceStatuses["my-service"] != client.StatusActive {
@@ -429,9 +423,7 @@ func ContainerGetPebbleServiceStatus() error {
 }
 
 func TestContainerGetPebbleServiceStatus(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm: ContainerGetPebbleServiceStatus,
-	}
+	ctx := goopstest.NewContext(ContainerGetPebbleServiceStatus)
 
 	stateIn := goopstest.State{
 		Containers: []goopstest.Container{
@@ -458,9 +450,10 @@ func TestContainerGetPebbleServiceStatus(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("install", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
+	stateOut := ctx.Run("install", stateIn)
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
 	}
 
 	if len(stateOut.Containers) != 1 {
@@ -494,9 +487,7 @@ func ContainerStopPebbleService() error {
 }
 
 func TestContainerStopPebbleService(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm: ContainerStopPebbleService,
-	}
+	ctx := goopstest.NewContext(ContainerStopPebbleService)
 
 	stateIn := goopstest.State{
 		Containers: []goopstest.Container{
@@ -523,9 +514,10 @@ func TestContainerStopPebbleService(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("install", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
+	stateOut := ctx.Run("install", stateIn)
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
 	}
 
 	if stateOut.Containers[0].ServiceStatuses["my-service"] != client.StatusInactive {
@@ -551,9 +543,7 @@ func ContainerRestartPebbleService() error {
 }
 
 func TestContainerRestartPebbleService(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm: ContainerRestartPebbleService,
-	}
+	ctx := goopstest.NewContext(ContainerRestartPebbleService)
 
 	stateIn := goopstest.State{
 		Containers: []goopstest.Container{
@@ -580,9 +570,10 @@ func TestContainerRestartPebbleService(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("install", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
+	stateOut := ctx.Run("install", stateIn)
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
 	}
 
 	if stateOut.Containers[0].ServiceStatuses["my-service"] != client.StatusActive {
@@ -622,9 +613,7 @@ func ContainerPushFile() error {
 }
 
 func TestContainerPushFile(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm: ContainerPushFile,
-	}
+	ctx := goopstest.NewContext(ContainerPushFile)
 
 	dname, err := os.MkdirTemp("", "sampledir")
 	if err != nil {
@@ -648,10 +637,7 @@ func TestContainerPushFile(t *testing.T) {
 		},
 	}
 
-	_, err = ctx.Run("install", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	_ = ctx.Run("install", stateIn)
 
 	content, err := os.ReadFile(dname + "/etc/config.yaml")
 	if err != nil {
@@ -685,9 +671,7 @@ func ContainerPullFile() error {
 }
 
 func TestContainerPullFile(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm: ContainerPullFile,
-	}
+	ctx := goopstest.NewContext(ContainerPullFile)
 
 	dname, err := os.MkdirTemp("", "sampledir")
 	if err != nil {
@@ -731,9 +715,10 @@ func TestContainerPullFile(t *testing.T) {
 		},
 	}
 
-	_, err = ctx.Run("install", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
+	_ = ctx.Run("install", stateIn)
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
 	}
 }
 
@@ -793,9 +778,7 @@ func TestMultiContainer(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctx := goopstest.Context{
-				Charm: MultiContainer,
-			}
+			ctx := goopstest.NewContext(MultiContainer)
 
 			stateIn := goopstest.State{
 				Containers: []goopstest.Container{
@@ -810,20 +793,13 @@ func TestMultiContainer(t *testing.T) {
 				},
 			}
 
-			_, err := ctx.Run("install", stateIn)
-			if err != nil {
-				t.Errorf("Run failed: %v", err)
-			}
+			_ = ctx.Run("install", stateIn)
 
 			if tt.expectError {
 				if ctx.CharmErr == nil {
 					t.Errorf("Charm should have returned an error, but got none")
 				} else if ctx.CharmErr.Error() != tt.expectedError {
 					t.Errorf("Charm returned error %v, expected %v", ctx.CharmErr.Error(), tt.expectedError)
-				}
-			} else {
-				if err != nil {
-					t.Fatalf("Charm returned an error: %v", err)
 				}
 			}
 		})

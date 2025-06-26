@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gruyaume/goops"
 	"gopkg.in/yaml.v3"
 )
 
@@ -15,7 +14,7 @@ type fakeEnvGetter struct {
 	AppName     string
 	UnitID      string
 	JujuVersion string
-	Metadata    goops.Metadata
+	Metadata    Metadata
 }
 
 func (f *fakeEnvGetter) Get(key string) string {

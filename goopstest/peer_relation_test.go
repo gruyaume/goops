@@ -26,11 +26,7 @@ func GetRelationIDsForPeers() error {
 }
 
 func TestGetRelationIDsForPeers(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm:   GetRelationIDsForPeers,
-		AppName: "example",
-		UnitID:  "example/0",
-	}
+	ctx := goopstest.NewContext(GetRelationIDsForPeers, goopstest.WithUnitID("example/0"))
 
 	peersData := map[goopstest.UnitID]goopstest.DataBag{
 		goopstest.UnitID("example/1"): {},
@@ -49,10 +45,7 @@ func TestGetRelationIDsForPeers(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Errorf("expected no error, got %v", ctx.CharmErr)
@@ -64,20 +57,13 @@ func TestGetRelationIDsForPeers(t *testing.T) {
 }
 
 func TestGetRelationIDsNoPeers(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm:   GetRelationIDsForPeers,
-		AppName: "example",
-		UnitID:  "example/0",
-	}
+	ctx := goopstest.NewContext(GetRelationIDsForPeers, goopstest.WithUnitID("example/0"))
 
 	stateIn := goopstest.State{
 		PeerRelations: []goopstest.PeerRelation{},
 	}
 
-	_, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	_ = ctx.Run("start", stateIn)
 
 	if ctx.CharmErr == nil {
 		t.Errorf("expected charm error to be set, got nil")
@@ -106,11 +92,7 @@ func ListPeerRelationUnits() error {
 }
 
 func TestListPeerRelationUnits(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm:   ListPeerRelationUnits,
-		AppName: "example",
-		UnitID:  "example/0",
-	}
+	ctx := goopstest.NewContext(ListPeerRelationUnits, goopstest.WithUnitID("example/0"))
 
 	stateIn := goopstest.State{
 		PeerRelations: []goopstest.PeerRelation{
@@ -121,10 +103,7 @@ func TestListPeerRelationUnits(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Errorf("expected no error, got %v", ctx.CharmErr)
@@ -149,11 +128,7 @@ func GetPeerRelationModelUUID() error {
 }
 
 func TestGetPeerRelationModelUUID(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm:   GetPeerRelationModelUUID,
-		AppName: "example",
-		UnitID:  "example/0",
-	}
+	ctx := goopstest.NewContext(GetPeerRelationModelUUID, goopstest.WithUnitID("example/0"))
 
 	stateIn := goopstest.State{
 		PeerRelations: []goopstest.PeerRelation{
@@ -166,10 +141,7 @@ func TestGetPeerRelationModelUUID(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Errorf("expected no error, got %v", ctx.CharmErr)
@@ -207,11 +179,7 @@ func TestGetSelfUnitPeerRelationData(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("Leader=%v", tc.leader), func(t *testing.T) {
-			ctx := goopstest.Context{
-				Charm:   GetUnitPeerRelationData,
-				AppName: "example",
-				UnitID:  "example/0",
-			}
+			ctx := goopstest.NewContext(GetUnitPeerRelationData, goopstest.WithUnitID("example/0"))
 
 			stateIn := goopstest.State{
 				Leader: tc.leader,
@@ -225,10 +193,7 @@ func TestGetSelfUnitPeerRelationData(t *testing.T) {
 				},
 			}
 
-			stateOut, err := ctx.Run("start", stateIn)
-			if err != nil {
-				t.Fatalf("Run returned an error: %v", err)
-			}
+			stateOut := ctx.Run("start", stateIn)
 
 			if ctx.CharmErr != nil {
 				t.Errorf("expected no error, got %v", ctx.CharmErr)
@@ -251,11 +216,7 @@ func TestGetOtherUnitPeerRelationData(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("Leader=%v", tc.leader), func(t *testing.T) {
-			ctx := goopstest.Context{
-				Charm:   GetUnitPeerRelationData,
-				AppName: "example",
-				UnitID:  "example/1",
-			}
+			ctx := goopstest.NewContext(GetUnitPeerRelationData, goopstest.WithUnitID("example/1"))
 
 			stateIn := goopstest.State{
 				Leader: tc.leader,
@@ -272,10 +233,7 @@ func TestGetOtherUnitPeerRelationData(t *testing.T) {
 				},
 			}
 
-			stateOut, err := ctx.Run("start", stateIn)
-			if err != nil {
-				t.Fatalf("Run returned an error: %v", err)
-			}
+			stateOut := ctx.Run("start", stateIn)
 
 			if ctx.CharmErr != nil {
 				t.Errorf("expected no error, got %v", ctx.CharmErr)
@@ -315,11 +273,7 @@ func TestGetAppPeerRelationData(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("Leader=%v", tc.leader), func(t *testing.T) {
-			ctx := goopstest.Context{
-				Charm:   GetAppPeerRelationData,
-				AppName: "example-peer",
-				UnitID:  "example-peer/0",
-			}
+			ctx := goopstest.NewContext(GetAppPeerRelationData, goopstest.WithUnitID("example-peer/0"))
 
 			stateIn := goopstest.State{
 				Leader: tc.leader,
@@ -333,10 +287,7 @@ func TestGetAppPeerRelationData(t *testing.T) {
 				},
 			}
 
-			stateOut, err := ctx.Run("start", stateIn)
-			if err != nil {
-				t.Fatalf("Run returned an error: %v", err)
-			}
+			stateOut := ctx.Run("start", stateIn)
 
 			if ctx.CharmErr != nil {
 				t.Errorf("expected no error, got %v", ctx.CharmErr)
@@ -350,20 +301,13 @@ func TestGetAppPeerRelationData(t *testing.T) {
 }
 
 func TestGetAppPeerRelationDataNoRelation(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm:   GetAppPeerRelationData,
-		AppName: "example-peer",
-		UnitID:  "example-peer/0",
-	}
+	ctx := goopstest.NewContext(GetAppPeerRelationData, goopstest.WithUnitID("example-peer/0"))
 
 	stateIn := goopstest.State{
 		PeerRelations: []goopstest.PeerRelation{},
 	}
 
-	_, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	_ = ctx.Run("start", stateIn)
 
 	if ctx.CharmErr == nil {
 		t.Errorf("expected charm error to be set, got nil")
@@ -389,11 +333,7 @@ func SetPeerUnitRelationData() error {
 }
 
 func TestSetPeerUnitRelationData(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm:   SetPeerUnitRelationData,
-		AppName: "example",
-		UnitID:  "example/0",
-	}
+	ctx := goopstest.NewContext(SetPeerUnitRelationData, goopstest.WithUnitID("example/0"))
 
 	stateIn := goopstest.State{
 		PeerRelations: []goopstest.PeerRelation{
@@ -403,10 +343,7 @@ func TestSetPeerUnitRelationData(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("expected no error, got %v", ctx.CharmErr)
@@ -435,11 +372,7 @@ func SetPeerAppRelationData() error {
 }
 
 func TestSetPeerAppRelationDataLeader(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm:   SetPeerAppRelationData,
-		AppName: "example-peer",
-		UnitID:  "example-peer/0",
-	}
+	ctx := goopstest.NewContext(SetPeerAppRelationData, goopstest.WithUnitID("example-peer/0"))
 
 	stateIn := goopstest.State{
 		Leader: true,
@@ -450,10 +383,7 @@ func TestSetPeerAppRelationDataLeader(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr != nil {
 		t.Fatalf("expected no error, got %v", ctx.CharmErr)
@@ -469,11 +399,7 @@ func TestSetPeerAppRelationDataLeader(t *testing.T) {
 }
 
 func TestSetPeerAppRelationDataNonLeader(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm:   SetPeerAppRelationData,
-		AppName: "example-peer",
-		UnitID:  "example-peer/0",
-	}
+	ctx := goopstest.NewContext(SetPeerAppRelationData, goopstest.WithUnitID("example-peer/0"))
 
 	stateIn := goopstest.State{
 		Leader: false,
@@ -484,10 +410,7 @@ func TestSetPeerAppRelationDataNonLeader(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("start", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("start", stateIn)
 
 	if ctx.CharmErr == nil {
 		t.Fatalf("expected charm error to be set, got nil")

@@ -32,19 +32,14 @@ func ConfigureBasic() error {
 
 func TestCharmBasic(t *testing.T) {
 	// Arrange
-	ctx := goopstest.Context{
-		Charm: ConfigureBasic,
-	}
+	ctx := goopstest.NewContext(ConfigureBasic)
 
 	stateIn := goopstest.State{
 		Leader: false,
 	}
 
 	// Act
-	stateOut, err := ctx.Run("install", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("install", stateIn)
 
 	// Assert
 	expectedStatus := goopstest.Status{
@@ -108,9 +103,7 @@ func ConfigureKubernetes() error {
 
 func TestCharmKubernetes(t *testing.T) {
 	// Arrange
-	ctx := goopstest.Context{
-		Charm: ConfigureKubernetes,
-	}
+	ctx := goopstest.NewContext(ConfigureKubernetes)
 
 	dname, err := os.MkdirTemp("", "sampledir")
 	if err != nil {
@@ -135,10 +128,7 @@ func TestCharmKubernetes(t *testing.T) {
 	}
 
 	// Act
-	stateOut, err := ctx.Run("install", stateIn)
-	if err != nil {
-		t.Fatalf("Run returned an error: %v", err)
-	}
+	stateOut := ctx.Run("install", stateIn)
 
 	// Assert
 	if len(stateOut.Containers) != 1 {

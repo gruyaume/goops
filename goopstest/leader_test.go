@@ -75,17 +75,16 @@ func TestCharmLeader(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			ctx := goopstest.Context{
-				Charm: tc.handler,
-			}
+			ctx := goopstest.NewContext(tc.handler)
 
 			stateIn := goopstest.State{
 				Leader: tc.leader,
 			}
 
-			stateOut, err := ctx.Run(tc.hookName, stateIn)
-			if err != nil {
-				t.Fatalf("Run returned an error: %v", err)
+			stateOut := ctx.Run(tc.hookName, stateIn)
+
+			if ctx.CharmErr != nil {
+				t.Fatalf("Charm returned an error: %v", ctx.CharmErr)
 			}
 
 			if stateOut.UnitStatus.Name != tc.expectedStatusName {
