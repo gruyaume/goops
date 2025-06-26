@@ -29,12 +29,19 @@ type UnitStatus struct {
 func SetUnitStatus(status StatusName, message ...string) error {
 	commandRunner := GetCommandRunner()
 
-	var args []string
-
-	args = append(args, string(status))
+	args := []string{string(status)}
 
 	if len(message) > 0 {
-		args = append(args, message...)
+		fullMessage := ""
+		for _, part := range message {
+			if fullMessage != "" {
+				fullMessage += " "
+			}
+
+			fullMessage += part
+		}
+
+		args = append(args, fullMessage)
 	}
 
 	_, err := commandRunner.Run(statusSetCommand, args...)

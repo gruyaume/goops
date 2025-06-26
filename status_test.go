@@ -36,6 +36,40 @@ func TestSetUnitStatus_Success(t *testing.T) {
 	}
 }
 
+func TestSetUnitStatusWithMessage_Success(t *testing.T) {
+	fakeRunner := &FakeRunner{
+		Output: nil,
+		Err:    nil,
+	}
+
+	goops.SetCommandRunner(fakeRunner)
+
+	err := goops.SetUnitStatus(goops.StatusActive, "my", "name", "is", "example")
+	if err != nil {
+		t.Fatalf("SetUnitStatus returned an error: %v", err)
+	}
+
+	if fakeRunner.Command != "status-set" {
+		t.Errorf("Expected command %q, got %q", "status-set", fakeRunner.Command)
+	}
+
+	if len(fakeRunner.Args) != 2 {
+		t.Fatalf("Expected 2 argument, got %d", len(fakeRunner.Args))
+	}
+
+	if fakeRunner.Args[0] != string(goops.StatusActive) {
+		t.Errorf("Expected argument %q, got %q", string(goops.StatusActive), fakeRunner.Args[0])
+	}
+
+	if fakeRunner.Args[1] != "my name is example" {
+		t.Errorf("Expected argument %q, got %q", "my name is example", fakeRunner.Args[1])
+	}
+
+	if fakeRunner.Output != nil {
+		t.Errorf("Expected no output, got %q", string(fakeRunner.Output))
+	}
+}
+
 func TestSetAppStatus_Success(t *testing.T) {
 	fakeRunner := &FakeRunner{
 		Output: nil,

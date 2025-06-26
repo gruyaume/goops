@@ -1,0 +1,59 @@
+site_name: Goops Documentation
+site_url: https://gruyaume.github.io/goops/
+docs_dir: docs
+theme:
+  name: material
+  palette:
+    primary: custom
+  font:
+    text: Source Code Pro
+  features:
+    - navigation.sections
+    - navigation.footer
+    - navigation.indexes
+    - content.code.copy
+  icon:
+    repo: fontawesome/brands/github
+extra_css:
+  - stylesheets/extra.css
+repo_url: https://github.com/gruyaume/goops
+repo_name: gruyaume/goops
+copyright: Copyright &copy; 2024 Guillaume Belanger
+extra:
+  generator: false
+markdown_extensions: 
+  - attr_list
+  - md_in_html
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - admonition
+  - pymdownx.details
+  - tables
+  - toc:
+      permalink: true
+nav:
+  - Home: index.md
+  - Tutorials:
+    - tutorials/index.md 
+    - Getting Started: tutorials/getting_started.md
+  - How-to Guides:
+    - how_to/index.md
+  - Reference:
+    - reference/index.md
+    - Example Charms: reference/example_charms.md
+    - Charm Libraries: reference/charm_libraries.md
+    - Unit Testing: reference/unit_testing.md
+    - Design Principles: reference/design_principles.md
+    - Juju Compatibility: reference/juju_compatibility.md
+  - Explanation:
+    - explanation/index.md
+plugins:
+  - search
+  - glightbox
+  - social:
+      cards_layout_options:
+        background_color: "#26374a"
