@@ -22,9 +22,7 @@ func GetCredential() error {
 }
 
 func TestGetCredential(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: GetCredential,
-	}
+	ctx := goopstest.NewContext(GetCredential)
 
 	stateIn := goopstest.State{}
 

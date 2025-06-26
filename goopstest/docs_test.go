@@ -32,9 +32,7 @@ func ConfigureBasic() error {
 
 func TestCharmBasic(t *testing.T) {
 	// Arrange
-	ctx := goopstest.Context{
-		CharmFunc: ConfigureBasic,
-	}
+	ctx := goopstest.NewContext(ConfigureBasic)
 
 	stateIn := goopstest.State{
 		Leader: false,
@@ -108,9 +106,7 @@ func ConfigureKubernetes() error {
 
 func TestCharmKubernetes(t *testing.T) {
 	// Arrange
-	ctx := goopstest.Context{
-		CharmFunc: ConfigureKubernetes,
-	}
+	ctx := goopstest.NewContext(ConfigureKubernetes)
 
 	dname, err := os.MkdirTemp("", "sampledir")
 	if err != nil {

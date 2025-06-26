@@ -17,9 +17,7 @@ func ApplicationVersion() error {
 }
 
 func TestCharmApplicationVersion(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: ApplicationVersion,
-	}
+	ctx := goopstest.NewContext(ApplicationVersion)
 
 	stateIn := goopstest.State{}
 
@@ -38,9 +36,7 @@ func TestCharmApplicationVersion(t *testing.T) {
 }
 
 func TestCharmApplicationVersionInActionHook(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: ApplicationVersion,
-	}
+	ctx := goopstest.NewContext(ApplicationVersion)
 
 	stateIn := goopstest.State{}
 

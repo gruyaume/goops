@@ -71,6 +71,58 @@ type Context struct {
 	CharmErr      error
 }
 
+func WithUnitID(id string) func(*Context) {
+	return func(c *Context) {
+		c.UnitID = id
+	}
+}
+
+func WithAppName(name string) func(*Context) {
+	return func(c *Context) {
+		c.AppName = name
+	}
+}
+
+func WithJujuVersion(version string) func(*Context) {
+	return func(c *Context) {
+		c.JujuVersion = version
+	}
+}
+
+func WithMetadata(meta Metadata) func(*Context) {
+	return func(c *Context) {
+		c.Metadata = meta
+	}
+}
+
+func NewContext(charm func() error, opts ...func(*Context)) *Context {
+	ctx := &Context{
+		CharmFunc: charm,
+	}
+
+	for _, opt := range opts {
+		opt(ctx)
+	}
+
+	if ctx.AppName == "" {
+		if ctx.UnitID != "" {
+			ctx.AppName = ctx.UnitID[:len(ctx.UnitID)-2] // Remove the "/0" at the end
+		} else {
+			ctx.AppName = "test-app"
+		}
+	}
+
+	if ctx.UnitID == "" {
+		ctx.UnitID = ctx.AppName + "/0"
+	}
+
+	if ctx.JujuVersion == "" {
+		ctx.JujuVersion = DefaultJujuVersion
+	}
+
+	return ctx
+}
+
 func (c *Context) Run(hookName string, state State) (State, error) {
 	state.Relations = setRelationIDs(state.Relations)
 	state.Relations = setUnitIDs(state.Relations)

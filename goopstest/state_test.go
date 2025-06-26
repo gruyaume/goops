@@ -22,9 +22,7 @@ func GetState() error {
 }
 
 func TestGetState(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: GetState,
-	}
+	ctx := goopstest.NewContext(GetState)
 
 	stateIn := goopstest.State{
 		StoredState: map[string]string{
@@ -43,9 +41,7 @@ func TestGetState(t *testing.T) {
 }
 
 func TestGetStateNoKey(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: GetState,
-	}
+	ctx := goopstest.NewContext(GetState)
 
 	stateIn := goopstest.State{}
 
@@ -74,9 +70,7 @@ func SetState() error {
 }
 
 func TestSetState(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: SetState,
-	}
+	ctx := goopstest.NewContext(SetState)
 
 	stateIn := goopstest.State{}
 
@@ -122,9 +116,7 @@ func GetSetState() error {
 }
 
 func TestGetSetState(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: GetSetState,
-	}
+	ctx := goopstest.NewContext(GetSetState)
 
 	stateIn := goopstest.State{
 		StoredState: map[string]string{
@@ -156,9 +148,7 @@ func DeleteState() error {
 }
 
 func TestDeleteState(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: DeleteState,
-	}
+	ctx := goopstest.NewContext(DeleteState)
 
 	stateIn := goopstest.State{
 		StoredState: map[string]string{
@@ -185,9 +175,7 @@ func TestDeleteState(t *testing.T) {
 }
 
 func TestDeleteStateNoKey(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: DeleteState,
-	}
+	ctx := goopstest.NewContext(DeleteState)
 
 	stateIn := goopstest.State{}
 

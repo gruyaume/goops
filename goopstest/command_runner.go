@@ -669,17 +669,8 @@ func (f *fakeCommandRunner) handleRelationModelGet(args []string) {
 
 func (f *fakeCommandRunner) handleResourceGet(args []string) {
 	requestedResourceName := args[0]
-
 	appName := f.AppName
-	if appName == "" {
-		appName = "example" // Default app name for testing
-	}
-
 	unitID := f.UnitID
-	if unitID == "" {
-		unitID = "example/0" // Default unit ID for testing
-	}
-
 	unitNumber := strings.Split(unitID, "/")[1]
 
 	for resourceName, resource := range f.Metadata.Resources {

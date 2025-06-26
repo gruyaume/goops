@@ -27,9 +27,7 @@ func GetRelationIDs() error {
 }
 
 func TestCharmGetRelationIDs(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: GetRelationIDs,
-	}
+	ctx := goopstest.NewContext(GetRelationIDs)
 
 	certRelation := goopstest.Relation{
 		Endpoint: "certificates",
@@ -64,9 +62,7 @@ func GetRelationIDsNoRelation() error {
 }
 
 func TestCharmGetRelationIDsNoRelation(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: GetRelationIDsNoRelation,
-	}
+	ctx := goopstest.NewContext(GetRelationIDsNoRelation)
 
 	stateIn := goopstest.State{}
 
@@ -94,9 +90,7 @@ func GetRelationIDsNoName() error {
 }
 
 func TestCharmGetRelationIDsNoName(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: GetRelationIDsNoName,
-	}
+	ctx := goopstest.NewContext(GetRelationIDsNoName)
 
 	stateIn := goopstest.State{}
 
@@ -129,9 +123,7 @@ func GetRelationIDsNoResult() error {
 }
 
 func TestCharmGetRelationIDsNoResult(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: GetRelationIDsNoResult,
-	}
+	ctx := goopstest.NewContext(GetRelationIDsNoResult)
 
 	stateIn := goopstest.State{}
 
@@ -214,9 +206,7 @@ func TestCharmListRelationUnits(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		ctx := goopstest.Context{
-			CharmFunc: tc.handler,
-		}
+		ctx := goopstest.NewContext(tc.handler)
 
 		remoteUnitsData := map[goopstest.UnitID]goopstest.DataBag{}
 
@@ -252,9 +242,7 @@ func TestCharmListRelationUnits(t *testing.T) {
 }
 
 func TestListRelationUnitsResultNotFound(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: ListRelationUnits1Result,
-	}
+	ctx := goopstest.NewContext(ListRelationUnits1Result)
 
 	stateIn := goopstest.State{
 		Relations: []goopstest.Relation{},
@@ -276,9 +264,7 @@ func TestListRelationUnitsResultNotFound(t *testing.T) {
 }
 
 func TestListRelationUnitsInActionHook(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: ListRelationUnits1Result,
-	}
+	ctx := goopstest.NewContext(ListRelationUnits1Result)
 
 	remoteUnitsData := map[goopstest.UnitID]goopstest.DataBag{
 		goopstest.UnitID("provider/0"): {},
@@ -328,9 +314,7 @@ func GetRemoteUnitRelationData() error {
 }
 
 func TestCharmGetRemoteUnitRelationData(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: GetRemoteUnitRelationData,
-	}
+	ctx := goopstest.NewContext(GetRemoteUnitRelationData)
 
 	remoteUnitsData := map[goopstest.UnitID]goopstest.DataBag{
 		goopstest.UnitID("provider/0"): {
@@ -364,9 +348,7 @@ func TestCharmGetRemoteUnitRelationData(t *testing.T) {
 }
 
 func TestCharmGetRemoteUnitRelationDataNoRelation(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: GetRemoteUnitRelationData,
-	}
+	ctx := goopstest.NewContext(GetRemoteUnitRelationData)
 
 	stateIn := goopstest.State{
 		Relations: []goopstest.Relation{},
@@ -388,9 +370,7 @@ func TestCharmGetRemoteUnitRelationDataNoRelation(t *testing.T) {
 }
 
 func TestCharmGetRemoteUnitRelationDataNoRemoteUnit(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: GetRemoteUnitRelationData,
-	}
+	ctx := goopstest.NewContext(GetRemoteUnitRelationData)
 
 	stateIn := goopstest.State{
 		Relations: []goopstest.Relation{
@@ -422,9 +402,7 @@ func TestCharmGetRemoteUnitRelationDataNoRemoteUnit(t *testing.T) {
 }
 
 func TestCharmGetRemoteUnitRelationDataNoData(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: GetRemoteUnitRelationData,
-	}
+	ctx := goopstest.NewContext(GetRemoteUnitRelationData)
 
 	stateIn := goopstest.State{
 		Relations: []goopstest.Relation{
@@ -476,11 +454,7 @@ func GetLocalUnitRelationData() error {
 }
 
 func TestCharmGetLocalUnitRelationData(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: GetLocalUnitRelationData,
-		AppName:   "requirer",
-		UnitID:    "requirer/0",
-	}
+	ctx := goopstest.NewContext(GetLocalUnitRelationData, goopstest.WithUnitID("requirer/0"))
 
 	certRelation := goopstest.Relation{
 		Endpoint: "certificates",
@@ -510,21 +484,16 @@ func TestCharmGetLocalUnitRelationData(t *testing.T) {
 
 // In regular relations, each unit can only read its own databag. Reading another local unit's data should return nothing.
 func TestGetOtherLocalUnitRelationData(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: GetLocalUnitRelationData,
-		AppName:   "requirer",
-		UnitID:    "requirer/1", // This unit should not be able to read data from unit 0
-	}
+	ctx := goopstest.NewContext(GetLocalUnitRelationData, goopstest.WithUnitID("requirer/1"))
 
-	certRelation := goopstest.Relation{
-		Endpoint: "certificates",
-		LocalUnitData: map[string]string{
-			"certificate_signing_requests": "csr-data",
-		},
-	}
 	stateIn := goopstest.State{
 		Relations: []goopstest.Relation{
-			certRelation,
+			{
+				Endpoint: "certificates",
+				LocalUnitData: map[string]string{
+					"certificate_signing_requests": "csr-data",
+				},
+			},
 		},
 	}
 
@@ -544,11 +513,7 @@ func TestGetOtherLocalUnitRelationData(t *testing.T) {
 }
 
 func TestGetOtherUnexistantLocalUnitRelationData(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: GetLocalUnitRelationData,
-		AppName:   "banana",
-		UnitID:    "banana/1", // This unit should not be able to read data from unit 0
-	}
+	ctx := goopstest.NewContext(GetLocalUnitRelationData, goopstest.WithUnitID("banana/1"))
 
 	certRelation := goopstest.Relation{
 		Endpoint: "certificates",
@@ -600,9 +565,7 @@ func GetRemoteAppRelationData() error {
 }
 
 func TestCharmGetRemoteAppRelationData(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: GetRemoteAppRelationData,
-	}
+	ctx := goopstest.NewContext(GetRemoteAppRelationData)
 
 	remoteAppData := goopstest.DataBag{
 		"certificate_signing_requests": "csr-data",
@@ -634,9 +597,7 @@ func TestCharmGetRemoteAppRelationData(t *testing.T) {
 }
 
 func TestCharmGetRemoteAppRelationDataNoRelation(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: GetRemoteAppRelationData,
-	}
+	ctx := goopstest.NewContext(GetRemoteAppRelationData)
 
 	stateIn := goopstest.State{
 		Relations: []goopstest.Relation{},
@@ -680,11 +641,7 @@ func GetLocalAppRelationData() error {
 }
 
 func TestCharmGetLocalAppRelationData(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: GetLocalAppRelationData,
-		AppName:   "requirer",
-		UnitID:    "requirer/0",
-	}
+	ctx := goopstest.NewContext(GetLocalAppRelationData, goopstest.WithUnitID("requirer/0"))
 
 	certRelation := goopstest.Relation{
 		Endpoint: "certificates",
@@ -715,11 +672,7 @@ func TestCharmGetLocalAppRelationData(t *testing.T) {
 
 // In regular relations, only the leader unit can read to the local application databag
 func TestCharmGetLocalAppRelationDataNonLeader(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: GetLocalAppRelationData,
-		AppName:   "requirer",
-		UnitID:    "requirer/0",
-	}
+	ctx := goopstest.NewContext(GetLocalAppRelationData, goopstest.WithUnitID("requirer/0"))
 
 	certRelation := goopstest.Relation{
 		Endpoint: "certificates",
@@ -763,9 +716,7 @@ func SetUnitRelationData() error {
 }
 
 func TestCharmSetUnitRelationData(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: SetUnitRelationData,
-	}
+	ctx := goopstest.NewContext(SetUnitRelationData)
 
 	certRelation := goopstest.Relation{
 		Endpoint: "certificates",
@@ -813,9 +764,7 @@ func SetAppRelationData() error {
 }
 
 func TestCharmSetAppRelationData(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: SetAppRelationData,
-	}
+	ctx := goopstest.NewContext(SetAppRelationData)
 
 	certRelation := goopstest.Relation{
 		Endpoint: "certificates",
@@ -851,9 +800,7 @@ func TestCharmSetAppRelationData(t *testing.T) {
 }
 
 func TestCharmSetAppRelationDataNoRelation(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: SetAppRelationData,
-	}
+	ctx := goopstest.NewContext(SetAppRelationData)
 
 	stateIn := goopstest.State{
 		Leader:    true,
@@ -877,11 +824,7 @@ func TestCharmSetAppRelationDataNoRelation(t *testing.T) {
 
 // In regular relations, only the leader unit can write to the app databag
 func TestCharmSetAppRelationDataNonLeader(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: SetAppRelationData,
-		AppName:   "requirer",
-		UnitID:    "requirer/0",
-	}
+	ctx := goopstest.NewContext(SetAppRelationData, goopstest.WithUnitID("requirer/0"))
 
 	certRelation := goopstest.Relation{
 		Endpoint: "certificates",
@@ -982,9 +925,7 @@ func SetAppRelationData2() error {
 }
 
 func TestCharmSetAppRelationData2(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: SetAppRelationData2,
-	}
+	ctx := goopstest.NewContext(SetAppRelationData2)
 
 	certRelation := goopstest.Relation{
 		Endpoint: "metrics",
@@ -1062,9 +1003,7 @@ func RelationEndToEnd() error {
 }
 
 func TestCharmRelationEndToEnd(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: RelationEndToEnd,
-	}
+	ctx := goopstest.NewContext(RelationEndToEnd)
 
 	remoteUnitsData := map[goopstest.UnitID]goopstest.DataBag{
 		goopstest.UnitID("provider/0"): {
@@ -1114,9 +1053,7 @@ func RelationModelGetUUID() error {
 }
 
 func TestCharmRelationModelGetUUID(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: RelationModelGetUUID,
-	}
+	ctx := goopstest.NewContext(RelationModelGetUUID)
 
 	certRelation := goopstest.Relation{
 		Endpoint: "certificates",
@@ -1141,9 +1078,7 @@ func TestCharmRelationModelGetUUID(t *testing.T) {
 }
 
 func TestCharmRelationModelGetUUIDWithRemoteModelUUID(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: RelationModelGetUUID,
-	}
+	ctx := goopstest.NewContext(RelationModelGetUUID)
 
 	certRelation := goopstest.Relation{
 		Endpoint:        "certificates",
@@ -1169,9 +1104,7 @@ func TestCharmRelationModelGetUUIDWithRemoteModelUUID(t *testing.T) {
 }
 
 func TestCharmRelationModelGetUUIDNoRelation(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: RelationModelGetUUID,
-	}
+	ctx := goopstest.NewContext(RelationModelGetUUID)
 
 	stateIn := goopstest.State{
 		Relations: []goopstest.Relation{},

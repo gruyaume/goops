@@ -85,9 +85,7 @@ func TestCharmConfig(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			ctx := goopstest.Context{
-				CharmFunc: tc.handler,
-			}
+			ctx := goopstest.NewContext(tc.handler)
 
 			config := map[string]any{
 				tc.key: tc.value,
@@ -114,9 +112,7 @@ func TestCharmConfig(t *testing.T) {
 }
 
 func TestActiveIfExpectedConfigInActionHook(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: ActiveIfExpectedConfig,
-	}
+	ctx := goopstest.NewContext(ActiveIfExpectedConfig)
 
 	config := map[string]any{
 		"whatever_key": "expected",

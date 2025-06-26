@@ -62,9 +62,7 @@ func TestCharmGetSecretByLabel(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			ctx := goopstest.Context{
-				CharmFunc: tc.handler,
-			}
+			ctx := goopstest.NewContext(tc.handler)
 
 			mySecret := goopstest.Secret{
 				Label: "whatever-label",
@@ -105,9 +103,7 @@ func TestCharmGetSecretByLabel(t *testing.T) {
 }
 
 func TestCharmGetUnexistingSecretByLabel(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: GetSecretByLabel,
-	}
+	ctx := goopstest.NewContext(GetSecretByLabel)
 
 	stateIn := goopstest.State{}
 
@@ -181,9 +177,7 @@ func TestCharmGetSecretByID(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			ctx := goopstest.Context{
-				CharmFunc: tc.handler,
-			}
+			ctx := goopstest.NewContext(tc.handler)
 
 			mySecret := goopstest.Secret{
 				ID: "12345",
@@ -246,9 +240,7 @@ func AddAppSecret() error {
 }
 
 func TestCharmAddAppSecret(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: AddAppSecret,
-	}
+	ctx := goopstest.NewContext(AddAppSecret)
 
 	stateIn := goopstest.State{
 		Leader: true,
@@ -286,9 +278,7 @@ func TestCharmAddAppSecret(t *testing.T) {
 }
 
 func TestCharmAddAppSecretNonLeader(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: AddAppSecret,
-	}
+	ctx := goopstest.NewContext(AddAppSecret)
 
 	stateIn := goopstest.State{
 		Leader: false,
@@ -335,9 +325,7 @@ func AddUnitSecret() error {
 }
 
 func TestCharmAddUnitSecretNonLeader(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: AddUnitSecret,
-	}
+	ctx := goopstest.NewContext(AddUnitSecret)
 
 	stateIn := goopstest.State{
 		Leader: false,
@@ -396,9 +384,7 @@ func RemoveSecret() error {
 }
 
 func TestCharmRemoveSecret(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: RemoveSecret,
-	}
+	ctx := goopstest.NewContext(RemoveSecret)
 
 	stateIn := goopstest.State{
 		Leader: true,
@@ -428,9 +414,7 @@ func TestCharmRemoveSecret(t *testing.T) {
 }
 
 func TestCharmRemoveSecretNonLeader(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: RemoveSecret,
-	}
+	ctx := goopstest.NewContext(RemoveSecret)
 
 	stateIn := goopstest.State{
 		Leader: false,
@@ -464,9 +448,7 @@ func TestCharmRemoveSecretNonLeader(t *testing.T) {
 }
 
 func TestCharmRemoveUnexistingSecret(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: RemoveSecret,
-	}
+	ctx := goopstest.NewContext(RemoveSecret)
 
 	stateIn := goopstest.State{
 		Secrets: []goopstest.Secret{
@@ -516,9 +498,7 @@ func GetSecretInfoByID() error {
 }
 
 func TestCharmGetSecretInfoByID(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: GetSecretInfoByID,
-	}
+	ctx := goopstest.NewContext(GetSecretInfoByID)
 
 	stateIn := goopstest.State{
 		Secrets: []goopstest.Secret{
@@ -548,9 +528,7 @@ func TestCharmGetSecretInfoByID(t *testing.T) {
 }
 
 func TestCharmGetSecretInfoByIDNonLeader(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: GetSecretInfoByID,
-	}
+	ctx := goopstest.NewContext(GetSecretInfoByID)
 
 	stateIn := goopstest.State{
 		Leader: false,
@@ -580,9 +558,7 @@ func TestCharmGetSecretInfoByIDNonLeader(t *testing.T) {
 }
 
 func TestCharmGetUnitSecretInfoByNonLeader(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: GetSecretInfoByID,
-	}
+	ctx := goopstest.NewContext(GetSecretInfoByID)
 
 	stateIn := goopstest.State{
 		Secrets: []goopstest.Secret{
@@ -630,9 +606,7 @@ func GetSecretInfoByLabel() error {
 }
 
 func TestCharmGetSecretInfoByLabel(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: GetSecretInfoByLabel,
-	}
+	ctx := goopstest.NewContext(GetSecretInfoByLabel)
 
 	stateIn := goopstest.State{
 		Leader: true,
@@ -662,9 +636,7 @@ func TestCharmGetSecretInfoByLabel(t *testing.T) {
 }
 
 func TestCharmGetSecretInfoByLabelNonLeader(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: GetSecretInfoByLabel,
-	}
+	ctx := goopstest.NewContext(GetSecretInfoByLabel)
 
 	stateIn := goopstest.State{
 		Leader: false,
@@ -694,9 +666,7 @@ func TestCharmGetSecretInfoByLabelNonLeader(t *testing.T) {
 }
 
 func TestCharmGetUnitSecretInfoByLabelNonLeader(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: GetSecretInfoByLabel,
-	}
+	ctx := goopstest.NewContext(GetSecretInfoByLabel)
 
 	stateIn := goopstest.State{
 		Leader: false,
@@ -742,9 +712,7 @@ func GetSecretIDs() error {
 }
 
 func TestCharmGetSecretIDs(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: GetSecretIDs,
-	}
+	ctx := goopstest.NewContext(GetSecretIDs)
 
 	stateIn := goopstest.State{
 		Leader: true,
@@ -785,9 +753,7 @@ func TestCharmGetSecretIDs(t *testing.T) {
 }
 
 func TestCharmGetSecretIDsNonLeader(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: GetSecretIDs,
-	}
+	ctx := goopstest.NewContext(GetSecretIDs)
 
 	stateIn := goopstest.State{
 		Leader: false,
@@ -838,9 +804,7 @@ func GrantSecretToRelation() error {
 }
 
 func TestCharmGrantSecretToRelation(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: GrantSecretToRelation,
-	}
+	ctx := goopstest.NewContext(GrantSecretToRelation)
 
 	stateIn := goopstest.State{
 		Leader: true,
@@ -885,9 +849,7 @@ func GrantSecretToUnit() error {
 }
 
 func TestCharmGrantSecretToUnit(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: GrantSecretToUnit,
-	}
+	ctx := goopstest.NewContext(GrantSecretToUnit)
 
 	stateIn := goopstest.State{
 		Leader: true,
@@ -917,9 +879,7 @@ func TestCharmGrantSecretToUnit(t *testing.T) {
 }
 
 func TestCharmGrantSecretNonLeader(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: GrantSecretToRelation,
-	}
+	ctx := goopstest.NewContext(GrantSecretToRelation)
 
 	stateIn := goopstest.State{
 		Leader: false,
@@ -967,9 +927,7 @@ func SetSecret() error {
 }
 
 func TestCharmSetSecret(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: SetSecret,
-	}
+	ctx := goopstest.NewContext(SetSecret)
 
 	stateIn := goopstest.State{
 		Leader: true,
@@ -1025,9 +983,7 @@ func TestCharmSetSecret(t *testing.T) {
 }
 
 func TestCharmSetSecretNonLeader(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: SetSecret,
-	}
+	ctx := goopstest.NewContext(SetSecret)
 
 	stateIn := goopstest.State{
 		Leader: false,
@@ -1086,9 +1042,7 @@ func RevokeSecret() error {
 }
 
 func TestCharmRevokeSecret(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: RevokeSecret,
-	}
+	ctx := goopstest.NewContext(RevokeSecret)
 
 	stateIn := goopstest.State{
 		Leader: true,

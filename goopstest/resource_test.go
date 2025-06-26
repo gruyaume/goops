@@ -22,9 +22,8 @@ func ResourceGet() error {
 }
 
 func TestResourceGet(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: ResourceGet,
-		Metadata: goopstest.Metadata{
+	ctx := goopstest.NewContext(ResourceGet, goopstest.WithAppName("example"), goopstest.WithMetadata(
+		goopstest.Metadata{
 			Resources: map[string]goopstest.ResourceMeta{
 				"my-resource": {
 					Description: "A test resource",
@@ -33,7 +32,7 @@ func TestResourceGet(t *testing.T) {
 				},
 			},
 		},
-	}
+	))
 
 	stateIn := goopstest.State{}
 
@@ -48,9 +47,7 @@ func TestResourceGet(t *testing.T) {
 }
 
 func TestResourceGetDoesntExist(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: ResourceGet,
-	}
+	ctx := goopstest.NewContext(ResourceGet)
 
 	stateIn := goopstest.State{}
 

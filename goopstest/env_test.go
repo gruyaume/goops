@@ -43,9 +43,7 @@ func GetJujuVersion() error {
 }
 
 func TestGetModelInfo(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: GetModelInfo,
-	}
+	ctx := goopstest.NewContext(GetModelInfo)
 
 	model := goopstest.Model{
 		Name: "test-model",
@@ -75,11 +73,7 @@ func TestGetModelInfo(t *testing.T) {
 }
 
 func TestGetUnitName(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: GetUnitName,
-		AppName:   "blou",
-		UnitID:    "blou/0",
-	}
+	ctx := goopstest.NewContext(GetUnitName, goopstest.WithUnitID("blou/0"))
 
 	stateIn := goopstest.State{}
 
@@ -94,10 +88,7 @@ func TestGetUnitName(t *testing.T) {
 }
 
 func TestGetJujuVersion(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc:   GetJujuVersion,
-		JujuVersion: "1.2.3",
-	}
+	ctx := goopstest.NewContext(GetJujuVersion, goopstest.WithJujuVersion("1.2.3"))
 
 	stateIn := goopstest.State{}
 

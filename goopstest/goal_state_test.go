@@ -34,11 +34,7 @@ func GoalState() error {
 }
 
 func TestGoalState(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: GoalState,
-		AppName:   "example",
-		UnitID:    "example/0",
-	}
+	ctx := goopstest.NewContext(GoalState, goopstest.WithUnitID("example/0"))
 
 	stateIn := goopstest.State{
 		UnitStatus: goopstest.Status{

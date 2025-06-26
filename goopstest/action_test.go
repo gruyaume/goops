@@ -49,9 +49,7 @@ func TestCharmActionName(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			ctx := goopstest.Context{
-				CharmFunc: tc.handler,
-			}
+			ctx := goopstest.NewContext(tc.handler)
 
 			stateIn := goopstest.State{}
 
@@ -81,9 +79,7 @@ func ActionResults1() error {
 }
 
 func TestCharmActionResults1(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: ActionResults1,
-	}
+	ctx := goopstest.NewContext(ActionResults1)
 
 	stateIn := goopstest.State{}
 
@@ -113,9 +109,7 @@ func ActionResults3() error {
 }
 
 func TestCharmActionResults3(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: ActionResults3,
-	}
+	ctx := goopstest.NewContext(ActionResults3)
 
 	stateIn := goopstest.State{}
 
@@ -147,9 +141,7 @@ func ActionFailed() error {
 }
 
 func TestCharmActionFailed(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: ActionFailed,
-	}
+	ctx := goopstest.NewContext(ActionFailed)
 
 	stateIn := goopstest.State{}
 
@@ -198,9 +190,7 @@ func GetActionParamsAndSetResults() error {
 }
 
 func TestCharmActionParameters(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: GetActionParamsAndSetResults,
-	}
+	ctx := goopstest.NewContext(GetActionParamsAndSetResults)
 
 	stateIn := goopstest.State{}
 
@@ -218,9 +208,7 @@ func TestCharmActionParameters(t *testing.T) {
 }
 
 func TestCharmActionParameterNotSet(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: GetActionParamsAndSetResults,
-	}
+	ctx := goopstest.NewContext(GetActionParamsAndSetResults)
 
 	stateIn := goopstest.State{}
 
@@ -254,9 +242,7 @@ func ActionParams() error {
 }
 
 func TestGetActionParamInNonActionHook(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: ActionParams,
-	}
+	ctx := goopstest.NewContext(ActionParams)
 
 	stateIn := goopstest.State{}
 
@@ -284,9 +270,7 @@ func ActionFailf() error {
 }
 
 func TestActionFailfInNonActionHook(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: ActionFailf,
-	}
+	ctx := goopstest.NewContext(ActionFailf)
 
 	stateIn := goopstest.State{}
 
@@ -314,9 +298,7 @@ func ActionLogf() error {
 }
 
 func TestActionLogfInNonActionHook(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: ActionLogf,
-	}
+	ctx := goopstest.NewContext(ActionLogf)
 
 	stateIn := goopstest.State{}
 
@@ -348,9 +330,7 @@ func SetActionResults() error {
 }
 
 func TestSetActionResultsInNonActionHook(t *testing.T) {
-	ctx := goopstest.Context{
-		CharmFunc: SetActionResults,
-	}
+	ctx := goopstest.NewContext(SetActionResults)
 
 	stateIn := goopstest.State{}
 

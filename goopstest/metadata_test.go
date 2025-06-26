@@ -34,8 +34,8 @@ func GetMetadata() error {
 }
 
 func TestGetMetadata(t *testing.T) {
-	ctx := goopstest.Context{
-		Metadata: goopstest.Metadata{
+	ctx := goopstest.NewContext(GetMetadata, goopstest.WithAppName("example"), goopstest.WithMetadata(
+		goopstest.Metadata{
 			Name:        "example",
 			Description: "An example charm",
 			Containers: map[string]goopstest.ContainerMeta{
@@ -50,8 +50,7 @@ func TestGetMetadata(t *testing.T) {
 				},
 			},
 		},
-		CharmFunc: GetMetadata,
-	}
+	))
 
 	stateIn := goopstest.State{}
 

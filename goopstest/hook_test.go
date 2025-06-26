@@ -64,9 +64,7 @@ func TestCharmHookName(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			ctx := goopstest.Context{
-				CharmFunc: tc.handler,
-			}
+			ctx := goopstest.NewContext(tc.handler)
 
 			stateIn := goopstest.State{}
 
