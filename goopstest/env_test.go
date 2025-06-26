@@ -44,7 +44,7 @@ func GetJujuVersion() error {
 
 func TestGetModelInfo(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: GetModelInfo,
+		CharmFunc: GetModelInfo,
 	}
 
 	model := goopstest.Model{
@@ -76,9 +76,9 @@ func TestGetModelInfo(t *testing.T) {
 
 func TestGetUnitName(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm:   GetUnitName,
-		AppName: "blou",
-		UnitID:  "blou/0",
+		CharmFunc: GetUnitName,
+		AppName:   "blou",
+		UnitID:    "blou/0",
 	}
 
 	stateIn := goopstest.State{}
@@ -95,7 +95,7 @@ func TestGetUnitName(t *testing.T) {
 
 func TestGetJujuVersion(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm:       GetJujuVersion,
+		CharmFunc:   GetJujuVersion,
 		JujuVersion: "1.2.3",
 	}
 

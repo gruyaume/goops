@@ -15,7 +15,7 @@ func ContainerLog() error {
 
 func TestContainerLog(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: ContainerLog,
+		CharmFunc: ContainerLog,
 	}
 
 	stateIn := goopstest.State{}

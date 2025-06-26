@@ -32,6 +32,7 @@ type fakeCommandRunner struct {
 	UnitID             string
 	JujuLog            []JujuLogLine
 	Model              Model
+	Metadata           Metadata
 }
 
 func (f *fakeCommandRunner) Run(name string, args ...string) ([]byte, error) {
@@ -60,6 +61,7 @@ func (f *fakeCommandRunner) Run(name string, args ...string) ([]byte, error) {
 		"relation-list":           f.handleRelationList,
 		"relation-set":            f.handleRelationSet,
 		"relation-model-get":      f.handleRelationModelGet,
+		"resource-get":            f.handleResourceGet,
 		"secret-add":              f.handleSecretAdd,
 		"secret-get":              f.handleSecretGet,
 		"secret-remove":           f.handleSecretRemove,
@@ -665,6 +667,33 @@ func (f *fakeCommandRunner) handleRelationModelGet(args []string) {
 	f.Output = outputBytes
 }
 
+func (f *fakeCommandRunner) handleResourceGet(args []string) {
+	requestedResourceName := args[0]
+
+	appName := f.AppName
+	if appName == "" {
+		appName = "example" // Default app name for testing
+	}
+
+	unitID := f.UnitID
+	if unitID == "" {
+		unitID = "example/0" // Default unit ID for testing
+	}
+
+	unitNumber := strings.Split(unitID, "/")[1]
+
+	for resourceName, resource := range f.Metadata.Resources {
+		if resourceName == requestedResourceName {
+			path := fmt.Sprintf("/var/lib/juju/agents/unit-%s-%s/resources/%s", appName, unitNumber, resource.Filename)
+			f.Output = []byte(path)
+
+			return
+		}
+	}
+
+	f.Err = fmt.Errorf("command resource-get failed: ERROR could not download resource: HTTP request failed: Get https://1.2.3.4:17070/model/7bc47acd-4a48-4d11-8f52-3c44656bcb94/units/unit-example-0/resources/%q: resource#example/%q not found", requestedResourceName, requestedResourceName)
+}
+
 func (f *fakeCommandRunner) handleSecretAdd(args []string) {
 	meta, remaining := splitPrefixedArgs(args, "--")
 	label := meta["label"]
@@ -1070,8 +1099,7 @@ func (f *fakeCommandRunner) handleActionFail(args []string) {
 }
 
 func (f *fakeCommandRunner) handleActionGet(_ []string) {
-	env := goops.ReadEnv()
-	if env.ActionName == "" {
+	if goops.ReadEnv().ActionName == "" {
 		f.Err = fmt.Errorf("command action-get failed: ERROR not running an action")
 		return
 	}

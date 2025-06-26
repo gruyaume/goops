@@ -87,7 +87,7 @@ func TestContainerCantConnect(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := goopstest.Context{
-				Charm: tt.fn,
+				CharmFunc: tt.fn,
 			}
 
 			stateIn := goopstest.State{
@@ -120,7 +120,7 @@ func ContainerCanConnect() error {
 
 func TestContainerCanConnect(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: ContainerCanConnect,
+		CharmFunc: ContainerCanConnect,
 	}
 
 	stateIn := goopstest.State{
@@ -211,7 +211,7 @@ func ContainerGetPebblePlan() error {
 
 func TestContainerGetPebblePlan(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: ContainerGetPebblePlan,
+		CharmFunc: ContainerGetPebblePlan,
 	}
 
 	stateIn := goopstest.State{
@@ -248,7 +248,7 @@ func TestContainerGetPebblePlan(t *testing.T) {
 
 func TestContainerUnexistantGetPebblePlan(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: ContainerGetPebblePlan,
+		CharmFunc: ContainerGetPebblePlan,
 	}
 
 	stateIn := goopstest.State{
@@ -302,7 +302,7 @@ func ContainerAddPebbleLayer() error {
 
 func TestContainerAddPebbleLayer(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: ContainerAddPebbleLayer,
+		CharmFunc: ContainerAddPebbleLayer,
 	}
 
 	stateIn := goopstest.State{
@@ -373,7 +373,7 @@ func ConatainerStartPebbleService() error {
 
 func TestContainerStartPebbleService(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: ConatainerStartPebbleService,
+		CharmFunc: ConatainerStartPebbleService,
 	}
 
 	stateIn := goopstest.State{
@@ -446,7 +446,7 @@ func ContainerGetPebbleServiceStatus() error {
 
 func TestContainerGetPebbleServiceStatus(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: ContainerGetPebbleServiceStatus,
+		CharmFunc: ContainerGetPebbleServiceStatus,
 	}
 
 	stateIn := goopstest.State{
@@ -515,7 +515,7 @@ func ContainerStopPebbleService() error {
 
 func TestContainerStopPebbleService(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: ContainerStopPebbleService,
+		CharmFunc: ContainerStopPebbleService,
 	}
 
 	stateIn := goopstest.State{
@@ -576,7 +576,7 @@ func ContainerRestartPebbleService() error {
 
 func TestContainerRestartPebbleService(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: ContainerRestartPebbleService,
+		CharmFunc: ContainerRestartPebbleService,
 	}
 
 	stateIn := goopstest.State{
@@ -651,7 +651,7 @@ func ContainerPushFile() error {
 
 func TestContainerPushFile(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: ContainerPushFile,
+		CharmFunc: ContainerPushFile,
 	}
 
 	dname, err := os.MkdirTemp("", "sampledir")
@@ -714,7 +714,7 @@ func ContainerPullFile() error {
 
 func TestContainerPullFile(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: ContainerPullFile,
+		CharmFunc: ContainerPullFile,
 	}
 
 	dname, err := os.MkdirTemp("", "sampledir")
@@ -822,7 +822,7 @@ func TestMultiContainer(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := goopstest.Context{
-				Charm: MultiContainer,
+				CharmFunc: MultiContainer,
 			}
 
 			stateIn := goopstest.State{

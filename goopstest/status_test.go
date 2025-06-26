@@ -81,7 +81,7 @@ func TestCharmSetUnitStatus(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx := goopstest.Context{
-				Charm: tc.handler,
+				CharmFunc: tc.handler,
 			}
 
 			stateIn := goopstest.State{}
@@ -104,7 +104,7 @@ func TestCharmSetUnitStatus(t *testing.T) {
 
 func TestCharmSetUnitStatusPreset(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: SetUnitStatusMaintenance,
+		CharmFunc: SetUnitStatusMaintenance,
 	}
 
 	stateIn := goopstest.State{
@@ -203,7 +203,7 @@ func TestSetAppStatusLeader(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx := goopstest.Context{
-				Charm: tc.handler,
+				CharmFunc: tc.handler,
 			}
 
 			stateIn := goopstest.State{
@@ -228,7 +228,7 @@ func TestSetAppStatusLeader(t *testing.T) {
 
 func TestCharmAppStatusPreset(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: SetAppStatusMaintenance,
+		CharmFunc: SetAppStatusMaintenance,
 	}
 
 	stateIn := goopstest.State{
@@ -275,7 +275,7 @@ func GetUnitStatus() error {
 
 func TestGetUnitStatus(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: GetUnitStatus,
+		CharmFunc: GetUnitStatus,
 	}
 
 	stateIn := goopstest.State{
@@ -318,7 +318,7 @@ func GetUnitStatusUnknown() error {
 
 func TestGetUnitStatusNotSet(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: GetUnitStatusUnknown,
+		CharmFunc: GetUnitStatusUnknown,
 	}
 
 	stateIn := goopstest.State{}
@@ -360,7 +360,7 @@ func GetAppStatus() error {
 
 func TestGetAppStatusLeader(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: GetAppStatus,
+		CharmFunc: GetAppStatus,
 	}
 
 	stateIn := goopstest.State{
@@ -391,7 +391,7 @@ func TestGetAppStatusLeader(t *testing.T) {
 
 func TestGetAppStatusNonLeader(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: GetAppStatus,
+		CharmFunc: GetAppStatus,
 	}
 
 	stateIn := goopstest.State{
@@ -427,7 +427,7 @@ func TestGetAppStatusNonLeader(t *testing.T) {
 
 func TestSetAppStatusNonLeader(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: SetAppStatusActive,
+		CharmFunc: SetAppStatusActive,
 	}
 
 	stateIn := goopstest.State{

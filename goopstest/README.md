@@ -38,7 +38,7 @@ func Configure() error {
 func TestCharm(t *testing.T) {
 	// Arrange
 	ctx := goopstest.Context{
-		Charm: Configure,
+		CharmFunc: Configure,
 	}
 
 	stateIn := goopstest.State{
@@ -133,7 +133,7 @@ func Configure() error {
 func TestCharm(t *testing.T) {
 	// Arrange
 	ctx := goopstest.Context{
-		Charm: Configure,
+		CharmFunc: Configure,
 	}
 
 	dname, err := os.MkdirTemp("", "sampledir")

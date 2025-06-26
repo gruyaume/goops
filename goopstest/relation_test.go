@@ -28,7 +28,7 @@ func GetRelationIDs() error {
 
 func TestCharmGetRelationIDs(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: GetRelationIDs,
+		CharmFunc: GetRelationIDs,
 	}
 
 	certRelation := goopstest.Relation{
@@ -65,7 +65,7 @@ func GetRelationIDsNoRelation() error {
 
 func TestCharmGetRelationIDsNoRelation(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: GetRelationIDsNoRelation,
+		CharmFunc: GetRelationIDsNoRelation,
 	}
 
 	stateIn := goopstest.State{}
@@ -95,7 +95,7 @@ func GetRelationIDsNoName() error {
 
 func TestCharmGetRelationIDsNoName(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: GetRelationIDsNoName,
+		CharmFunc: GetRelationIDsNoName,
 	}
 
 	stateIn := goopstest.State{}
@@ -130,7 +130,7 @@ func GetRelationIDsNoResult() error {
 
 func TestCharmGetRelationIDsNoResult(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: GetRelationIDsNoResult,
+		CharmFunc: GetRelationIDsNoResult,
 	}
 
 	stateIn := goopstest.State{}
@@ -215,7 +215,7 @@ func TestCharmListRelationUnits(t *testing.T) {
 
 	for _, tc := range tests {
 		ctx := goopstest.Context{
-			Charm: tc.handler,
+			CharmFunc: tc.handler,
 		}
 
 		remoteUnitsData := map[goopstest.UnitID]goopstest.DataBag{}
@@ -253,7 +253,7 @@ func TestCharmListRelationUnits(t *testing.T) {
 
 func TestListRelationUnitsResultNotFound(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: ListRelationUnits1Result,
+		CharmFunc: ListRelationUnits1Result,
 	}
 
 	stateIn := goopstest.State{
@@ -277,7 +277,7 @@ func TestListRelationUnitsResultNotFound(t *testing.T) {
 
 func TestListRelationUnitsInActionHook(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: ListRelationUnits1Result,
+		CharmFunc: ListRelationUnits1Result,
 	}
 
 	remoteUnitsData := map[goopstest.UnitID]goopstest.DataBag{
@@ -329,7 +329,7 @@ func GetRemoteUnitRelationData() error {
 
 func TestCharmGetRemoteUnitRelationData(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: GetRemoteUnitRelationData,
+		CharmFunc: GetRemoteUnitRelationData,
 	}
 
 	remoteUnitsData := map[goopstest.UnitID]goopstest.DataBag{
@@ -365,7 +365,7 @@ func TestCharmGetRemoteUnitRelationData(t *testing.T) {
 
 func TestCharmGetRemoteUnitRelationDataNoRelation(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: GetRemoteUnitRelationData,
+		CharmFunc: GetRemoteUnitRelationData,
 	}
 
 	stateIn := goopstest.State{
@@ -389,7 +389,7 @@ func TestCharmGetRemoteUnitRelationDataNoRelation(t *testing.T) {
 
 func TestCharmGetRemoteUnitRelationDataNoRemoteUnit(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: GetRemoteUnitRelationData,
+		CharmFunc: GetRemoteUnitRelationData,
 	}
 
 	stateIn := goopstest.State{
@@ -423,7 +423,7 @@ func TestCharmGetRemoteUnitRelationDataNoRemoteUnit(t *testing.T) {
 
 func TestCharmGetRemoteUnitRelationDataNoData(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: GetRemoteUnitRelationData,
+		CharmFunc: GetRemoteUnitRelationData,
 	}
 
 	stateIn := goopstest.State{
@@ -477,9 +477,9 @@ func GetLocalUnitRelationData() error {
 
 func TestCharmGetLocalUnitRelationData(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm:   GetLocalUnitRelationData,
-		AppName: "requirer",
-		UnitID:  "requirer/0",
+		CharmFunc: GetLocalUnitRelationData,
+		AppName:   "requirer",
+		UnitID:    "requirer/0",
 	}
 
 	certRelation := goopstest.Relation{
@@ -511,9 +511,9 @@ func TestCharmGetLocalUnitRelationData(t *testing.T) {
 // In regular relations, each unit can only read its own databag. Reading another local unit's data should return nothing.
 func TestGetOtherLocalUnitRelationData(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm:   GetLocalUnitRelationData,
-		AppName: "requirer",
-		UnitID:  "requirer/1", // This unit should not be able to read data from unit 0
+		CharmFunc: GetLocalUnitRelationData,
+		AppName:   "requirer",
+		UnitID:    "requirer/1", // This unit should not be able to read data from unit 0
 	}
 
 	certRelation := goopstest.Relation{
@@ -545,9 +545,9 @@ func TestGetOtherLocalUnitRelationData(t *testing.T) {
 
 func TestGetOtherUnexistantLocalUnitRelationData(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm:   GetLocalUnitRelationData,
-		AppName: "banana",
-		UnitID:  "banana/1", // This unit should not be able to read data from unit 0
+		CharmFunc: GetLocalUnitRelationData,
+		AppName:   "banana",
+		UnitID:    "banana/1", // This unit should not be able to read data from unit 0
 	}
 
 	certRelation := goopstest.Relation{
@@ -601,7 +601,7 @@ func GetRemoteAppRelationData() error {
 
 func TestCharmGetRemoteAppRelationData(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: GetRemoteAppRelationData,
+		CharmFunc: GetRemoteAppRelationData,
 	}
 
 	remoteAppData := goopstest.DataBag{
@@ -635,7 +635,7 @@ func TestCharmGetRemoteAppRelationData(t *testing.T) {
 
 func TestCharmGetRemoteAppRelationDataNoRelation(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: GetRemoteAppRelationData,
+		CharmFunc: GetRemoteAppRelationData,
 	}
 
 	stateIn := goopstest.State{
@@ -681,9 +681,9 @@ func GetLocalAppRelationData() error {
 
 func TestCharmGetLocalAppRelationData(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm:   GetLocalAppRelationData,
-		AppName: "requirer",
-		UnitID:  "requirer/0",
+		CharmFunc: GetLocalAppRelationData,
+		AppName:   "requirer",
+		UnitID:    "requirer/0",
 	}
 
 	certRelation := goopstest.Relation{
@@ -716,9 +716,9 @@ func TestCharmGetLocalAppRelationData(t *testing.T) {
 // In regular relations, only the leader unit can read to the local application databag
 func TestCharmGetLocalAppRelationDataNonLeader(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm:   GetLocalAppRelationData,
-		AppName: "requirer",
-		UnitID:  "requirer/0",
+		CharmFunc: GetLocalAppRelationData,
+		AppName:   "requirer",
+		UnitID:    "requirer/0",
 	}
 
 	certRelation := goopstest.Relation{
@@ -764,7 +764,7 @@ func SetUnitRelationData() error {
 
 func TestCharmSetUnitRelationData(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: SetUnitRelationData,
+		CharmFunc: SetUnitRelationData,
 	}
 
 	certRelation := goopstest.Relation{
@@ -814,7 +814,7 @@ func SetAppRelationData() error {
 
 func TestCharmSetAppRelationData(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: SetAppRelationData,
+		CharmFunc: SetAppRelationData,
 	}
 
 	certRelation := goopstest.Relation{
@@ -852,7 +852,7 @@ func TestCharmSetAppRelationData(t *testing.T) {
 
 func TestCharmSetAppRelationDataNoRelation(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: SetAppRelationData,
+		CharmFunc: SetAppRelationData,
 	}
 
 	stateIn := goopstest.State{
@@ -878,9 +878,9 @@ func TestCharmSetAppRelationDataNoRelation(t *testing.T) {
 // In regular relations, only the leader unit can write to the app databag
 func TestCharmSetAppRelationDataNonLeader(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm:   SetAppRelationData,
-		AppName: "requirer",
-		UnitID:  "requirer/0",
+		CharmFunc: SetAppRelationData,
+		AppName:   "requirer",
+		UnitID:    "requirer/0",
 	}
 
 	certRelation := goopstest.Relation{
@@ -983,7 +983,7 @@ func SetAppRelationData2() error {
 
 func TestCharmSetAppRelationData2(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: SetAppRelationData2,
+		CharmFunc: SetAppRelationData2,
 	}
 
 	certRelation := goopstest.Relation{
@@ -1063,7 +1063,7 @@ func RelationEndToEnd() error {
 
 func TestCharmRelationEndToEnd(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: RelationEndToEnd,
+		CharmFunc: RelationEndToEnd,
 	}
 
 	remoteUnitsData := map[goopstest.UnitID]goopstest.DataBag{
@@ -1115,7 +1115,7 @@ func RelationModelGetUUID() error {
 
 func TestCharmRelationModelGetUUID(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: RelationModelGetUUID,
+		CharmFunc: RelationModelGetUUID,
 	}
 
 	certRelation := goopstest.Relation{
@@ -1142,7 +1142,7 @@ func TestCharmRelationModelGetUUID(t *testing.T) {
 
 func TestCharmRelationModelGetUUIDWithRemoteModelUUID(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: RelationModelGetUUID,
+		CharmFunc: RelationModelGetUUID,
 	}
 
 	certRelation := goopstest.Relation{
@@ -1170,7 +1170,7 @@ func TestCharmRelationModelGetUUIDWithRemoteModelUUID(t *testing.T) {
 
 func TestCharmRelationModelGetUUIDNoRelation(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm: RelationModelGetUUID,
+		CharmFunc: RelationModelGetUUID,
 	}
 
 	stateIn := goopstest.State{

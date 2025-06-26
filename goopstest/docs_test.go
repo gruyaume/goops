@@ -33,7 +33,7 @@ func ConfigureBasic() error {
 func TestCharmBasic(t *testing.T) {
 	// Arrange
 	ctx := goopstest.Context{
-		Charm: ConfigureBasic,
+		CharmFunc: ConfigureBasic,
 	}
 
 	stateIn := goopstest.State{
@@ -109,7 +109,7 @@ func ConfigureKubernetes() error {
 func TestCharmKubernetes(t *testing.T) {
 	// Arrange
 	ctx := goopstest.Context{
-		Charm: ConfigureKubernetes,
+		CharmFunc: ConfigureKubernetes,
 	}
 
 	dname, err := os.MkdirTemp("", "sampledir")

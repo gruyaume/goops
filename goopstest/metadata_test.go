@@ -35,22 +35,22 @@ func GetMetadata() error {
 
 func TestGetMetadata(t *testing.T) {
 	ctx := goopstest.Context{
-		Metadata: goops.Metadata{
+		Metadata: goopstest.Metadata{
 			Name:        "example",
 			Description: "An example charm",
-			Containers: map[string]goops.Container{
+			Containers: map[string]goopstest.ContainerMeta{
 				"example-container": {
 					Resource: "example-image",
-					Mounts:   []goops.Mount{},
+					Mounts:   []goopstest.MountMeta{},
 				},
 			},
-			Provides: map[string]goops.Integration{
+			Provides: map[string]goopstest.IntegrationMeta{
 				"example-interface": {
 					Interface: "example-interface",
 				},
 			},
 		},
-		Charm: GetMetadata,
+		CharmFunc: GetMetadata,
 	}
 
 	stateIn := goopstest.State{}

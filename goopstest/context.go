@@ -9,6 +9,10 @@ import (
 type LogLevel string
 
 const (
+	DefaultJujuVersion = "3.6.0"
+)
+
+const (
 	LogLevelInfo    LogLevel = "INFO"
 	LogLevelWarning LogLevel = "WARNING"
 	LogLevelError   LogLevel = "ERROR"
@@ -20,9 +24,44 @@ type JujuLogLine struct {
 	Message string
 }
 
+type MountMeta struct {
+	Location string
+	Storage  string
+}
+
+type ContainerMeta struct {
+	Mounts   []MountMeta
+	Resource string
+}
+
+type IntegrationMeta struct {
+	Interface string
+}
+
+type ResourceMeta struct {
+	Description string
+	Type        string
+	Filename    string
+}
+
+type StorageMeta struct {
+	MinimumSize string
+	Type        string
+}
+
+type Metadata struct {
+	Containers  map[string]ContainerMeta
+	Description string
+	Name        string
+	Provides    map[string]IntegrationMeta
+	Resources   map[string]ResourceMeta
+	Storage     map[string]StorageMeta
+	Summary     string
+}
+
 type Context struct {
-	Charm         func() error
-	Metadata      goops.Metadata
+	CharmFunc     func() error
+	Metadata      Metadata
 	AppName       string
 	UnitID        string
 	JujuVersion   string
@@ -33,10 +72,6 @@ type Context struct {
 }
 
 func (c *Context) Run(hookName string, state State) (State, error) {
-	if c.Charm == nil {
-		return State{}, fmt.Errorf("charm function is not set in the context")
-	}
-
 	state.Relations = setRelationIDs(state.Relations)
 	state.Relations = setUnitIDs(state.Relations)
 	state.PeerRelations = setPeerRelationIDs(state.PeerRelations)
@@ -71,6 +106,7 @@ func (c *Context) Run(hookName string, state State) (State, error) {
 		Model:         state.Model,
 		UnitStatus:    state.UnitStatus,
 		AppStatus:     state.AppStatus,
+		Metadata:      c.Metadata,
 	}
 
 	fakeEnv := &fakeEnvGetter{
@@ -90,7 +126,7 @@ func (c *Context) Run(hookName string, state State) (State, error) {
 	goops.SetCommandRunner(fakeCommand)
 	goops.SetEnvGetter(fakeEnv)
 
-	err := c.Charm()
+	err := c.CharmFunc()
 	if err != nil {
 		c.CharmErr = err
 	}
@@ -146,7 +182,7 @@ func (c *Context) RunAction(actionName string, state State, params map[string]an
 	goops.SetCommandRunner(fakeCommandRunner)
 	goops.SetEnvGetter(fakeEnvGetter)
 
-	err := c.Charm()
+	err := c.CharmFunc()
 	if err != nil {
 		c.CharmErr = err
 	}

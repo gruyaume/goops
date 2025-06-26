@@ -27,9 +27,9 @@ func GetRelationIDsForPeers() error {
 
 func TestGetRelationIDsForPeers(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm:   GetRelationIDsForPeers,
-		AppName: "example",
-		UnitID:  "example/0",
+		CharmFunc: GetRelationIDsForPeers,
+		AppName:   "example",
+		UnitID:    "example/0",
 	}
 
 	peersData := map[goopstest.UnitID]goopstest.DataBag{
@@ -65,9 +65,9 @@ func TestGetRelationIDsForPeers(t *testing.T) {
 
 func TestGetRelationIDsNoPeers(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm:   GetRelationIDsForPeers,
-		AppName: "example",
-		UnitID:  "example/0",
+		CharmFunc: GetRelationIDsForPeers,
+		AppName:   "example",
+		UnitID:    "example/0",
 	}
 
 	stateIn := goopstest.State{
@@ -107,9 +107,9 @@ func ListPeerRelationUnits() error {
 
 func TestListPeerRelationUnits(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm:   ListPeerRelationUnits,
-		AppName: "example",
-		UnitID:  "example/0",
+		CharmFunc: ListPeerRelationUnits,
+		AppName:   "example",
+		UnitID:    "example/0",
 	}
 
 	stateIn := goopstest.State{
@@ -150,9 +150,9 @@ func GetPeerRelationModelUUID() error {
 
 func TestGetPeerRelationModelUUID(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm:   GetPeerRelationModelUUID,
-		AppName: "example",
-		UnitID:  "example/0",
+		CharmFunc: GetPeerRelationModelUUID,
+		AppName:   "example",
+		UnitID:    "example/0",
 	}
 
 	stateIn := goopstest.State{
@@ -208,9 +208,9 @@ func TestGetSelfUnitPeerRelationData(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("Leader=%v", tc.leader), func(t *testing.T) {
 			ctx := goopstest.Context{
-				Charm:   GetUnitPeerRelationData,
-				AppName: "example",
-				UnitID:  "example/0",
+				CharmFunc: GetUnitPeerRelationData,
+				AppName:   "example",
+				UnitID:    "example/0",
 			}
 
 			stateIn := goopstest.State{
@@ -252,9 +252,9 @@ func TestGetOtherUnitPeerRelationData(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("Leader=%v", tc.leader), func(t *testing.T) {
 			ctx := goopstest.Context{
-				Charm:   GetUnitPeerRelationData,
-				AppName: "example",
-				UnitID:  "example/1",
+				CharmFunc: GetUnitPeerRelationData,
+				AppName:   "example",
+				UnitID:    "example/1",
 			}
 
 			stateIn := goopstest.State{
@@ -316,9 +316,9 @@ func TestGetAppPeerRelationData(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("Leader=%v", tc.leader), func(t *testing.T) {
 			ctx := goopstest.Context{
-				Charm:   GetAppPeerRelationData,
-				AppName: "example-peer",
-				UnitID:  "example-peer/0",
+				CharmFunc: GetAppPeerRelationData,
+				AppName:   "example-peer",
+				UnitID:    "example-peer/0",
 			}
 
 			stateIn := goopstest.State{
@@ -351,9 +351,9 @@ func TestGetAppPeerRelationData(t *testing.T) {
 
 func TestGetAppPeerRelationDataNoRelation(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm:   GetAppPeerRelationData,
-		AppName: "example-peer",
-		UnitID:  "example-peer/0",
+		CharmFunc: GetAppPeerRelationData,
+		AppName:   "example-peer",
+		UnitID:    "example-peer/0",
 	}
 
 	stateIn := goopstest.State{
@@ -390,9 +390,9 @@ func SetPeerUnitRelationData() error {
 
 func TestSetPeerUnitRelationData(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm:   SetPeerUnitRelationData,
-		AppName: "example",
-		UnitID:  "example/0",
+		CharmFunc: SetPeerUnitRelationData,
+		AppName:   "example",
+		UnitID:    "example/0",
 	}
 
 	stateIn := goopstest.State{
@@ -436,9 +436,9 @@ func SetPeerAppRelationData() error {
 
 func TestSetPeerAppRelationDataLeader(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm:   SetPeerAppRelationData,
-		AppName: "example-peer",
-		UnitID:  "example-peer/0",
+		CharmFunc: SetPeerAppRelationData,
+		AppName:   "example-peer",
+		UnitID:    "example-peer/0",
 	}
 
 	stateIn := goopstest.State{
@@ -470,9 +470,9 @@ func TestSetPeerAppRelationDataLeader(t *testing.T) {
 
 func TestSetPeerAppRelationDataNonLeader(t *testing.T) {
 	ctx := goopstest.Context{
-		Charm:   SetPeerAppRelationData,
-		AppName: "example-peer",
-		UnitID:  "example-peer/0",
+		CharmFunc: SetPeerAppRelationData,
+		AppName:   "example-peer",
+		UnitID:    "example-peer/0",
 	}
 
 	stateIn := goopstest.State{
