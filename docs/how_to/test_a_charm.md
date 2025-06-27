@@ -53,13 +53,7 @@ func TestConfigure(t *testing.T) {
 
 ## 2. Run the tests
 
-Run the tests using Go's testing tool:
-
-```bash
-go test ./...
-```
-
-You should see output similar to this:
+Run the tests using `go test ./... -v`: 
 
 ```shell
 (venv) guillaume@courge:~/example$ go test ./... -v
