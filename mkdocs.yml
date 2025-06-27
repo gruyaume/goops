@@ -55,6 +55,7 @@ nav:
     - reference/index.md
     - Example Charms: reference/example_charms.md
     - Charm Libraries: reference/charm_libraries.md
+    - Best Practices: reference/best_practices.md
     - Juju Compatibility: reference/juju_compatibility.md
   - Explanation:
     - explanation/index.md
