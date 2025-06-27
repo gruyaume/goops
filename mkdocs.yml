@@ -44,6 +44,7 @@ nav:
     - Test a Charm: how_to/test_a_charm.md
     - Build a Charm: how_to/build_a_charm.md
     - Perform other charm operations: how_to/perform_other_charm_operations.md
+    - Manage Integrations: how_to/manage_integrations.md
   - Reference:
     - reference/index.md
     - Example Charms: reference/example_charms.md
