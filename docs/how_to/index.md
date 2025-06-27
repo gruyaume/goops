@@ -16,3 +16,4 @@ These guides cover basic operations for developing charms with `goops`.
 These guides cover how to manage specific charm resources using `goops`.
 
 - [Manage Integrations](manage_integrations.md)
+- [Manage Config](manage_config.md)

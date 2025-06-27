@@ -4,15 +4,11 @@ description: Manage integrations with `goops` charms.
 
 # Manage integrations
 
-## Directly
+Integrations are a core part of Juju, allowing charms to connect and share data with each other. Here we cover how you can use `goops` to manage integrations.
 
-`goops` provides functions to manage relations, allowing you to get relation IDs, list relation units, and set or get relation data. Those are the same functions that Juju exposes through hook commands.
+## 1. Declare the relation endpoint
 
-### 1. Declare the relation endpoint
-
-To integrate with another charm, declare the relations in your charm’s `charmcraft.yaml` file.
-
-To exchange data with another charm, define a provides or requires endpoint including an interface name. By convention, the interface name should be unique in the ecosystem. Each relation must have an endpoint, which your charm will use to refer to the relation.
+To integrate with another charm, declare the relations in your charm’s `charmcraft.yaml` file. Define a `provides` or `requires` endpoint including an interface name. By convention, the interface name should be unique in the ecosystem. Each relation must have an endpoint, which your charm will use to refer to the relation.
 
 For example, to declare a relation with a PostgreSQL database, you can add the following to your `charmcraft.yaml`:
 
@@ -23,7 +19,16 @@ requires:
     limit: 1
 ```
 
-### 2. Implement the relation logic in your charm
+!!! note
+    For more information on the `charmcraft.yaml` charm definition, read the [official charmcraft documentation](https://canonical-charmcraft.readthedocs-hosted.com/stable/reference/files/charmcraft-yaml-file/).
+
+## 2. Read and write relation data
+
+You can manage relation data in two ways: directly using `goops` functions or indirectly using Charm Libraries.
+
+### Option 1: Directly
+
+`goops` provides functions to manage relations, allowing you to get relation IDs, list relation units, and set or get relation data. Those are the same functions that Juju exposes through hook commands.
 
 Use `goops` to read the relation data:
 
@@ -78,7 +83,7 @@ func GetDatabaseURL(relationName string) (string, error) {
     - [Juju Hook commands :octicons-link-external-24:](https://documentation.ubuntu.com/juju/3.6/reference/hook-command/list-of-hook-commands/)
     - [goops API reference :octicons-link-external-24:](https://pkg.go.dev/github.com/gruyaume/goops)
 
-## Using Charm Libraries
+### Option 2: Using Charm Libraries
 
 In most cases, charms should not directly read and write to relation data. Instead, they should do so indirectly using [Charm Libraries](../reference/charm_libraries.md), which encapsulate the relation logic.
 
