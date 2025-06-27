@@ -53,3 +53,9 @@ func Configure() error {
 	return nil
 }
 ```
+
+!!! info
+    Learn more about config management in charms:
+
+    - [Juju Hook commands :octicons-link-external-24:](https://documentation.ubuntu.com/juju/3.6/reference/hook-command/list-of-hook-commands/)
+    - [goops API reference :octicons-link-external-24:](https://pkg.go.dev/github.com/gruyaume/goops)

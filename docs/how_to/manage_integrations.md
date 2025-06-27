@@ -30,7 +30,7 @@ You can manage relation data in two ways: directly using `goops` functions or in
 
 `goops` provides functions to manage relations, allowing you to get relation IDs, list relation units, and set or get relation data. Those are the same functions that Juju exposes through hook commands.
 
-Use `goops` to read the relation data:
+For example, to get the database URL from a relation named `db`, you can use the following code:
 
 ```go
 package charm

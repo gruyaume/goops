@@ -17,3 +17,4 @@ These guides cover how to manage specific charm resources using `goops`.
 
 - [Manage Integrations](manage_integrations.md)
 - [Manage Config](manage_config.md)
+- [Manage Secrets](manage_secrets.md)

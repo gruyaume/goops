@@ -46,6 +46,7 @@ nav:
     - Perform other charm operations: how_to/perform_other_charm_operations.md
     - Manage Integrations: how_to/manage_integrations.md
     - Manage Config: how_to/manage_config.md
+    - Manage Secrets: how_to/manage_secrets.md
   - Reference:
     - reference/index.md
     - Example Charms: reference/example_charms.md
