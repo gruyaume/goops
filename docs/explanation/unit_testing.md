@@ -2,7 +2,7 @@
 description: Unit testing for `goops` charms.
 ---
 
-# Unit Testing
+# Unit Testing with `goopstest`
 
 `goopstest` is a unit testing framework for `goops` charms. It allows you to simulate Juju environments and test your charm logic without needing a live Juju controller.
 
@@ -227,6 +227,9 @@ func TestCharm(t *testing.T) {
 }
 ```
 
-## API Documentation
+## Other resources
 
-You can refer to the [goopstest API documentation](https://pkg.go.dev/github.com/gruyaume/goops/goopstest) for more details.
+You can find more information about unit testing with `goopstest` in the following resources:
+
+- [How-to: test a charm](../how_to/test_a_charm.md)
+- [goopstest API Documentation :octicons-link-external-24:](https://pkg.go.dev/github.com/gruyaume/goops/goopstest)

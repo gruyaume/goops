@@ -14,8 +14,6 @@ theme:
     - content.code.copy
   icon:
     repo: fontawesome/brands/github
-extra_css:
-  - stylesheets/extra.css
 repo_url: https://github.com/gruyaume/goops
 repo_name: gruyaume/goops
 copyright: Copyright &copy; 2024 Guillaume Belanger
@@ -53,11 +51,8 @@ nav:
   - Explanation:
     - explanation/index.md
     - Charm Libraries: explanation/charm_libraries.md
-    - Unit Testing: explanation/unit_testing.md
+    - Unit Testing with goopstest: explanation/unit_testing.md
     - Design Principles: explanation/design_principles.md
 plugins:
   - search
   - glightbox
-  - social:
-      cards_layout_options:
-        background_color: "#26374a"
