@@ -58,6 +58,7 @@ nav:
     - Juju Compatibility: reference/juju_compatibility.md
   - Explanation:
     - explanation/index.md
+    - Handling Hooks: explanation/handling_hooks.md
     - Integrating: explanation/integrating.md
     - Unit Testing with goopstest: explanation/unit_testing.md
     - Design Principles: explanation/design_principles.md
