@@ -85,7 +85,7 @@ func GetDatabaseURL(relationName string) (string, error) {
 
 ### Option 2: Using Charm Libraries
 
-In most cases, charms should not directly read and write to relation data. Instead, they should do so indirectly using [Charm Libraries](../reference/charm_libraries.md), which encapsulate the relation logic.
+In most cases, charms should not directly read and write to relation data. Instead, they should do so indirectly using [Charm Libraries](../../reference/charm_libraries.md), which encapsulate the relation logic.
 
 ```go
 package charm
