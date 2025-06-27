@@ -4,7 +4,7 @@ description: Test a Juju charm using `goops` and `goopstest`.
 
 # Test a Charm
 
-## Write the test cases
+## 1. Write the test cases
 
 Create a `<charm name>_test.go` file in the same directory as your charm code. This file will contain the test cases for your charm using the `goopstest` package. Here we assume the charm name is `example`:
 
@@ -53,13 +53,7 @@ func TestConfigure(t *testing.T) {
 
 ## 2. Run the tests
 
-Run the tests using Go's testing tool:
-
-```bash
-go test ./...
-```
-
-You should see output similar to this:
+Run the tests using `go test ./... -v`: 
 
 ```shell
 (venv) guillaume@courge:~/example$ go test ./... -v

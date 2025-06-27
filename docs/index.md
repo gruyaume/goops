@@ -4,7 +4,9 @@ description: Develop reliable, portable, and fast Juju Charms in Go.
 
 # goops
 
-**goops** is a Go library for developing robust Juju charms. Go charms compile to a single, self-contained binary, ensuring greater reliability and consistent behavior accross different charm bases.
+*Develop reliable, simple, and fast Juju Charms in Go*
+
+`goops` is a Go library for developing simple and robust Juju charms. Write, test, build, and deploy your charm in minutes with goops.
 
 --- 
 ```go
