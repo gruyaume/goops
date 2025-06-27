@@ -20,3 +20,9 @@ Pre-requisites:
 ```shell
 INTEGRATION=1 go test ./...  # integration tests
 ```
+
+### Build documentation
+
+```shell
+mkdocs build
+```

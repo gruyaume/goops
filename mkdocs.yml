@@ -1,0 +1,58 @@
+site_name: Goops Documentation
+site_url: https://gruyaume.github.io/goops/
+docs_dir: docs
+theme:
+  name: material
+  palette:
+    primary: custom
+  font:
+    text: Source Code Pro
+  features:
+    - navigation.sections
+    - navigation.footer
+    - navigation.indexes
+    - content.code.copy
+  icon:
+    repo: fontawesome/brands/github
+repo_url: https://github.com/gruyaume/goops
+repo_name: gruyaume/goops
+copyright: Copyright &copy; 2024 Guillaume Belanger
+extra:
+  generator: false
+markdown_extensions: 
+  - attr_list
+  - md_in_html
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - admonition
+  - pymdownx.details
+  - tables
+  - toc:
+      permalink: true
+nav:
+  - Home: index.md
+  - Tutorials:
+    - tutorials/index.md 
+    - Getting Started: tutorials/getting_started.md
+  - How-to Guides:
+    - how_to/index.md
+    - Write a Charm: how_to/write_a_charm.md
+    - Test a Charm: how_to/test_a_charm.md
+    - Build a Charm: how_to/build_a_charm.md
+    - Perform other charm operations: how_to/perform_other_charm_operations.md
+  - Reference:
+    - reference/index.md
+    - Example Charms: reference/example_charms.md
+    - Juju Compatibility: reference/juju_compatibility.md
+  - Explanation:
+    - explanation/index.md
+    - Charm Libraries: explanation/charm_libraries.md
+    - Unit Testing with goopstest: explanation/unit_testing.md
+    - Design Principles: explanation/design_principles.md
+plugins:
+  - search
+  - glightbox
