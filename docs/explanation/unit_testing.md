@@ -6,7 +6,7 @@ description: Unit testing for `goops` charms.
 
 `goopstest` is a unit testing framework for `goops` charms. It allows you to simulate Juju environments and test your charm logic without needing a live Juju controller.
 
-`goopstest` allows users to write unit tests in a "state-transition" style. Each test includes:
+`goopstest` allows users to write unit tests in a "state-transition" style. Each test includes the following concepts:
 
 - **Context**: Charm function under test, Juju version, and other relevant context information.
 - **State**: Resources accessible to the charm, including status, leadership, configuration, relations.
