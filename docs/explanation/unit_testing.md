@@ -6,15 +6,21 @@ description: Unit testing for `goops` charms.
 
 `goopstest` is a unit testing framework for `goops` charms. It allows you to simulate Juju environments and test your charm logic without needing a live Juju controller.
 
-`goopstest` allows users to write unit tests in a "state-transition" style. Each test consists of:
+`goopstest` allows users to write unit tests in a "state-transition" style. Each test includes:
 
-- A Context and an initial state (Arrange)
-- An event (Act)
-- An output state (Assert)
+- **Context**: Charm function under test, Juju version, and other relevant context information.
+- **State**: Resources accessible to the charm, including status, leadership, configuration, relations.
+- **Event**: Hook name that will be run (ex. `install`, `start`, `stop`, etc.).
+
+Charm developers are expected to write tests that follow the *Arrange-Act-Assert* pattern:
+
+- **Arrange**: Declare the context and input state.
+- **Act**: Execute a hook.
+- **Assert**: Verify that the output state matches the expected state.
 
 ## Examples
 
-### A basic charm
+### Example 1: A basic charm
 
 Here's an example of a simple charm that uses `goops` to check if the unit is a leader and set its status accordingly:
 
@@ -75,7 +81,7 @@ func TestCharm(t *testing.T) {
 }
 ```
 
-### A Kubernetes charm
+### Example 2: A Kubernetes charm
 
 Here's a Kubernetes charm example that uses `goops` to configure a Pebble service and start it:
 
