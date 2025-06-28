@@ -2,7 +2,7 @@
 description: Manage secrets with `goops` charms.
 ---
 
-# Manage secrets
+# How-to manage secrets
 
 Both Juju users and charms can manage secrets. Here we cover how charms can read and write secrets using `goops`.
 

@@ -2,7 +2,7 @@
 description: Manage config with `goops` charms.
 ---
 
-# Manage config
+# How-to manage config
 
 Juju users can configure charms using the `juju config` command. Here we cover how you can use `goops` to read those configuration options in your charm.
 

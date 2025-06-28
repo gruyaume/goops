@@ -2,7 +2,7 @@
 description: Manage action with `goops` charms.
 ---
 
-# Manage actions
+# How-to manage actions
 
 Juju users can run actions in charms using the `juju run` command. Here we cover how you can use `goops` to handle those actions in your charm.
 

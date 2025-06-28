@@ -4,7 +4,7 @@ description: Best practices for writing charms with `goops`.
 
 # Charm Development best Practices
 
-This document outlines best practices for writing charms using the `goops` framework. Following these practices will help ensure that your charm is robust.
+This document outlines best practices for writing robust charms using `goops`.
 
 ## Write idempotent charm code
 
@@ -23,6 +23,7 @@ Use `goopstest` to write unit tests for your charms in a state-transition style.
 Be wary of managing state in your charm code. Maintaining state becomes increasingly complex the longer the charm is deployed as users upgrade it and the charm code evolves.
 
 State includes:
+
 - Stored State
 - Secrets
 - Relation data

@@ -2,7 +2,7 @@
 description: Manage state with `goops` charms.
 ---
 
-# Manage state
+# How-to manage state
 
 Juju allows charms to store state in a key-value store. Here we cover how you can use `goops` to set, get, and delete state in your charms. In this simple example, we check whether a state exists for a key named `my-key`. If it exists, we delete it. If it does not exist, we set it to a value of `my-value`.
 
