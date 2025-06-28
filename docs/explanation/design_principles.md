@@ -12,4 +12,4 @@ Charms are meant to be deployed at scale, in production environments, and in mis
 
 ## 2. Simplicity
 
-`goops` serves as a minimal mapping between Juju and Go constructs. Goops is not a framework; it does not impose charm design patterns. You call `goops`, it does not call you.
+`goops` serves as a minimal mapping between Juju and Go constructs. `goops` is not a framework; it does not impose charm design patterns. You call `goops`, it does not call you.
