@@ -2,7 +2,7 @@
 description: Manage integrations with `goops` charms.
 ---
 
-# Manage integrations
+# How-to manage integrations
 
 Integrations are a core part of Juju, allowing charms to connect and share data with each other. Here we cover how you can use `goops` to manage integrations.
 
@@ -26,7 +26,27 @@ requires:
 
 You can manage relation data in two ways: directly using `goops` functions or indirectly using Charm Libraries.
 
-### Option 1: Directly
+### Option 1: Using Charm Libraries (recommended)
+
+In most cases, charms should not directly read and write to relation data. Instead, they should do so indirectly using [Charm Libraries](../../reference/charm_libraries.md), which encapsulate the relation logic.
+
+```go
+package charm
+
+import (
+	"github.com/gruyaume/charm-libraries/postgresql"
+)
+
+func GetDatabaseURL(relationName string) (string, error) {
+	i := &postgresql.Integration{
+		RelationName: relationName,
+	}
+
+	return i.GetDatabaseURL()
+}
+```
+
+### Option 2: Directly
 
 `goops` provides functions to manage relations, allowing you to get relation IDs, list relation units, and set or get relation data. Those are the same functions that Juju exposes through hook commands.
 
@@ -82,23 +102,3 @@ func GetDatabaseURL(relationName string) (string, error) {
 
     - [Juju Hook commands :octicons-link-external-24:](https://documentation.ubuntu.com/juju/3.6/reference/hook-command/list-of-hook-commands/)
     - [goops API reference :octicons-link-external-24:](https://pkg.go.dev/github.com/gruyaume/goops)
-
-### Option 2: Using Charm Libraries
-
-In most cases, charms should not directly read and write to relation data. Instead, they should do so indirectly using [Charm Libraries](../../reference/charm_libraries.md), which encapsulate the relation logic.
-
-```go
-package charm
-
-import (
-	"github.com/gruyaume/charm-libraries/postgresql"
-)
-
-func GetDatabaseURL(relationName string) (string, error) {
-	i := &postgresql.Integration{
-		RelationName: relationName,
-	}
-
-	return i.GetDatabaseURL()
-}
-```

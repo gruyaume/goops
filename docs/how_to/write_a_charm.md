@@ -2,7 +2,7 @@
 description: Write a Juju charm using `goops`
 ---
 
-# Write a Charm
+# How-to write a Charm
 
 Create a new directory for your charm project and initialize a Go module. Here the charm name is `example`, replace it with your desired charm name:
 

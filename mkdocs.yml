@@ -51,6 +51,7 @@ nav:
       - Secrets: how_to/manage/secrets.md
       - Actions: how_to/manage/actions.md
       - State: how_to/manage/state.md
+      - Workloads (on Kubernetes): how_to/manage/workloads_on_k8s.md
   - Reference:
     - reference/index.md
     - Example Charms: reference/example_charms.md

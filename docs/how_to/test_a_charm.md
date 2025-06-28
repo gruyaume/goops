@@ -2,7 +2,7 @@
 description: Test a Juju charm using `goops` and `goopstest`.
 ---
 
-# Test a Charm
+# How-to test a Charm
 
 ## 1. Write the test cases
 

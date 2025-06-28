@@ -53,25 +53,25 @@ func Configure() error {
 
     ---
 
-    **Start here**: a hands-on introduction to goops for new users. Build and deploy a Go charm in minutes.
+    **Start here**: a hands-on introduction to goops for new users. Write, build and deploy your first charm in minutes.
 
 -   [__How-to Guides__](how_to/index.md)
 
     ---
 
-    **Step-by-step guides** covering key operation and common tasks.
+    **Step-by-step guides** covering key operations such as managing config, integrations, and workloads.
 
 -   [__Reference__](reference/index.md)
 
     ---
 
-    **Technical information** - API, configuration, and more.
+    **Technical information** - API, example charms, charm libraries, best practices, and more.
 
 -   [__Explanation__](explanation/index.md)
 
     ---
 
-    **Discussion and clarification** of key topics.
+    **Discussion and clarification** of key topics like unit testing, and handling hooks.
 
 
 </div>

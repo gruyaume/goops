@@ -2,7 +2,7 @@
 description: Build a `goops` charm.
 ---
 
-# Build a Charm
+# How-to build a Charm
 
 ## 1. Create a `charmcraft.yaml` file with the Go plugin
 
