@@ -1,7 +1,6 @@
 # Tutorials
 
-In this tutorial, we will write, build, and deploy a Go charm using `goops`.
+In these tutorials, we will write, build, and deploy charms using `goops`.
 
-You can expect to spend less than 10 minutes working through the complete tutorial. It’s a strongly-recommended investment of time if you’re new to `goops` - it will save you many more hours later on. Follow the tutorials steps in sequence; they take you on a learning journey through the product.
-
-- [Getting Started](getting_started.md)
+- [Getting Started](getting_started.md): A hands-on introduction to `goops` for new users. Write, build, and deploy your first charm in less than 10 minutes.
+- [Write your first Kubernetes charm](write_your_first_k8s_charm.md): Write a complete Kubenetes charm for a web application using `goops`. Learn how to use `goops` to manage Pebble services, relations, and configurations. Build and deploy your charm to a Kubernetes cluster.
