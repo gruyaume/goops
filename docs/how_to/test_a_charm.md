@@ -19,9 +19,7 @@ import (
 )
 
 func TestConfigure(t *testing.T) {
-	ctx := goopstest.Context{
-		Charm: charm.Configure,
-	}
+	ctx := goopstest.NewContext(charm.Configure)
 
 	stateIn := goopstest.State{
 		Leader: true,
@@ -30,9 +28,10 @@ func TestConfigure(t *testing.T) {
 		},
 	}
 
-	stateOut, err := ctx.Run("install", stateIn)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+	stateOut := ctx.Run("install", stateIn)
+
+	if ctx.CharmErr != nil {
+		t.Fatalf("Configure failed: %v", ctx.CharmErr)
 	}
 
 	expectedStatus := goopstest.Status{
