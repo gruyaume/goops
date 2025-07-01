@@ -2,13 +2,13 @@
 description: Add a configuration option to your Kubernetes charm using `goops`.
 ---
 
-# 2. Add a configuration option
+# 2. Make the port configurable
 
 We will add a configuration option to our `myapp` charm that allows the user to set the port on which the application listens. This step of the tutorial assumes you have completed the previous step.
 
 ## 2.1 Update the Go charm
 
-Open the `internal/charm/charm.go` file, remove the hardcoded port, and include read the port from the Juju configuration options. Here's the updated code:
+Open the `internal/charm/charm.go` file, remove the hardcoded port, read the port from the Juju configuration options, and use it to write the configuration file. Here's the updated code:
 
 ```go
 package charm
