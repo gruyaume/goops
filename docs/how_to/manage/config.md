@@ -43,7 +43,7 @@ type Config struct {
 func Configure() error {
 	c := Config{}
 
-	err := goops.GetConfig(c)
+	err := goops.GetConfig(&c)
 	if err != nil {
 		return fmt.Errorf("could not get config: %w", err)
 	}

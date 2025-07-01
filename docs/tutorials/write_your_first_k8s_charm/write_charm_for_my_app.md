@@ -43,6 +43,7 @@ Create a `internal/charm/charm.go` file with the following content:
 package charm
 
 import (
+	"bytes"
 	"fmt"
 	"strings"
 
@@ -74,8 +75,6 @@ type PebblePlan struct {
 }
 
 func Configure() error {
-	pebble := goops.Pebble("myapp")
-
 	err := goops.SetPorts([]*goops.Port{
 		{Port: Port, Protocol: goops.ProtocolTCP},
 	})
@@ -83,19 +82,35 @@ func Configure() error {
 		return fmt.Errorf("could not set ports: %w", err)
 	}
 
-	err = syncConfig(pebble)
-	if err != nil {
-		return fmt.Errorf("could not sync config: %w", err)
-	}
+	pebble := goops.Pebble("myapp")
 
 	_, err = pebble.SysInfo()
 	if err != nil {
-		return fmt.Errorf("could not connect to pebble: %w", err)
+		_ = goops.SetUnitStatus(goops.StatusWaiting, "waiting for pebble to be ready")
+		return nil
+	}
+
+	configFileChanged, err := syncConfig(pebble, Port)
+	if err != nil {
+		return fmt.Errorf("could not sync config: %w", err)
 	}
 
 	err = syncPebbleService(pebble)
 	if err != nil {
 		return fmt.Errorf("could not sync pebble service: %w", err)
+	}
+
+	if configFileChanged {
+		_, err = pebble.Restart(
+			&client.ServiceOptions{
+				Names: []string{"myapp"},
+			},
+		)
+		if err != nil {
+			return fmt.Errorf("could not start pebble service: %w", err)
+		}
+
+		goops.LogInfof("Pebble service restarted")
 	}
 
 	_ = goops.SetUnitStatus(goops.StatusActive, "service is running")
@@ -107,9 +122,9 @@ type MyAppConfig struct {
 	Port int `yaml:"port"`
 }
 
-func getExpectedConfig() ([]byte, error) {
+func getExpectedConfig(port int) ([]byte, error) {
 	myappConfig := MyAppConfig{
-		Port: Port,
+		Port: port,
 	}
 
 	b, err := yaml.Marshal(myappConfig)
@@ -120,25 +135,38 @@ func getExpectedConfig() ([]byte, error) {
 	return b, nil
 }
 
-func syncConfig(pebble goops.PebbleClient) error {
-	content, err := getExpectedConfig()
+func syncConfig(pebble goops.PebbleClient, port int) (bool, error) {
+	expectedContent, err := getExpectedConfig(port)
 	if err != nil {
-		return fmt.Errorf("could not get expected config: %w", err)
+		return false, fmt.Errorf("could not get expected config: %w", err)
 	}
 
-	source := strings.NewReader(string(content))
+	target := &bytes.Buffer{}
+
+	err = pebble.Pull(&client.PullOptions{
+		Path:   ConfigPath,
+		Target: target,
+	})
+	if err != nil {
+		goops.LogInfof("could not pull existing config from pebble: %v", err)
+	}
+
+	if target.String() == string(expectedContent) {
+		goops.LogInfof("Config file is already up to date at %s", ConfigPath)
+		return false, nil
+	}
 
 	err = pebble.Push(&client.PushOptions{
-		Source: source,
+		Source: strings.NewReader(string(expectedContent)),
 		Path:   ConfigPath,
 	})
 	if err != nil {
-		return fmt.Errorf("could not push config to pebble: %w", err)
+		return false, fmt.Errorf("could not push config to pebble: %w", err)
 	}
 
 	goops.LogInfof("Config file pushed to %s", ConfigPath)
 
-	return nil
+	return true, nil
 }
 
 func syncPebbleService(pebble goops.PebbleClient) error {
