@@ -113,7 +113,7 @@ func Configure() error {
 		goops.LogInfof("Pebble service restarted")
 	}
 
-	_ = goops.SetUnitStatus(goops.StatusActive, "service is running")
+	_ = goops.SetUnitStatus(goops.StatusActive, "service is running on port", fmt.Sprintf("%d", Port))
 
 	return nil
 }
