@@ -38,7 +38,10 @@ nav:
   - Tutorials:
     - tutorials/index.md 
     - Getting Started: tutorials/getting_started.md
-    - Write your first Kubernetes charm: tutorials/write_your_first_k8s_charm.md
+    - Write your first Kubernetes charm:
+      - tutorials/write_your_first_k8s_charm/index.md
+      - 1. Write a charm for `myapp`: tutorials/write_your_first_k8s_charm/write_charm_for_my_app.md
+      - 2. Add a configuration option: tutorials/write_your_first_k8s_charm/add_config_option.md
   - How-to Guides:
     - how_to/index.md
     - Write a Charm: how_to/write_a_charm.md
