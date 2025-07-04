@@ -42,6 +42,8 @@ nav:
       - tutorials/write_your_first_k8s_charm/index.md
       - 1. Write a charm for `myapp`: tutorials/write_your_first_k8s_charm/write_charm_for_my_app.md
       - 2. Make the port configurable: tutorials/write_your_first_k8s_charm/make_port_configurable.md
+      - 3. Integrate with Loki: tutorials/write_your_first_k8s_charm/integrate_with_loki.md
+      - 4. Add unit tests using `goopstest`: tutorials/write_your_first_k8s_charm/add_unit_tests.md
   - How-to Guides:
     - how_to/index.md
     - Write a Charm: how_to/write_a_charm.md
@@ -71,3 +73,4 @@ nav:
 plugins:
   - search
   - glightbox
+  - social:
