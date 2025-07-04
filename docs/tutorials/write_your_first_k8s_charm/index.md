@@ -4,5 +4,6 @@ In this tutorial, we will write a Kubernetes charm in Go for a web application u
 
 - [1. Write a charm for `myapp`](write_charm_for_my_app.md)
 - [2. Make the port configurable](make_port_configurable.md)
+- [2. Integrate with Loki](integrate_with_loki.md)
 
 At any moment, you can refer to the [MyApp K8s Operator GitHub repository](https://github.com/gruyaume/myapp-k8s-operator) for the complete code of the charm we will write in this tutorial.
