@@ -1,9 +1,11 @@
 module github.com/gruyaume/goops
 
-go 1.24.0
+go 1.24.4
+
+toolchain go1.24.5
 
 require (
-	github.com/canonical/pebble v1.22.2
+	github.com/canonical/pebble v1.23.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
