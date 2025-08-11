@@ -1,6 +1,6 @@
 module github.com/gruyaume/goops
 
-go 1.24.4
+go 1.24.2
 
 require (
 	github.com/canonical/pebble v1.23.0
