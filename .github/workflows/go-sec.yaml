@@ -12,13 +12,13 @@ jobs:
     env:
       GO111MODULE: on
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: actions/setup-go@v5
         with:
           go-version-file: "go.mod"
 
       - name: Run Gosec Security Scanner
-        uses: securego/gosec@v2.22.7
+        uses: securego/gosec@v2.22.8
         with:
           args: ./...
