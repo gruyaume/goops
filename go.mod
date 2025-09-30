@@ -3,7 +3,7 @@ module github.com/gruyaume/goops
 go 1.24.6
 
 require (
-	github.com/canonical/pebble v1.24.0
+	github.com/canonical/pebble v1.25.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
